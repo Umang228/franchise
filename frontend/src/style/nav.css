@@ -1,0 +1,43 @@
+*{
+    scroll-behavior: smooth;
+}
+.navbar{
+    min-width: 100vw;width: 100vw;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    max-height: 90px;
+    background-color:#010103;
+    position: fixed;
+    
+}
+.logo{
+    position: relative;
+    top: -12px;
+    color: #fff;
+}
+.navbar ul{
+    display: flex;
+    flex-direction: row;
+    margin-top:23px ;
+}
+
+ul li{
+    list-style: none;
+    padding: 13px;
+}
+ul a{
+    text-decoration: none;
+    color: #fff;
+}
+
+button{
+    margin: 23px;
+    padding: 11px;
+    background-color: transparent;
+    border: none;
+    outline: none;
+    color: #fff;
+    font-size: 15px;
+    cursor:pointer
+}

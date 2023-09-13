@@ -1,0 +1,120 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins&display=swap');
+
+*{
+    font-family: 'Poppins', sans-serif;
+}
+
+.login-page{
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+}
+.circle{
+    width: 750px;
+    height: 700px;
+    border-radius: 50%;
+    top: -200px;
+    left: -200px;
+    z-index: -1;
+    background-color: #7464BC;
+    position: absolute;
+    text-align: center;
+}
+.circle-c{
+    width: 750px;
+    height: 700px;
+    border-radius: 50%;
+    top: -200px;
+    left: -200px;
+    z-index: -1;
+    background-color: #7464BC;
+    position: absolute;
+    text-align: center;
+}
+p{
+    text-align: center;
+    color: #fff;
+    position: relative;
+    right: 200px;
+    font-size: 20px;
+    top: 70px;
+}
+p{
+    text-align: center;
+    color: #fff;
+    position: relative;
+    right: 200px;
+    font-size: 20px;
+    top: 70px;
+}
+#pr{
+    text-align: center;
+    color: #fff;
+    position: relative;
+    right: 200px;
+    font-size: 20px;
+    top: 170px;
+}
+#rl{
+    margin: 43px;
+    position: relative;
+    top: 60px;
+}
+.left-side button{
+    position: relative;
+    top: 50px;
+    right: 200px;
+    color: #fff;
+    border: 1px solid #fff;
+    border-radius: 23px;
+    font-size: 16px;
+    padding: 11px;
+    width: 140px;
+    transition: all 0.5s;
+}
+.left-side button:hover{
+    box-shadow: 1px 1px 10px #fff;
+
+}
+
+.left-side img{
+    width: 600px;
+    margin: 23px;
+    position: relative;
+    top: 120px;
+}
+
+.right-side-1{
+    display: flex;
+    flex-direction: column;
+}
+
+h2{
+    margin: 40px;
+    text-align: center;
+}
+
+.right-form{
+    display: flex;
+    flex-direction: column;
+    margin: 13px;
+    padding: 23px;
+}
+
+.right-form input{
+    padding: 18px;
+    width: 280px;
+    border-radius: 23px;
+    border: none;
+    background-color: #f1f1f1;
+    margin: 18px;
+}
+
+.right-form label{
+    margin-left: 19.8px;
+}
+
+.right-form button{
+    background-color: #7464BC;
+    border-radius: 23px;
+}
