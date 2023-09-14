@@ -145,6 +145,7 @@ export default function EditFranchise() {
                   value="Regular"
                   checked={formData.franchise_type === "Regular"}
                   onChange={handleChange}
+                  className="rdio"
                 />
                 Regular
               </label>
@@ -155,6 +156,7 @@ export default function EditFranchise() {
                   value="Online"
                   checked={formData.franchise_type === "Online"}
                   onChange={handleChange}
+                  className="rdio"
                 />
                 Online
               </label>
