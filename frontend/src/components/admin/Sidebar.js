@@ -8,9 +8,9 @@ import { BsCartCheck } from "react-icons/bs";
 import {HiTemplate} from "react-icons/hi"
 import { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import SidebarMenu from "./SidebarMenu";
+import SidebarMenu from "../Header/SidebarMenu";
 import { CgFramer } from "react-icons/cg";
-import './Header.css'
+import '../Header/Header.css';
 
 
 

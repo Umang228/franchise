@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-import Sidebar from '../Header/Sidebar';
+import Sidebar from './Sidebar';
 import axios from 'axios';
 
 export default function Products() {

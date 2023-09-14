@@ -1,73 +1,98 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import Sidebar from '../Header/Sidebar';
+import Sidebar from './Sidebar';
 import axios from 'axios';
 
-export default function Products({ selectedProducts }) {
-  const [products, setProducts] = useState([]);
-  const navigate = useNavigate();
+export default function Products() {
+  const [selectedProductIds, setSelectedProductIds] = useState([]);
+  const [productsData, setProductsData] = useState([]);
 
-  // Function to fetch product data from the backend
-  const fetchProducts = async () => {
+  // Function to fetch selected product IDs from the backend
+  const fetchSelectedProductIds = async () => {
     try {
-      const response = await axios.get('http://localhost:8081/admin/products');
+      const response = await axios.get(
+        // Replace with your backend API endpoint to retrieve selected product IDs
+        'http://localhost:8081/franchise/products'
+      );
+
       if (response.status === 200) {
-        setProducts(response.data);
+        // Split the comma-separated string into an array of product IDs
+        const ids = response.data.split(',').map((id) => parseInt(id));
+        setSelectedProductIds(ids);
       }
     } catch (error) {
-      console.error('Error fetching products:', error);
+      console.error('Error fetching selected product IDs:', error);
     }
   };
 
-  // Call fetchProducts when the component mounts
+  // Function to fetch product details by product ID
+  const fetchProductDetails = async (id) => {
+    try {
+      const response = await axios.get(
+        // Replace with your backend API endpoint to retrieve product details by ID
+        `http://localhost:8081/franchise/products/${id}`
+      );
+
+      if (response.status === 200) {
+        setProductsData((prevData) => [...prevData, response.data]);
+      }
+    } catch (error) {
+      console.error('Error fetching product details:', error);
+    }
+  };
+
+  // Call fetchSelectedProductIds when the component mounts
   useEffect(() => {
-    fetchProducts();
+    fetchSelectedProductIds();
   }, []);
 
-  // Function to get product details by product ID
-  const getProductDetailsById = (id) => {
-    return products.find((product) => product.id === id);
-  };
+  // Fetch product details for each selected product ID
+  useEffect(() => {
+    selectedProductIds.forEach((id) => {
+      fetchProductDetails(id);
+    });
+  }, [selectedProductIds]);
+
+  // Define your table headers
+  const tableHeaders = [
+    'Product Name',
+    'Faculty Name',
+    'Product ID',
+    'Product Type',
+    'Course',
+    'Group',
+    'Subject',
+    'Delivery Type',
+    'Actions',
+  ];
 
   return (
     <div>
       <Sidebar />
-      <h1>Products</h1>
+      <h1>Selected Products</h1>
       <table>
         <thead>
           <tr>
-            <th>Product Name</th>
-            <th>Faculty Name</th>
-            <th>Product ID</th>
-            <th>Product Type</th>
-            <th>Course</th>
-            <th>Group</th>
-            <th>Subject</th>
-            <th>Delivery Type</th>
-            <th>Actions</th>
+            {tableHeaders.map((header) => (
+              <th key={header}>{header}</th>
+            ))}
           </tr>
         </thead>
         <tbody>
-          {selectedProducts.map((id) => {
-            const product = getProductDetailsById(id);
-            if (product) {
-              return (
-                <tr key={product.id}>
-                  <td>{product.productName}</td>
-                  <td>{product.facultyName}</td>
-                  <td>{product.productID}</td>
-                  <td>{product.productType}</td>
-                  <td>{product.course}</td>
-                  <td>{product.subject}</td>
-                  <td>{product.deliveryType}</td>
-                  <td>
-                    <button onClick={() => navigate(`/franchise/products/edit/${product.id}`)}>Edit</button>
-                  </td>
-                </tr>
-              );
-            }
-            return null;
-          })}
+          {productsData.map((product) => (
+            <tr key={product.id}>
+              <td>{product.productName}</td>
+              <td>{product.facultyName}</td>
+              <td>{product.productID}</td>
+              <td>{product.productType}</td>
+              <td>{product.course}</td>
+              <td>{product.group}</td>
+              <td>{product.subject}</td>
+              <td>{product.deliveryType}</td>
+              <td>
+                <button>Edit</button>
+              </td>
+            </tr>
+          ))}
         </tbody>
       </table>
     </div>

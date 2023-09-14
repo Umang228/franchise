@@ -157,9 +157,12 @@ router.post('/add-franchise', (req, res) => {
     mode_of_payment,
     selected_products,
   } = req.body;
-  
-  const selectedProductsString = selected_products.join(', ');
 
+  // Extract the product IDs from the selected_products array
+  const selectedProductIds = selected_products.map((product) => product.id);
+
+  // Convert the array of product IDs to a comma-separated string
+  const selectedProductsString = selectedProductIds.join(', ');
 
   // Insert the franchise data into the "franchises" table
   const franchiseSql =
@@ -198,6 +201,7 @@ router.post('/add-franchise', (req, res) => {
     });
   });
 });
+
 
 
 

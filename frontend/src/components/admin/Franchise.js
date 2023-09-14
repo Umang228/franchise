@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import Sidebar from '../Header/Sidebar';
+import Sidebar from './Sidebar';
 
 export default function Franchise() {
   const [franchises, setFranchises] = useState([]);
