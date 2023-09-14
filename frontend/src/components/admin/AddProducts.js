@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import {  useNavigate } from 'react-router-dom';
-
+import "../style/addprod.css"
 import Sidebar from './Sidebar';
 import axios from "axios";
 
@@ -99,6 +99,7 @@ export default function AddProducts() {
                   value="Combo"
                   checked={productInfo.productType === "Combo"}
                   onChange={handleChange}
+                  className="rdio"
                 />
                 Combo
               </label>
@@ -109,6 +110,7 @@ export default function AddProducts() {
                   value="Single"
                   checked={productInfo.productType === "Single"}
                   onChange={handleChange}
+                  className="rdio"
                 />
                 Single
               </label>
@@ -154,6 +156,7 @@ export default function AddProducts() {
                   value="Regular"
                   checked={productInfo.deliveryType === "Regular"}
                   onChange={handleChange}
+                  className="rdio"
                 />
                 Regular
               </label>
@@ -172,16 +175,17 @@ export default function AddProducts() {
           <div>
             <label>Additional Services:</label>
             <div>
-              <label>
+              <label style={{ color: 'black', padding: 15 }}>
                 <input
                   type="checkbox"
                   name="isFranchise"
                   checked={productInfo.isFranchise}
                   onChange={handleChange}
+                  className="rdio"
                 />
                 Is Franchise
               </label>
-              <label>
+              <label style={{ color: 'black', padding: 15 }}>
                 <input
                   type="checkbox"
                   name="isWhatsapp"
@@ -190,7 +194,7 @@ export default function AddProducts() {
                 />
                 Broadcast To Whatsapp
               </label>
-              <label>
+              <label style={{ color: 'black', padding: 15 }}>
                 <input
                   type="checkbox"
                   name="priceUpdate"
@@ -201,7 +205,7 @@ export default function AddProducts() {
               </label>
             </div>
           </div>
-          <button type="submit">Add Product</button>
+          <button type="submit" id="btnn">Add Product</button>
         </form>
       </div>
     </div>

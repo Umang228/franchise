@@ -1,0 +1,216 @@
+
+/* add product */
+.add-product-form h2{
+margin: 120px 120px 60px 120px;
+font-size: 27px;
+}
+
+.add-product-form form{
+    display: flex;
+    /* flex-direction: column; */
+    margin-left: 80px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+.add-product-form form>div{
+    flex: 50%;
+    display: flex;
+    flex-direction: column;
+    /* align-items: flex-start; */
+    justify-content: space-around;
+}
+
+.add-product-form form>div>input{
+    padding: 12px;
+    margin: 13px;
+    border: 0.3px solid lightgray;
+    border-radius: 12px;
+}
+
+.add-product-form form>div>input[type=radio]{
+    margin: 13px;
+}
+
+.add-product-form form>div>label{
+    margin-left: 13.8px;
+}
+
+.rdio{
+    margin: 13px;
+}
+
+
+
+#btnn{
+    color: rgb(255, 255, 255);
+    background-color: rgb(37, 37, 255);
+    border-radius: 13px;
+    padding: 13px;
+}
+
+/* edit products */
+
+.edit-product-form h2{
+    margin: 120px 120px 60px 120px;
+    font-size: 27px;
+    }
+
+    .edit-product-form form{
+        display: flex;
+        /* flex-direction: column; */
+        margin-left: 80px;
+        align-items: center;
+        flex-wrap: wrap;
+    }
+    .edit-product-form form>div{
+        flex: 50%;
+        display: flex;
+        flex-direction: column;
+        /* align-items: flex-start; */
+        justify-content: space-around;
+    }
+
+    .edit-product-form form>div>input{
+        padding: 12px;
+        margin: 13px;
+        border: 0.3px solid lightgray;
+        border-radius: 12px;
+    }
+
+    .edit-product-form form>div>input[type=radio]{
+        margin: 13px;
+    }
+
+    .edit-product-form form>div>label{
+        margin-left: 13.8px;
+    }
+
+    .rdio{
+        margin: 13px;
+    }
+
+    .update-product{
+        color: rgb(255, 255, 255);
+        background-color: rgb(37, 37, 255);
+        border-radius: 13px;
+        padding: 13px;
+    }
+
+
+
+/* Franchise */
+
+
+.add-franchise-form h2{
+    margin: 120px 120px 60px 120px;
+    font-size: 27px;
+}
+.add-franchise-form form{
+    display: flex;
+    /* flex-direction: column; */
+    margin-left: 80px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.add-franchise-form form>div{
+    flex: 50%;
+    display: flex;
+    flex-direction: column;
+    /* align-items: flex-start; */
+    justify-content: space-around;
+}
+
+.add-franchise-form form>div>input{
+    padding: 12px;
+    margin: 13px;
+    border: 0.3px solid lightgray;
+    border-radius: 12px;
+}
+
+.add-franchise-form form>div>input[type=radio]{
+    margin: 13px;
+}
+
+.add-franchise-form form>div>label{
+    margin-left: 13.8px;
+}
+
+#addBtnn{
+    color: rgb(255, 255, 255);
+    background-color: rgb(37, 37, 255);
+    border-radius: 13px;
+    padding: 13px;
+    width: 180px;
+}
+.modeOfPayment{
+    padding: 12px;
+    margin: 13px;
+    border: 0.3px solid lightgray;
+    border-radius: 12px;
+}
+
+.selectProducts{
+    margin: 13px;
+    border: 0.3px solid lightgray;
+    border-radius: 12px;
+    width: 97% !important;
+}
+
+
+/* update franchise */
+
+.edit-franchise-form h2{
+    margin: 120px 120px 60px 120px;
+    font-size: 27px;
+}
+.edit-franchise-form form{
+    display: flex;
+    margin-left: 80px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.edit-franchise-form form>div{
+    flex: 50%;
+    display: flex;
+    flex-direction: column;
+    /* align-items: flex-start; */
+    justify-content: space-around;
+}
+
+.edit-franchise-form form>div>input{
+    padding: 12px;
+    margin: 13px;
+    border: 0.3px solid lightgray;
+    border-radius: 12px;
+}
+
+.edit-franchise-form form>div>input[type=radio]{
+    margin: 13px;
+}
+
+.edit-franchise-form form>div>label{
+    margin-left: 13.8px;
+}
+
+#updateBtnn{
+    color: rgb(255, 255, 255);
+    background-color: rgb(37, 37, 255);
+    border-radius: 13px;
+    padding: 13px;
+    width: 180px;
+}
+.modeOfPayment{
+    padding: 12px;
+    margin: 13px;
+    border: 0.3px solid lightgray;
+    border-radius: 12px;
+}
+
+.selectProducts{
+    margin: 13px;
+    border: 0.3px solid lightgray;
+    border-radius: 12px;
+    width: 97% !important;
+}
