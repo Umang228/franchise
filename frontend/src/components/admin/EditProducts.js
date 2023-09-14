@@ -122,6 +122,7 @@ export default function EditProduct() {
                   value="Combo"
                   checked={productInfo.productType === "Combo"}
                   onChange={handleChange}
+                  className="rdio"
                 />
                 Combo
               </label>
@@ -132,6 +133,7 @@ export default function EditProduct() {
                   value="Single"
                   checked={productInfo.productType === "Single"}
                   onChange={handleChange}
+                  className="rdio"
                 />
                 Single
               </label>
@@ -177,6 +179,7 @@ export default function EditProduct() {
                   value="Regular"
                   checked={productInfo.deliveryType === "Regular"}
                   onChange={handleChange}
+                  className="rdio"
                 />
                 Regular
               </label>
@@ -187,6 +190,7 @@ export default function EditProduct() {
                   value="Fast Track"
                   checked={productInfo.deliveryType === "Fast Track"}
                   onChange={handleChange}
+                  className="rdio"
                 />
                 Fast Track
               </label>
@@ -195,7 +199,7 @@ export default function EditProduct() {
           <div>
             <label>Additional Services:</label>
             <div>
-              <label>
+              <label style={{ color: 'black', padding: 15 }}>
                 <input
                   type="checkbox"
                   name="isFranchise"
@@ -204,7 +208,7 @@ export default function EditProduct() {
                 />
                 Is Franchise
               </label>
-              <label>
+              <label style={{ color: 'black', padding: 15 }}>
                 <input
                   type="checkbox"
                   name="isWhatsapp"
@@ -213,7 +217,7 @@ export default function EditProduct() {
                 />
                 Broadcast To Whatsapp
               </label>
-              <label>
+              <label style={{ color: 'black', padding: 15 }}>
                 <input
                   type="checkbox"
                   name="priceUpdate"
@@ -224,7 +228,7 @@ export default function EditProduct() {
               </label>
             </div>
           </div>
-          <button type="submit">Update Product</button>
+          <button type="submit" className="update-product">Update Product</button>
         </form>
       </div>
     </div>

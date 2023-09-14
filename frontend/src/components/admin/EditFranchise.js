@@ -145,6 +145,7 @@ export default function EditFranchise() {
                   value="Regular"
                   checked={formData.franchise_type === "Regular"}
                   onChange={handleChange}
+                  className="rdio"
                 />
                 Regular
               </label>
@@ -155,6 +156,7 @@ export default function EditFranchise() {
                   value="Online"
                   checked={formData.franchise_type === "Online"}
                   onChange={handleChange}
+                  className="rdio"
                 />
                 Online
               </label>
@@ -166,6 +168,7 @@ export default function EditFranchise() {
               name="mode_of_payment"
               value={formData.mode_of_payment}
               onChange={handleChange}
+              className="modeOfPayment"
             >
               <option value="Wallet">Wallet</option>
               <option value="Payment Gateway">Payment Gateway</option>
@@ -178,6 +181,7 @@ export default function EditFranchise() {
               name="selected_products"
               value={formData.selected_products}
               onChange={handleChange}
+              className="modeOfPayment"
             >
               <option value="">Select a Product</option>
               {products.map((product) => (
@@ -188,7 +192,7 @@ export default function EditFranchise() {
             </select>
           </div>
           <div>
-            <button type="submit">Update Franchise</button>
+            <button type="submit" id="updateBtnn">Update Franchise</button>
           </div>
         </form>
       </div>

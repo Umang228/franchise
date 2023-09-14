@@ -142,6 +142,7 @@ export default function AddFranchise() {
                   value="Regular"
                   checked={formData.franchise_type === "Regular"}
                   onChange={handleChange}
+                  className="rdio"
                 />
                 Regular
               </label>
@@ -152,6 +153,7 @@ export default function AddFranchise() {
                   value="Online"
                   checked={formData.franchise_type === "Online"}
                   onChange={handleChange}
+                  className="rdio"
                 />
                 Online
               </label>
@@ -163,6 +165,7 @@ export default function AddFranchise() {
               name="mode_of_payment"
               value={formData.mode_of_payment}
               onChange={handleChange}
+              className="modeOfPayment"
             >
               <option value="Wallet">Wallet</option>
               <option value="Payment Gateway">Payment Gateway</option>
@@ -181,11 +184,12 @@ export default function AddFranchise() {
               onRemove={(selectedList) =>
                 handleSelectChange(selectedList, "selected_products")
               }
+              className="selectProducts"
             />
           </div>
 
           <div>
-            <button type="submit">Add Franchise</button>
+            <button type="submit" id="addBtnn">Add Franchise</button>
           </div>
         </form>
       </div>

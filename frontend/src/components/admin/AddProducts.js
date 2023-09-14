@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import {  useNavigate } from 'react-router-dom';
-
+import "../style/addprod.css"
 import Sidebar from '../Header/Sidebar';
 import axios from "axios";
 
@@ -51,6 +51,8 @@ export default function AddProducts() {
     }
   };
 
+  var abc = "margin-right: 13px;";
+
   return (
     <div>
       <Sidebar />
@@ -99,6 +101,7 @@ export default function AddProducts() {
                   value="Combo"
                   checked={productInfo.productType === "Combo"}
                   onChange={handleChange}
+                  className="rdio"
                 />
                 Combo
               </label>
@@ -109,6 +112,7 @@ export default function AddProducts() {
                   value="Single"
                   checked={productInfo.productType === "Single"}
                   onChange={handleChange}
+                  className="rdio"
                 />
                 Single
               </label>
@@ -154,6 +158,7 @@ export default function AddProducts() {
                   value="Regular"
                   checked={productInfo.deliveryType === "Regular"}
                   onChange={handleChange}
+                  className="rdio"
                 />
                 Regular
               </label>
@@ -164,44 +169,56 @@ export default function AddProducts() {
                   value="Fast Track"
                   checked={productInfo.deliveryType === "Fast Track"}
                   onChange={handleChange}
+                  className="rdio"
                 />
                 Fast Track
               </label>
             </div>
           </div>
-          <div>
-            <label>Additional Services:</label>
+
+        <div className="services">
+        <div className="aservice">
+            <label style={{ color: 'black', padding: 15 }}>Additional Services:</label>
             <div>
-              <label>
+              <label className="aservicecheck" style={{ color: 'black',padding: 10 }}>
                 <input
                   type="checkbox"
                   name="isFranchise"
                   checked={productInfo.isFranchise}
                   onChange={handleChange}
+                  
                 />
                 Is Franchise
               </label>
-              <label>
+              <label style={{ color: 'black', padding: 10 }}>
                 <input
                   type="checkbox"
                   name="isWhatsapp"
                   checked={productInfo.isWhatsapp}
                   onChange={handleChange}
+                  className="aservicecheck"
                 />
                 Broadcast To Whatsapp
               </label>
-              <label>
+              <label style={{ color: 'black', padding: 10 }}>
                 <input
                   type="checkbox"
                   name="priceUpdate"
                   checked={productInfo.priceUpdate}
                   onChange={handleChange}
+                  className="aservicecheck"
+              
                 />
                 Price Update
               </label>
             </div>
           </div>
-          <button type="submit">Add Product</button>
+          <div>
+          </div>
+          </div>  
+
+          <button type="submit" id="btnn">Add Product</button>
+
         </form>
       </div>
     </div>

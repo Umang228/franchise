@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import Validation from './RegisterValidation';
 import axios from 'axios';
-import '../style/register.css'
+import './style/register.css'
 import loginimg from '../login.svg'
 
 
