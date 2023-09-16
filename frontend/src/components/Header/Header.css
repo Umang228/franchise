@@ -1,6 +1,7 @@
 
 .main-container {
     display: flex;
+
   }
   main {
     padding: 10px;
@@ -14,6 +15,7 @@
   
   /* Sidebar */
   .sidebar {
+    z-index: 100;
     background: rgb(0, 4, 35);
     color: white;
     height: 100vh;

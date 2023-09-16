@@ -1,9 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-
+import { DataGrid } from '@mui/material';
 import Sidebar from './Sidebar';
+import '../style/prod.css'
 import axios from 'axios';
-
+import {AiFillEdit} from 'react-icons/ai'
+import {AiFillDelete} from 'react-icons/ai'
+import {AiOutlineUsergroupDelete} from 'react-icons/ai'
+import {AiOutlineBook} from 'react-icons/ai'
+import {FcBookmark} from 'react-icons/fc'
 export default function Products() {
   const [products, setProducts] = useState([]);
   const [showConfirmationDialog, setShowConfirmationDialog] = useState(false);
@@ -73,15 +78,17 @@ export default function Products() {
       }
     }
   };
+ 
 
   return (
-    <div>
+    <div className='prod'>
       <Sidebar />
-
-      <h1>Products</h1>
-      <table>
+    <div className="child-prod">
+    <h1 className='heading1'>Products</h1>
+      <table class='utable'>
         <thead>
           <tr>
+            <th>Id</th>
             <th>Product Name</th>
             <th>Faculty Name</th>
             <th>Course</th>
@@ -92,22 +99,22 @@ export default function Products() {
         </thead>
         <tbody>
           {products.map((product) => (
-            <tr key={product.id}>
+            <tr key={product.id} className='row'>
+              <td>{product.id}</td>
               <td>{product.productName}</td>
-              <td>{product.facultyName}</td>
-              <td>{product.course}</td>
-              <td>{product.subject}</td>
+              <td><AiOutlineUsergroupDelete className='facu'/> {product.facultyName}</td>
+              <td><AiOutlineBook className='course'/> {product.course}</td>
+              <td className='subject'><FcBookmark/>{product.subject}</td>
               <td>{product.deliveryType}</td>
-              <td>
-                <button onClick={() => navigate(`/admin/products/edit/${product.id}`)}>Edit</button>
-                <button onClick={() => handleOpenConfirmationDialog(product.id)}>Delete</button>
+              <td className='action'>
+                <button onClick={() => navigate(`/admin/products/edit/${product.id}`)} className='edit'><AiFillEdit/> Edit</button>
+                <button onClick={() => handleOpenConfirmationDialog(product.id)} className='delete'><AiFillDelete/> Delete</button>
               </td>
             </tr>
           ))}
         </tbody>
       </table>
 
-      {/* Confirmation Dialog */}
       {showConfirmationDialog && (
         <div className="confirmation-dialog">
           <p>Are you sure you want to delete this product?</p>
@@ -122,6 +129,9 @@ export default function Products() {
           Product deleted successfully.
         </div>
       )}
+    </div>
+
+
     </div>
   );
 }
