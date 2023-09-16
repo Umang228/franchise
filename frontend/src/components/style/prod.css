@@ -1,0 +1,61 @@
+.child-prod{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.prod{
+    background-color: rgb(225, 226, 254);
+    width:100%;
+    height: 100vh;
+    overflow-y: hidden;
+}
+
+.prod .heading1{
+    margin: 70px;
+    position: relative;
+    top: 20px;
+    text-align: center;
+}
+
+.utable{
+    margin:20px;
+    background-color: #fff;
+    border-radius: 13px;
+    width: 90%;
+    padding: 23px;
+    box-shadow: 1.5px 1.5px 13px lightgray;
+}
+
+
+.utable button{
+    color: black;
+}
+.utable .row{
+    position: relative;
+    /* left: 52px; */
+}
+.row td{
+    text-align: center;
+}
+.subject{
+    position: relative;
+    
+}
+.action{
+    position: relative;
+    /* left: 45px; */
+}
+.edit{
+    color: rgb(49, 49, 255) !important;
+}
+.delete{
+    color: rgb(249, 41, 41) !important;
+}
+
+.mail,.facu{
+    color: lightblue;
+}
+.gold,.course{
+    color:gold;
+}

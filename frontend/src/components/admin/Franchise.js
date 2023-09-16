@@ -2,7 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import Sidebar from './Sidebar';
-
+import {MdPayment} from 'react-icons/md'
+import {AiTwotoneMail} from 'react-icons/ai'
+import {AiFillEdit} from 'react-icons/ai'
+import {AiFillDelete} from 'react-icons/ai'
 export default function Franchise() {
   const [franchises, setFranchises] = useState([]);
   const [showConfirmationDialog, setShowConfirmationDialog] = useState(false);
@@ -71,13 +74,14 @@ export default function Franchise() {
   };
 
   return (
-    <div>
+    <div className='prod'>
       <Sidebar />
-
-      <h1>All Franchise</h1>
-      <table>
+      <div className="child-prod">
+      <h1 className='heading1'>All Franchise</h1>
+      <table className='utable'>
         <thead>
           <tr>
+            <th>Id</th>
             <th>Name</th>
             <th>Email</th>
             <th>Phone Number</th>
@@ -89,16 +93,17 @@ export default function Franchise() {
         </thead>
         <tbody>
           {franchises.map((franchise) => (
-            <tr key={franchise.id}>
+            <tr key={franchise.id} className='row'>
+              <td>{franchise.id}</td>
               <td>{franchise.name}</td>
-              <td>{franchise.email}</td>
+              <td><AiTwotoneMail className='mail'/> {franchise.email}</td>
               <td>{franchise.phone_number}</td>
               <td>{franchise.gst_number}</td>
               <td>{franchise.franchise_type}</td>
-              <td>{franchise.mode_of_payment}</td>
-              <td>
-                <button onClick={() => navigate(`/admin/franchise/edit/${franchise.id}`)}>Edit</button>
-                <button onClick={() => handleOpenConfirmationDialog(franchise.id)}>Delete</button>
+              <td><MdPayment className='gold'/> {franchise.mode_of_payment}</td>
+              <td className='action'>
+                <button onClick={() => navigate(`/admin/franchise/edit/${franchise.id}`)} className='edit'><AiFillEdit/> Edit</button>
+                <button onClick={() => handleOpenConfirmationDialog(franchise.id)} className='delete'><AiFillDelete/> Delete</button>
               </td>
             </tr>
           ))}
@@ -120,6 +125,8 @@ export default function Franchise() {
           Franchise deleted successfully.
         </div>
       )}
+      </div>
+
     </div>
   );
 }
