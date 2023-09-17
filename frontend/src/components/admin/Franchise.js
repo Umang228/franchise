@@ -6,12 +6,25 @@ import {MdPayment} from 'react-icons/md'
 import {AiTwotoneMail} from 'react-icons/ai'
 import {AiFillEdit} from 'react-icons/ai'
 import {AiFillDelete} from 'react-icons/ai'
+
 export default function Franchise() {
+
   const [franchises, setFranchises] = useState([]);
   const [showConfirmationDialog, setShowConfirmationDialog] = useState(false);
   const [deleteFranchiseId, setDeleteFranchiseId] = useState(null);
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
   const navigate = useNavigate();
+  const[search,setSearch]=useState('');
+    // pagination
+    const[currentPage,setCurrentPage] = useState(1);
+    const recordsPerPage = 4;
+    const lastIndex = currentPage * recordsPerPage;
+    const firstIndex = lastIndex - recordsPerPage;
+    const records = franchises.slice(firstIndex, lastIndex);
+    const npage = Math.ceil(franchises.length/recordsPerPage);
+    const numbers = [...Array(npage + 1).keys()].slice(1);
+
+
 
   // Function to fetch franchise data from the backend
   const fetchFranchises = async () => {
@@ -78,6 +91,9 @@ export default function Franchise() {
       <Sidebar />
       <div className="child-prod">
       <h1 className='heading1'>All Franchise</h1>
+      <form>
+        <input type="text" placeholder="Search here" onChange={(e)=>setSearch(e.target.value)}/>
+      </form>
       <table className='utable'>
         <thead>
           <tr>
@@ -92,7 +108,9 @@ export default function Franchise() {
           </tr>
         </thead>
         <tbody>
-          {franchises.map((franchise) => (
+          {records.filter((franchise)=>{
+            return search.toLowerCase() === '' ? franchise : franchise.name.toLowerCase().includes(search);
+          }).map((franchise) => (
             <tr key={franchise.id} className='row'>
               <td>{franchise.id}</td>
               <td>{franchise.name}</td>
@@ -109,6 +127,21 @@ export default function Franchise() {
           ))}
         </tbody>
       </table>
+      <nav>
+        <ul>
+          <li>
+            <a href="#" onClick={prePage}>Prev</a>
+          </li>
+          {numbers.map((n,franchise)=>(
+            <li className={`page-item ${currentPage === n ? 'active': ''}`} key={franchise}>
+              <a href="#" onClick={()=>changeCPage(n)}>{n}</a>
+            </li>
+          ))}
+          <li>
+            <a href="#" onClick={nextPage}>Next</a>
+          </li>
+        </ul>
+      </nav>
 
       {/* Confirmation Dialog */}
       {showConfirmationDialog && (
@@ -129,4 +162,18 @@ export default function Franchise() {
 
     </div>
   );
+  function prePage(){
+    if(currentPage !== 1){
+      setCurrentPage(currentPage - 1)
+    }
+    }
+    function changeCPage(id){
+      setCurrentPage(id);
+  
+    }
+    function nextPage(){
+      if(currentPage !== npage){
+        setCurrentPage(currentPage + 1)
+      }
+    }
 }

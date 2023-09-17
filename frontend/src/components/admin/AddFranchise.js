@@ -50,10 +50,10 @@ export default function AddFranchise() {
       );
 
       if (response.status === 200) {
-        setSuccessMessage("Product added successfully");
+        setSuccessMessage("Franchise added successfully");
         navigate("/admin/franchise");
       } else {
-        console.log("Error adding product");
+        console.log("Error adding Franchise");
       }
     } catch (error) {
       console.error("Error:", error);

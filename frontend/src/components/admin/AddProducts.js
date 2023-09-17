@@ -1,7 +1,7 @@
 import React, { useState } from "react";
-import {  useNavigate } from 'react-router-dom';
-import "../style/addprod.css"
-import Sidebar from './Sidebar';
+import { useNavigate } from "react-router-dom";
+import "../style/addprod.css";
+import Sidebar from "./Sidebar";
 import axios from "axios";
 
 export default function AddProducts() {
@@ -9,7 +9,7 @@ export default function AddProducts() {
     productName: "",
     facultyName: "",
     productID: "",
-    productType: "Combo", // Default value
+    productType: "Combo",
     course: "",
     group_name: "",
     subject: "",
@@ -17,8 +17,18 @@ export default function AddProducts() {
     isFranchise: false,
     isWhatsapp: false,
     priceUpdate: false,
+    price: 0,
+    discountPrice: 0,
+    image: null,
+    description: "",
+    shortDescription: "",
+    featured: false,
+    slug: "",
+    category_id: "",
   });
+  
   const [successMessage, setSuccessMessage] = useState("");
+  const navigate = useNavigate();
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -27,8 +37,16 @@ export default function AddProducts() {
       [name]: type === "checkbox" ? checked : value,
     }));
   };
+  
 
-  const navigate = useNavigate();
+  const handleImageUpload = (e) => {
+    const file = e.target.files[0];
+    setProductInfo((prevInfo) => ({
+      ...prevInfo,
+      image: file,  
+    }));
+  };
+  
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -36,13 +54,13 @@ export default function AddProducts() {
     try {
       const response = await axios.post(
         // Replace with the appropriate backend API endpoint
-        'http://localhost:8081/admin/add-product',  
+        "http://localhost:8081/admin/add-product",
         productInfo
       );
 
       if (response.status === 200) {
         setSuccessMessage("Product added successfully");
-        navigate('/admin/products');
+        navigate("/admin/products");
       } else {
         console.log("Error adding product");
       }
@@ -50,6 +68,10 @@ export default function AddProducts() {
       console.error("Error:", error);
     }
   };
+  
+  
+  
+  
 
   return (
     <div>
@@ -131,7 +153,7 @@ export default function AddProducts() {
             <input
               type="text"
               name="group_name"
-              value={productInfo.group_name} 
+              value={productInfo.group_name}
               onChange={handleChange}
               required
             />
@@ -167,15 +189,80 @@ export default function AddProducts() {
                   value="Fast Track"
                   checked={productInfo.deliveryType === "Fast Track"}
                   onChange={handleChange}
+                  className="rdio"
                 />
                 Fast Track
               </label>
             </div>
           </div>
+          
+          <div>
+            <label>Price:</label>
+            <input
+              type="number"
+              name="price"
+              value={productInfo.price}
+              onChange={handleChange}
+              required
+            />
+          </div>
+          <div>
+            <label>Discount Price:</label>
+            <input
+              type="number"
+              name="discountPrice"
+              value={productInfo.discountPrice}
+              onChange={handleChange}
+            />
+          </div>
+          <div>
+            <label>Upload Image:</label>
+            <input
+              type="file"
+              accept="image/*"
+              name="image"
+              onChange={handleImageUpload}
+            />
+          </div>
+          <div>
+            <label>Description:</label>
+            <textarea
+              name="description"
+              value={productInfo.description}
+              onChange={handleChange}
+            />
+          </div>
+          <div>
+            <label>Short Description:</label>
+            <textarea
+              name="shortDescription"
+              value={productInfo.shortDescription}
+              onChange={handleChange}
+            />
+          </div>
+        
+          <div>
+            <label>Slug:</label>
+            <input
+              type="text"
+              name="slug"
+              value={productInfo.slug}
+              onChange={handleChange}
+            />
+          </div>
+          <div>
+            <label>Category ID:</label>
+            <input
+              type="text"
+              name="category_id"
+              value={productInfo.category_id}
+              onChange={handleChange}
+            />
+          </div>
           <div>
             <label>Additional Services:</label>
             <div>
-              <label style={{ color: 'black', padding: 15 }}>
+              <label style={{ color: "black", padding: 15 }}>
                 <input
                   type="checkbox"
                   name="isFranchise"
@@ -185,7 +272,7 @@ export default function AddProducts() {
                 />
                 Is Franchise
               </label>
-              <label style={{ color: 'black', padding: 15 }}>
+              <label style={{ color: "black", padding: 15 }}>
                 <input
                   type="checkbox"
                   name="isWhatsapp"
@@ -194,7 +281,7 @@ export default function AddProducts() {
                 />
                 Broadcast To Whatsapp
               </label>
-              <label style={{ color: 'black', padding: 15 }}>
+              <label style={{ color: "black", padding: 15 }}>
                 <input
                   type="checkbox"
                   name="priceUpdate"
@@ -203,9 +290,21 @@ export default function AddProducts() {
                 />
                 Price Update
               </label>
+              <label style={{ color: "black", padding: 15 }}>
+                <input
+                  type="checkbox"
+                  name="featured"
+                  checked={productInfo.featured}
+                  onChange={handleChange}
+                />
+                Featured
+              </label>
+            
             </div>
           </div>
-          <button type="submit" id="btnn">Add Product</button>
+          <button type="submit" id="btnn">
+            Add Product
+          </button>
         </form>
       </div>
     </div>

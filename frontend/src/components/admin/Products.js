@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { DataGrid } from '@mui/material';
 import Sidebar from './Sidebar';
 import '../style/prod.css'
 import axios from 'axios';
@@ -9,12 +8,24 @@ import {AiFillDelete} from 'react-icons/ai'
 import {AiOutlineUsergroupDelete} from 'react-icons/ai'
 import {AiOutlineBook} from 'react-icons/ai'
 import {FcBookmark} from 'react-icons/fc'
+
+
+
 export default function Products() {
   const [products, setProducts] = useState([]);
   const [showConfirmationDialog, setShowConfirmationDialog] = useState(false);
   const [deleteProductId, setDeleteProductId] = useState(null);
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
+  const[search,setSearch]=useState('');
   const navigate = useNavigate();
+  // pagination
+  const[currentPage,setCurrentPage] = useState(1);
+  const recordsPerPage = 4;
+  const lastIndex = currentPage * recordsPerPage;
+  const firstIndex = lastIndex - recordsPerPage;
+  const records = products.slice(firstIndex, lastIndex);
+  const npage = Math.ceil(products.length/recordsPerPage);
+  const numbers = [...Array(npage + 1).keys()].slice(1);
 
 
   // Function to fetch product data from the backend
@@ -85,6 +96,9 @@ export default function Products() {
       <Sidebar />
     <div className="child-prod">
     <h1 className='heading1'>Products</h1>
+    <form>
+        <input type="text" placeholder="Search here" onChange={(e)=>setSearch(e.target.value)}/>
+      </form>
       <table class='utable'>
         <thead>
           <tr>
@@ -98,7 +112,9 @@ export default function Products() {
           </tr>
         </thead>
         <tbody>
-          {products.map((product) => (
+          {records.filter((product)=>{
+            return search.toLowerCase() === '' ? product : product.productName.toLowerCase().includes(search);
+          }).map((product) => (
             <tr key={product.id} className='row'>
               <td>{product.id}</td>
               <td>{product.productName}</td>
@@ -114,6 +130,21 @@ export default function Products() {
           ))}
         </tbody>
       </table>
+      <nav>
+        <ul>
+          <li>
+            <a href="#" onClick={prePage}>Prev</a>
+          </li>
+          {numbers.map((n,products)=>(
+            <li className={`page-item ${currentPage === n ? 'active': ''}`} key={products}>
+              <a href="#" onClick={()=>changeCPage(n)}>{n}</a>
+            </li>
+          ))}
+          <li>
+            <a href="#" onClick={nextPage}>Next</a>
+          </li>
+        </ul>
+      </nav>
 
       {showConfirmationDialog && (
         <div className="confirmation-dialog">
@@ -134,4 +165,19 @@ export default function Products() {
 
     </div>
   );
+  //pagination
+  function prePage(){
+  if(currentPage !== 1){
+    setCurrentPage(currentPage - 1)
+  }
+  }
+  function changeCPage(id){
+    setCurrentPage(id);
+
+  }
+  function nextPage(){
+    if(currentPage !== npage){
+      setCurrentPage(currentPage + 1)
+    }
+  }
 }
