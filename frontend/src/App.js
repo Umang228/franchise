@@ -28,7 +28,7 @@ import Navbar from './components/Navbar';
       <Route path="/register" element={<Authentication allowedRoles={[]}><RegisterPage /></Authentication>} />
 
       {/* admin */}
-      <Route path="/admin/dashboard" element={<Authentication allowedRoles={['admin']}><AdminDashboard /></Authentication>} />
+      <Route path="/admin/dashboard" element={<AdminDashboard />} />
       <Route path="/admin/franchise" element={<AdminFranchise />} />
       <Route path="/admin/products" element={<AdminProducts />} />
       <Route path="/admin/orders" element={<AdminOrders />} />

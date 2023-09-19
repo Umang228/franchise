@@ -14,43 +14,52 @@ const LoginPage = () => {
   });
 
   const [errors, setErrors] = useState({});
-  const [, setCookie] = useCookies(['user']);
+  const [, setCookie] = useCookies(['token']);
+  const navigate = useNavigate();
 
 
 
+axios.defaults.withCredentials = true;
   const handleInput = (e) => {
     setValues((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
-  const navigate = useNavigate();
-
   const handleSubmit = (e) => {
     e.preventDefault();
-    setErrors(Validation(values));
-    if (errors.email === '' && errors.password === '') {
-      axios
-        .post('http://localhost:8081/login', values)
-        .then((res) => {
-          if (res.data.message === 'Success') {
-            const userRole = res.data.user.role;
 
-            // Store user data in cookies
-            setCookie('user', JSON.stringify(res.data.user), { path: '/' });
+    // Perform validation
+    const validationErrors = Validation(values);
+    setErrors(validationErrors);
 
-            if (userRole === 'admin') {
-              navigate('/admin/dashboard');
-            } else if (userRole === 'franchise') {
-              navigate('/franchise/dashboard');
-            } else {
-              navigate('/user/dashboard');
-            }
+    if (Object.keys(validationErrors).length === 0) {
+      axios.post('http://localhost:8081/login', values)
+        .then(res => {
+          if (res.data.Status === 'Success') {
+            const userRole = res.data.user.role; 
+
+            const token = res.data.token;
+
+            // Store token as a cookie
+            setCookie('token', token, { path: '/' });
+               // Navigate based on user role
+          if (userRole === 'admin') {
+            navigate('/admin/dashboard');
+          } else if (userRole === 'franchise') {
+            navigate('/franchise/dashboard');
           } else {
-            alert('Login failed. Please check your email and password.');
+            navigate('/user/dashboard');
+          }
+
+
+          } else {
+            console.log("Error:", res.data.Error);
           }
         })
-        .catch((err) => console.log(err));
+        .catch(err => console.error("Error:", err));
     }
   };
+  
+
 
   return (
     <div className="login-page">

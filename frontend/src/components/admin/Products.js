@@ -133,15 +133,15 @@ export default function Products() {
       <nav>
         <ul>
           <li>
-            <a href="#" onClick={prePage}>Prev</a>
+            <a href="#0" onClick={prePage}>Prev</a>
           </li>
           {numbers.map((n,products)=>(
             <li className={`page-item ${currentPage === n ? 'active': ''}`} key={products}>
-              <a href="#" onClick={()=>changeCPage(n)}>{n}</a>
+              <a href="#0" onClick={()=>changeCPage(n)}>{n}</a>
             </li>
           ))}
           <li>
-            <a href="#" onClick={nextPage}>Next</a>
+            <a href="#0" onClick={nextPage}>Next</a>
           </li>
         </ul>
       </nav>

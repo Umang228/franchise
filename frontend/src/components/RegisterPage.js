@@ -27,10 +27,11 @@ const RegisterPage = () => {
   };
 
   const navigate = useNavigate();
+  
   const handleSubmit = (e) => {
     e.preventDefault();
     setErrors(Validation(values));
-    if (errors.name === "" && errors.email === "" && errors.password === "") {
+    if (Object.keys(errors).length === 0) {
       axios.post('http://localhost:8081/register', values)
         .then(res => {
           navigate('/');

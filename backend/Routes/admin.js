@@ -3,9 +3,10 @@ const router = express.Router();
 const multer = require("multer");
 const path = require("path");
 const { db } = require("../db");
+const verifyUser = require('../verifyUser.js');
 const storage = multer.diskStorage({
-  destination: function(req,file,cb){
-    return cb(null,'public/images/products')
+  destination:(req,file,cb)=>{
+     cb(null,'images/products')
   },
   filename:(req,file,cb)=>{
     cb (null,file.fieldname+"_"+Date.now() + path.extname(file.originalname))
@@ -15,6 +16,7 @@ const upload = multer({
   storage: storage
 })
 
+// router.use(verifyUser);
 // Define your routes here
 
 //add product
@@ -39,6 +41,7 @@ router.post("/add-product",upload.single('image'), (req, res) => {
     slug,
     category_id,
   } = req.body;
+  
   const image = req.file.filename;
 
   const sql = `INSERT INTO products 

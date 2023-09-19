@@ -5,6 +5,7 @@ import Sidebar from "./Sidebar";
 import axios from "axios";
 
 export default function AddProducts() {
+  const [file, setFile] = useState();
   const [productInfo, setProductInfo] = useState({
     productName: "",
     facultyName: "",
@@ -19,7 +20,6 @@ export default function AddProducts() {
     priceUpdate: false,
     price: 0,
     discountPrice: 0,
-    image: null,
     description: "",
     shortDescription: "",
     featured: false,
@@ -35,27 +35,28 @@ export default function AddProducts() {
     setProductInfo((prevInfo) => ({
       ...prevInfo,
       [name]: type === "checkbox" ? checked : value,
+      image: type === "file" ? e.target.files[0] : prevInfo.image,
     }));
   };
   
+  
 
-  const handleImageUpload = (e) => {
-    const file = e.target.files[0];
-    setProductInfo((prevInfo) => ({
-      ...prevInfo,
-      image: file,  
-    }));
-  };
+
   
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    const formdata = new FormData();
+    formdata.append('image',file);
+    for (const key in productInfo) {
+      formdata.append(key, productInfo[key]);
+    }
+
 
     try {
       const response = await axios.post(
-        // Replace with the appropriate backend API endpoint
         "http://localhost:8081/admin/add-product",
-        productInfo
+        formdata
       );
 
       if (response.status === 200) {
@@ -219,9 +220,7 @@ export default function AddProducts() {
             <label>Upload Image:</label>
             <input
               type="file"
-              accept="image/*"
-              name="image"
-              onChange={handleImageUpload}
+              onChange={e => setFile(e.target.files[0])}
             />
           </div>
           <div>

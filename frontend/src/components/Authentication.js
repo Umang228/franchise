@@ -2,46 +2,29 @@
 import { useCookies } from 'react-cookie';
 import { Navigate, useLocation } from 'react-router-dom';
 
-const Authentication = ({ children, allowedRoles }) => {
-  const [cookies] = useCookies(['user']);
+const Authentication = ({ children }) => {
+  const [cookies] = useCookies(['token']);
   const location = useLocation();
 
-  const user = cookies.user;
+  const token = cookies.token;
 
-  // Check if the user cookie exists
-  if (user) {
-    // Check if the user's role is included in the allowedRoles array
-    if (allowedRoles && !allowedRoles.includes(user.role)) {
-      // Redirect to the respective dashboard based on the user's role
-      let targetDashboard;
 
-      if (user.role === 'admin') {
-        targetDashboard = '/admin/dashboard';
-      } else if (user.role === 'franchise') {
-        targetDashboard = '/franchise/dashboard';
-      } else {
-        targetDashboard = '/user/dashboard';
-      }
-
-      return <Navigate to={targetDashboard} />;
-    }
-
-    // Render the protected content if authenticated and authorized
+  // If the token does not exist, allow access to the login and register pages
+  if (location.pathname === '/' || location.pathname === '/register') {
     return children;
   }
 
-   // If the user cookie does not exist, allow access to the register page
-   if (location.pathname === '/register') {
-    return children;
-  }
+  // If the token does not exist and the user is on any other page, redirect to the login page
+  return <Navigate to="/" />;
+};
 
-  // If the user cookie does not exist, redirect to the login page
-  if (location.pathname !== '/') {
-    return <Navigate to="/" />;
-  }
-
-  // If the user cookie does not exist and they are on the login page, render the content
-  return children;
+// Function to decode the token (you'll need to implement this)
+const decodeToken = (token) => {
+  // Implement token decoding logic here
+  // For example:
+  // const decodedToken = jwt_decode(token);
+  // return decodedToken;
+  return null;
 };
 
 export default Authentication;
