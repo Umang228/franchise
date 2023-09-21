@@ -1,26 +1,24 @@
 const express = require("express");
 const router = express.Router();
-const multer = require("multer");
-const path = require("path");
+// const multer = require("multer");
+// const path = require("path");
 const { db } = require("../db");
-const verifyUser = require('../verifyUser.js');
-const storage = multer.diskStorage({
-  destination:(req,file,cb)=>{
-     cb(null,'images/products')
-  },
-  filename:(req,file,cb)=>{
-    cb (null,file.fieldname+"_"+Date.now() + path.extname(file.originalname))
-  }
-});
-const upload = multer({
-  storage: storage
-})
+// const storage = multer.diskStorage({
+//   destination:(req,file,cb)=>{
+//      cb(null,'images/products')
+//   },
+//   filename:(req,file,cb)=>{
+//     cb (null,file.fieldname+"_"+Date.now() + path.extname(file.originalname))
+//   }
+// });
+// const upload = multer({
+//   storage: storage
+// })
 
-// router.use(verifyUser);
 // Define your routes here
 
 //add product
-router.post("/add-product",upload.single('image'), (req, res) => {
+router.post("/add-product", (req, res) => {
   const {
     productName,
     facultyName,
@@ -41,14 +39,12 @@ router.post("/add-product",upload.single('image'), (req, res) => {
     slug,
     category_id,
   } = req.body;
-  
-  const image = req.file.filename;
 
   const sql = `INSERT INTO products 
                (productName, facultyName, productID, productType, course, group_name, 
-                subject, deliveryType, isFranchise, isWhatsapp,priceUpdate, price, discountPrice, 
-                image, description, shortDescription, featured, slug, category_id) 
-               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?, ?, ?, ?, ?, ?, ?, ?)`;
+                subject, deliveryType, isFranchise, isWhatsapp, priceUpdate, price, discountPrice, 
+                description, shortDescription, featured, slug, category_id) 
+               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
 
   const values = [
     productName,
@@ -62,7 +58,6 @@ router.post("/add-product",upload.single('image'), (req, res) => {
     isFranchise,
     isWhatsapp,
     priceUpdate,
-    image,
     price,
     discountPrice,
     description,
@@ -81,6 +76,7 @@ router.post("/add-product",upload.single('image'), (req, res) => {
     return res.json({ message: "Product added successfully" });
   });
 });
+
 
 // Fetch all products
 router.get("/products", (req, res) => {
@@ -126,10 +122,17 @@ router.put("/products/:id", (req, res) => {
     isFranchise,
     isWhatsapp,
     priceUpdate,
+    price,
+    discountPrice,
+    description,
+    shortDescription,
+    featured,
+    slug,
+    category_id,
   } = req.body;
 
   const sql =
-    "UPDATE products SET productName=?, facultyName=?, productID=?, productType=?, course=?, group_name=?, subject=?, deliveryType=?, isFranchise=?, isWhatsapp=?, priceUpdate=? WHERE id=?";
+    "UPDATE products SET productName=?, facultyName=?, productID=?, productType=?, course=?, group_name=?, subject=?, deliveryType=?, isFranchise=?, isWhatsapp=?, priceUpdate=?, price=?, discountPrice=?, description=?, shortDescription=?, featured=?, slug=?, category_id=? WHERE id=?";
 
   const values = [
     productName,
@@ -143,7 +146,14 @@ router.put("/products/:id", (req, res) => {
     isFranchise,
     isWhatsapp,
     priceUpdate,
-    id,
+    price,
+    discountPrice,
+    description,
+    shortDescription,
+    featured,
+    slug,
+    category_id,
+    id
   ];
 
   db.query(sql, values, (err, result) => {
@@ -155,6 +165,7 @@ router.put("/products/:id", (req, res) => {
     return res.status(200).json({ message: "Product updated successfully" });
   });
 });
+
 
 // Fetch a single product
 router.get("/products/:id", (req, res) => {
@@ -175,6 +186,7 @@ router.get("/products/:id", (req, res) => {
   });
 });
 
+let franchiseId;
 // Add franchise
 router.post("/add-franchise", (req, res) => {
   const {
@@ -185,18 +197,11 @@ router.post("/add-franchise", (req, res) => {
     gst_number,
     franchise_type,
     mode_of_payment,
-    selected_products,
   } = req.body;
-
-  // Extract the product IDs from the selected_products array
-  const selectedProductIds = selected_products.map((product) => product.id);
-
-  // Convert the array of product IDs to a comma-separated string
-  const selectedProductsString = selectedProductIds.join(", ");
 
   // Insert the franchise data into the "franchises" table
   const franchiseSql =
-    "INSERT INTO franchises (name, email, phone_number, password, gst_number, franchise_type, mode_of_payment, selected_products) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+    "INSERT INTO franchises (name, email, phone_number, password, gst_number, franchise_type, mode_of_payment) VALUES (?, ?, ?, ?, ?, ?, ?)";
 
   const franchiseValues = [
     name,
@@ -206,7 +211,6 @@ router.post("/add-franchise", (req, res) => {
     gst_number,
     franchise_type,
     mode_of_payment,
-    selectedProductsString,
   ];
 
   db.query(franchiseSql, franchiseValues, (err, franchiseResult) => {
@@ -214,6 +218,8 @@ router.post("/add-franchise", (req, res) => {
       console.error("Database query error:", err);
       return res.status(500).json({ message: "Error creating franchise" });
     }
+     franchiseId = franchiseResult.insertId;
+   
 
     // Insert the franchise's email and password into the "user" table
     const userSql =
@@ -231,10 +237,37 @@ router.post("/add-franchise", (req, res) => {
 
       return res
         .status(200)
-        .json({ message: "Franchise created successfully" });
+        .json({ message: "Franchise created successfully" , franchiseId});
     });
   });
 });
+
+// select products
+router.post('/select', (req, res) => {
+  const { selectedProducts } = req.body;
+
+  if (!franchiseId) {
+    return res.status(400).json({ message: "Franchise ID not found" });
+  }
+
+  // Prepare the SQL query dynamically with placeholders for each value
+  const insertQuery = 'INSERT INTO selected_product (franchise_id, product_id) VALUES ' +
+    selectedProducts.map(productId => `(?, ${productId})`).join(', ');
+
+  // Flatten the array of values for the query (only franchiseId is needed)
+  const flattenedValues = selectedProducts.map(() => franchiseId);
+
+  db.query(insertQuery, flattenedValues, (insertErr) => {
+    if (insertErr) {
+      console.error('Database query error:', insertErr);
+      return res.status(500).json({ message: 'Error saving selected products' });
+    }
+
+    return res.status(200).json({ message: 'Selected products saved successfully' });
+  });
+});
+
+
 
 // Fetch all franchise
 router.get("/franchise", (req, res) => {
@@ -243,27 +276,64 @@ router.get("/franchise", (req, res) => {
   db.query(sql, (err, result) => {
     if (err) {
       console.error("Database query error:", err);
-      return res.status(500).json({ message: "Error fetching products" });
+      return res.status(500).json({ message: "Error fetching franchise" });
     }
 
     return res.json(result);
   });
 });
 
-//delete franchise
+// Delete franchise
 router.delete("/franchise/:id", (req, res) => {
-  const id = req.params.id;
-  const sql = "DELETE FROM franchises WHERE id = ?";
+  const franchiseId = req.params.id;
 
-  db.query(sql, [id], (err, result) => {
-    if (err) {
-      console.error("Database query error:", err);
-      return res.status(500).json({ message: "Error deleting product" });
+  // Get the franchise email first
+  const getEmailQuery = "SELECT email FROM franchises WHERE id = ?";
+  db.query(getEmailQuery, [franchiseId], (getEmailErr, getEmailResult) => {
+    if (getEmailErr) {
+      console.error("Database query error:", getEmailErr);
+      return res.status(500).json({ message: "Error getting franchise email" });
     }
 
-    return res.status(200).json({ message: "Product deleted successfully" });
+    if (getEmailResult.length === 0) {
+      return res.status(404).json({ message: "Franchise not found" });
+    }
+
+    const franchiseEmail = getEmailResult[0].email;
+
+    // Delete franchise from franchises table
+    const deleteFranchiseQuery = "DELETE FROM franchises WHERE id = ?";
+    db.query(deleteFranchiseQuery, [franchiseId], (err, franchiseResult) => {
+      if (err) {
+        console.error("Database query error:", err);
+        return res.status(500).json({ message: "Error deleting franchise" });
+      }
+
+      // Delete related records from users and selected_product tables based on email
+      const deleteUsersQuery = "DELETE FROM user WHERE email = ?";
+      const deleteSelectedProductsQuery = "DELETE FROM selected_product WHERE franchise_id = ?";
+      
+      // Execute the delete queries
+      db.query(deleteUsersQuery, [franchiseEmail], (userErr, userResult) => {
+        if (userErr) {
+          console.error("Database query error:", userErr);
+          return res.status(500).json({ message: "Error deleting related user records" });
+        }
+
+        db.query(deleteSelectedProductsQuery, [franchiseId], (selectedProductErr, selectedProductResult) => {
+          if (selectedProductErr) {
+            console.error("Database query error:", selectedProductErr);
+            return res.status(500).json({ message: "Error deleting related selected products" });
+          }
+
+          return res.status(200).json({ message: "Franchise and related records deleted successfully" });
+        });
+      });
+    });
   });
 });
+
+
 
 // Update franchise
 router.put("/franchise/:id", (req, res) => {

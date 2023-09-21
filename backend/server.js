@@ -5,15 +5,15 @@ const usersRoutes = require('./Routes/user');
 const adminRoutes = require('./Routes/admin');
 const franchiseRoutes = require('./Routes/franchise');
 const jwt = require('jsonwebtoken');
-const verifyUser = require('./verifyUser.js');
 const cookieParser = require('cookie-parser');
+const bcrypt = require('bcrypt');
 
 const jwtSecret = 'lecturevecture';
 
 const app = express();
 app.use(cors({
   origin: ["http://localhost:3000"],
-  methods: ['GET', 'POST'],
+  methods: ['GET', 'POST','PUT','DELETE'],
   credentials: true
 }));
 app.use(cookieParser());
@@ -22,57 +22,68 @@ app.use('/users/', usersRoutes);
 app.use('/admin/', adminRoutes);
 app.use('/franchise/', franchiseRoutes);
 
-app.post('/register', (req, res) => {
-  const sql = "INSERT INTO user (`name`, `email`, `username`, `password`) VALUES (?, ?, ?, ?)";
-  
-  const values = [
-    req.body.name,
-    req.body.email,
-    req.body.username,
-    req.body.password, 
-  ];
+app.post('/register', async (req, res) => {
+  const { name, email, username, password } = req.body;
 
-  db.query(sql, values, (err, result) => {
+  // Check if the email is already registered
+  const emailCheckSql = 'SELECT * FROM user WHERE email = ?';
+  db.query(emailCheckSql, [email], async (err, rows) => {
     if (err) {
-      console.error('Error in inserting data:', err);
-      return res.status(500).json({ Error: 'Error in inserting data' });
+      console.error('Error querying database:', err);
+      return res.status(500).json({ Error: 'Error in checking email' });
     }
 
-    return res.json({ Status: 'User registered successfully' });
+    if (rows.length > 0) {
+      return res.status(400).json({ Error: 'Email is already registered' });
+    } else {
+      // Hash the password
+      const hashedPassword = await bcrypt.hash(password, 10);
+
+      // Insert the user with the hashed password
+      const insertSql = 'INSERT INTO user (name, email, username, password) VALUES (?, ?, ?, ?)';
+      db.query(insertSql, [name, email, username, hashedPassword], (err, result) => {
+        if (err) {
+          console.error('Error in inserting data:', err);
+          return res.status(500).json({ Error: 'Error in inserting data' });
+        }
+
+        return res.json({ Status: 'Registration Successfull' });
+      });
+    }
   });
 });
 
-app.post('/login', (req, res) => {
-  const sql = "SELECT * FROM user WHERE `email` = ?";
-  db.query(sql, [req.body.email], (err, data) => {
+app.post('/login', async (req, res) => {
+  const { email, password } = req.body;
+  const sql = 'SELECT * FROM user WHERE email = ?';
+
+  db.query(sql, [email], (err, data) => {
     if (err) {
       console.error('Error querying database:', err);
       return res.status(500).json({ Error: 'Login Error' });
     }
 
     if (data.length > 0) {
-      if (req.body.password === data[0].password) {
-        const user = {
-          id: data[0].id,
-          name: data[0].name,
-          email: data[0].email,
-          username: data[0].username,
-          role: data[0].role  
-        };
+      const user = data[0];
+      console.log('Input Password:', password);
+      console.log('DB Password:', user.password);
+      const passwordMatch = bcrypt.compareSync(password, user.password);
+      console.log('Output:', passwordMatch);
 
+      if (passwordMatch) {
         const token = jwt.sign({ user }, jwtSecret, { expiresIn: '2h' });
         res.cookie('token', token);
-
-      
-        return res.status(200).json({ Status: 'Success', user,token });
+        return res.status(200).json({ Status: 'Success', user, token });
       } else {
-        return res.status(401).json({ Error: 'Password not matched' });
+        return res.status(401).json({ Error: 'Wrong Password!' });
       }
     } else {
-      return res.status(404).json({ Error: 'No email existed' });
+      return res.status(404).json({ Error: 'Please Register First! ' });
     }
   });
 });
+
+
 
 
 
@@ -81,21 +92,7 @@ app.post('/logout', (req, res) => {
   return res.json({ Status: 'Success' });
 });
 
-app.get('/verifyToken', (req, res) => {
-  const token = req.headers.authorization;  
 
-  if (!token) {
-    return res.status(401).json({ message: 'Token not found' });
-  }
-
-  verifyUser(token)
-    .then(user => {
-      return res.json({ user });
-    })
-    .catch(error => {
-      return res.status(401).json({ message: 'Invalid token', error });
-    });
-});
 
 
 app.listen(8081, () => {

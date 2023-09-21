@@ -1,6 +1,5 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import Multiselect from "multiselect-react-dropdown";
 import axios from "axios";
 import Sidebar from './Sidebar';
 
@@ -13,10 +12,8 @@ export default function AddFranchise() {
     gst_number: "",
     franchise_type: "Regular",
     mode_of_payment: "Wallet",
-    selected_products: [],
   });
 
-  const [products, setProducts] = useState([]);
   const [successMessage, setSuccessMessage] = useState("");
   const navigate = useNavigate();
 
@@ -28,13 +25,6 @@ export default function AddFranchise() {
       [name]: value,
     }));
   };
-
-  const handleSelectChange = (selectedList) => {
-    setFormData((prevData) => ({
-      ...prevData,
-      selected_products: selectedList,
-    }));
-  };
   
 
  
@@ -44,14 +34,13 @@ export default function AddFranchise() {
 
     try {
       const response = await axios.post(
-        // Replace with the appropriate backend API endpoint
         "http://localhost:8081/admin/add-franchise",
         formData
       );
 
       if (response.status === 200) {
         setSuccessMessage("Franchise added successfully");
-        navigate("/admin/franchise");
+        navigate("/admin/franchise/select");
       } else {
         console.log("Error adding Franchise");
       }
@@ -60,19 +49,7 @@ export default function AddFranchise() {
     }
   };
 
-  useEffect(() => {
-    // Fetch the list of products from the server
-    axios
-      .get("http://localhost:8081/admin/products")
-      .then((response) => {
-        if (response.status === 200) {
-          setProducts(response.data);
-        }
-      })
-      .catch((error) => {
-        console.error("Error fetching products:", error);
-      });
-  }, []);
+
 
   return (
     <div>
@@ -172,24 +149,10 @@ export default function AddFranchise() {
               <option value="Both">Both</option>
             </select>
           </div>
-          <div>
-            <label>Select Products:</label>
-            <Multiselect
-              options={products}
-              displayValue="productName"
-              selectedValues={formData.selected_products}
-              onSelect={(selectedList) =>
-                handleSelectChange(selectedList, "selected_products")
-              }
-              onRemove={(selectedList) =>
-                handleSelectChange(selectedList, "selected_products")
-              }
-              className="selectProducts"
-            />
-          </div>
+         
 
           <div>
-            <button type="submit" id="addBtnn">Add Franchise</button>
+            <button type="submit" id="addBtnn">Next</button>
           </div>
         </form>
       </div>

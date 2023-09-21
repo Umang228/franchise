@@ -26,6 +26,12 @@ font-size: 27px;
     border: 0.3px solid lightgray;
     border-radius: 12px;
 }
+.add-product-form form>div>textarea{
+    padding: 12px;
+    margin: 13px;
+    border: 0.3px solid lightgray;
+    border-radius: 12px;
+}
 
 .add-product-form form>div>input[type=radio]{
     margin: 13px;
@@ -71,6 +77,12 @@ font-size: 27px;
     }
 
     .edit-product-form form>div>input{
+        padding: 12px;
+        margin: 13px;
+        border: 0.3px solid lightgray;
+        border-radius: 12px;
+    }
+    .edit-product-form form>div>textarea{
         padding: 12px;
         margin: 13px;
         border: 0.3px solid lightgray;

@@ -5,7 +5,6 @@ import Sidebar from "./Sidebar";
 import axios from "axios";
 
 export default function AddProducts() {
-  const [file, setFile] = useState();
   const [productInfo, setProductInfo] = useState({
     productName: "",
     facultyName: "",
@@ -30,46 +29,30 @@ export default function AddProducts() {
   const [successMessage, setSuccessMessage] = useState("");
   const navigate = useNavigate();
 
-  const handleChange = (e) => {
-    const { name, value, type, checked } = e.target;
-    setProductInfo((prevInfo) => ({
-      ...prevInfo,
-      [name]: type === "checkbox" ? checked : value,
-      image: type === "file" ? e.target.files[0] : prevInfo.image,
+  
+  const handleChange = (event) => {
+    const { name, value, type, checked } = event.target;
+  
+    setProductInfo((prevProductInfo) => ({
+      ...prevProductInfo,
+      [name]: type === 'checkbox' ? checked : value,
     }));
   };
   
   
-
-
+  const handleSubmit = async (event) => {
+    event.preventDefault();
   
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    const formdata = new FormData();
-    formdata.append('image',file);
-    for (const key in productInfo) {
-      formdata.append(key, productInfo[key]);
-    }
-
-
     try {
-      const response = await axios.post(
-        "http://localhost:8081/admin/add-product",
-        formdata
-      );
-
+      const response = await axios.post('http://localhost:8081/admin/add-product', productInfo);
       if (response.status === 200) {
-        setSuccessMessage("Product added successfully");
-        navigate("/admin/products");
-      } else {
-        console.log("Error adding product");
+        setSuccessMessage('Product added successfully.');
+        navigate('/admin/products');
       }
     } catch (error) {
-      console.error("Error:", error);
+      console.error('Error adding product:', error);
     }
   };
-  
   
   
   
@@ -216,13 +199,13 @@ export default function AddProducts() {
               onChange={handleChange}
             />
           </div>
-          <div>
+          {/* <div>
             <label>Upload Image:</label>
             <input
               type="file"
               onChange={e => setFile(e.target.files[0])}
             />
-          </div>
+          </div> */}
           <div>
             <label>Description:</label>
             <textarea

@@ -7,7 +7,6 @@ export default function EditProduct() {
   const { id } = useParams();
   const navigate = useNavigate();
 
-  // Define state for product data and success message
   const [productInfo, setProductInfo] = useState({
     productName: "",
     facultyName: "",
@@ -20,6 +19,13 @@ export default function EditProduct() {
     isFranchise: false,
     isWhatsapp: false,
     priceUpdate: false,
+    price: 0,
+    discountPrice: 0,
+    description: "",
+    shortDescription: "",
+    featured: false,
+    slug: "",
+    category_id: "",
   });
   const [successMessage, setSuccessMessage] = useState("");
 
@@ -197,6 +203,59 @@ export default function EditProduct() {
             </div>
           </div>
           <div>
+            <label>Price:</label>
+            <input
+              type="number"
+              name="price"
+              value={productInfo.price}
+              onChange={handleChange}
+              required
+            />
+          </div>
+          <div>
+            <label>Discount Price:</label>
+            <input
+              type="number"
+              name="discountPrice"
+              value={productInfo.discountPrice}
+              onChange={handleChange}
+            />
+          </div>
+          <div>
+            <label>Description:</label>
+            <textarea
+              name="description"
+              value={productInfo.description}
+              onChange={handleChange}
+            />
+          </div>
+          <div>
+            <label>Short Description:</label>
+            <textarea
+              name="shortDescription"
+              value={productInfo.shortDescription}
+              onChange={handleChange}
+            />
+          </div>
+          <div>
+            <label>Slug:</label>
+            <input
+              type="text"
+              name="slug"
+              value={productInfo.slug}
+              onChange={handleChange}
+            />
+          </div>
+          <div>
+            <label>Category ID:</label>
+            <input
+              type="text"
+              name="category_id"
+              value={productInfo.category_id}
+              onChange={handleChange}
+            />
+          </div>
+          <div>
             <label>Additional Services:</label>
             <div>
               <label style={{ color: 'black', padding: 15 }}>
@@ -226,6 +285,15 @@ export default function EditProduct() {
                   onChange={handleChange}
                 />
                 Price Update
+              </label>
+              <label style={{ color: "black", padding: 15 }}>
+                <input
+                  type="checkbox"
+                  name="featured"
+                  checked={productInfo.featured}
+                  onChange={handleChange}
+                />
+                Featured
               </label>
             </div>
           </div>

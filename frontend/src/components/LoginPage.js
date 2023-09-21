@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import Validation from './LoginValidation';
 import axios from 'axios';
 import { useCookies } from 'react-cookie';
 import loginimg from '../login.svg'
@@ -13,29 +12,33 @@ const LoginPage = () => {
     password: '',
   });
 
-  const [errors, setErrors] = useState({});
+  const [emailError, setEmailError] = useState("");
   const [, setCookie] = useCookies(['token']);
   const navigate = useNavigate();
 
 
 
 axios.defaults.withCredentials = true;
+
   const handleInput = (e) => {
+    const inputName = e.target.name;
+    const inputValue = e.target.value;
     setValues((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+     // Email validation
+     if (inputName === "email") {
+      const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      const isValidEmail = emailPattern.test(inputValue);
+      setEmailError(isValidEmail ? "" : "Please enter a valid email address");
+    }
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
+     // Check for email validation error
+     if (emailError) {
+      return;
+    }
   
-    // Perform validation
-    const validationErrors = Validation(values);
-    setErrors(validationErrors);
-  
-    const hasValidationErrors = Object.keys(validationErrors).some(
-      key => validationErrors[key] !== ''
-    );
-  
-    if (!hasValidationErrors) {
       axios.post('http://localhost:8081/login', values)
         .then(res => {
           if (res.data.Status === 'Success') {
@@ -57,8 +60,19 @@ axios.defaults.withCredentials = true;
             console.log("Error:", res.data.Error);
           }
         })
-        .catch(err => console.error("Error:", err));
-    }
+        .catch((error) => {
+          if (error.response) {
+            // Show the error message in an alert
+            alert(error.response.data.Error);
+          } else if (error.request) {
+            // The request was made but no response was received
+            console.log("No response received from the server");
+          } else {
+            // Something happened in setting up the request that triggered an error
+            console.log("Error:", error.message);
+          }
+        });
+    
   };
   
   
@@ -88,8 +102,10 @@ axios.defaults.withCredentials = true;
           placeholder="Email"
           onChange={handleInput}
           id='email'
+          required
         />
-        {errors.email && <span>{errors.email}</span>}
+        {emailError && <span className="error">{emailError}</span>}
+
         <label htmlFor="password">Password</label>
         <input
           type="password"
@@ -97,9 +113,8 @@ axios.defaults.withCredentials = true;
           id='password'
           placeholder="Password"
           onChange={handleInput}
+          required
         />
-
-        {errors.password && <span>{errors.password}</span>}
 
         <button type="submit">
           Login

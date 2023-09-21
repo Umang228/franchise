@@ -11,6 +11,7 @@ import AdminOrders from './components/admin/Orders';
 import AdminAddProducts from './components/admin/AddProducts';
 import AdminEditProducts from './components/admin/EditProducts';
 import AdminAddFranchise from './components/admin/AddFranchise';
+import AdminSelectProducts from './components/admin/SelectProducts';
 import AdminEditFranchise from './components/admin/EditFranchise';
 import FranchiseDashboard from './components/franchise/FranchiseDashboard';
 import FranchiseProducts from './components/franchise/Products';
@@ -35,11 +36,12 @@ import Navbar from './components/Navbar';
       <Route path="/admin/products/add" element={<AdminAddProducts />} />
       <Route path="/admin/products/edit/:id" element={<AdminEditProducts />} />
       <Route path="/admin/franchise/add" element={<AdminAddFranchise />} />
+      <Route path="/admin/franchise/select" element={<AdminSelectProducts />} />
       <Route path="/admin/franchise/edit/:id" element={<AdminEditFranchise />} />
 
 
       {/* franchise */}
-      <Route path="/franchise/dashboard" element={<Authentication allowedRoles={['franchise']}><FranchiseDashboard /></Authentication>} />
+      <Route path="/franchise/dashboard" element={<FranchiseDashboard />} />
         <Route path="/franchise/products" element={<FranchiseProducts />} />
         <Route path="/franchise/orders" element={<FranchiseOrder />} />
         <Route path="/franchise/students" element={<FranchiseStudent />} />
