@@ -26,31 +26,33 @@ axios.defaults.withCredentials = true;
 
   const handleSubmit = (e) => {
     e.preventDefault();
-
+  
     // Perform validation
     const validationErrors = Validation(values);
     setErrors(validationErrors);
-
-    if (Object.keys(validationErrors).length === 0) {
+  
+    const hasValidationErrors = Object.keys(validationErrors).some(
+      key => validationErrors[key] !== ''
+    );
+  
+    if (!hasValidationErrors) {
       axios.post('http://localhost:8081/login', values)
         .then(res => {
           if (res.data.Status === 'Success') {
-            const userRole = res.data.user.role; 
-
+            const userRole = res.data.user.role;
             const token = res.data.token;
-
+  
             // Store token as a cookie
             setCookie('token', token, { path: '/' });
-               // Navigate based on user role
-          if (userRole === 'admin') {
-            navigate('/admin/dashboard');
-          } else if (userRole === 'franchise') {
-            navigate('/franchise/dashboard');
-          } else {
-            navigate('/user/dashboard');
-          }
-
-
+  
+            // Navigate based on user role
+            if (userRole === 'admin') {
+              navigate('/admin/dashboard');
+            } else if (userRole === 'franchise') {
+              navigate('/franchise/dashboard');
+            } else {
+              navigate('/user/dashboard');
+            }
           } else {
             console.log("Error:", res.data.Error);
           }
@@ -58,6 +60,7 @@ axios.defaults.withCredentials = true;
         .catch(err => console.error("Error:", err));
     }
   };
+  
   
 
 

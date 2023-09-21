@@ -29,7 +29,7 @@ app.post('/register', (req, res) => {
     req.body.name,
     req.body.email,
     req.body.username,
-    req.body.password,  // Assuming the password is already hashed before sending
+    req.body.password, 
   ];
 
   db.query(sql, values, (err, result) => {
