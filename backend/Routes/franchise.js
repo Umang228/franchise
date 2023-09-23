@@ -4,28 +4,39 @@ const { db } = require('../db');
 
 
 
-
-
-router.get('/products/:productId', async (req, res) => {
-  const { id } = req.params;
-
-  try {
-    // Fetch product details from the database based on product ID
-    const productDetails = await db.query(
-      'SELECT * FROM products WHERE id = ?',
-      [id]
-    );
-
-    if (productDetails.length === 0) {
-      return res.status(404).json({ message: 'Product not found' });
+// Route to get selected product IDs
+router.get('/products', (req, res) => {
+  db.query('SELECT product_id FROM selected_product', (error, results) => {
+    if (error) {
+      console.error('Error fetching selected product IDs:', error);
+      res.status(500).send('Internal Server Error');
+    } else {
+      const productIds = results.map((result) => result.product_id);
+      res.status(200).json(productIds);
     }
-
-    res.status(200).json(productDetails[0]);
-  } catch (error) {
-    console.error('Error fetching product details:', error);
-    res.status(500).json({ message: 'Internal server error' });
-  }
+  });
 });
+
+// Route to get product details by ID
+router.get('/products/:id', (req, res) => {
+  const productId = req.params.id;
+  db.query('SELECT * FROM products WHERE id = ?', [productId], (error, results) => {
+    if (error) {
+      console.error('Error fetching product details:', error);
+      res.status(500).send('Internal Server Error');
+    } else {
+      if (results.length === 0) {
+        res.status(404).send('Product not found');
+      } else {
+        const product = results[0];  // Assuming there's only one product with the given ID
+        res.status(200).json(product);
+      }
+    }
+  });
+});
+
+
+
 
 
 

@@ -29,7 +29,7 @@ import Navbar from './components/Navbar';
       <Route path="/register" element={<Authentication allowedRoles={[]}><RegisterPage /></Authentication>} />
 
       {/* admin */}
-      <Route path="/admin/dashboard" element={<AdminDashboard />} />
+      <Route path="/admin/dashboard" element={<Authentication allowedRoles={['admin']}><AdminDashboard /></Authentication>} />
       <Route path="/admin/franchise" element={<AdminFranchise />} />
       <Route path="/admin/products" element={<AdminProducts />} />
       <Route path="/admin/orders" element={<AdminOrders />} />
@@ -41,7 +41,7 @@ import Navbar from './components/Navbar';
 
 
       {/* franchise */}
-      <Route path="/franchise/dashboard" element={<FranchiseDashboard />} />
+      <Route path="/franchise/dashboard" element={<Authentication allowedRoles={['franchise']}><FranchiseDashboard /></Authentication>} />
         <Route path="/franchise/products" element={<FranchiseProducts />} />
         <Route path="/franchise/orders" element={<FranchiseOrder />} />
         <Route path="/franchise/students" element={<FranchiseStudent />} />

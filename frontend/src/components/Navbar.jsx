@@ -1,43 +1,59 @@
-import React from 'react'
-import './style/nav.css'
+import React from 'react';
+import './style/nav.css';
 import { Link } from 'react-router-dom';
+import { useCookies } from 'react-cookie';
+import jwt_decode from 'jwt-decode'; 
+
 const Navbar = () => {
-    return (
-        <div className='navbar'>
-            <div className="logo">
-                <h2>
-                    UFranchise
-                </h2>
-            </div>
-            <nav>
-                <ul>
-                    <Link to="/">
-                        <li>Home</li>
-                    </Link>
-                    <Link to="/">
-                        <li>Products</li>
-                    </Link>
-                    <Link to="/">
-                        <li>About</li>
-                    </Link>
-                    <Link to="/">
-                        <li>Contact</li>
-                    </Link>
+  const [cookies] = useCookies(['token']);
+  let userName = null;
 
-                </ul>
-            </nav>
+  // If token exists, decode it to get user information
+  if (cookies.token) {
+    const decodedToken = jwt_decode(cookies.token);
+    userName = decodedToken.user?.name;
+  }
 
-            <div className="btn">
+  return (
+    <div className='navbar'>
+      <div className="logo">
+        <h2>
+          UFranchise
+        </h2>
+      </div>
+      <nav>
+        <ul>
+          <Link to="/">
+            <li>Home</li>
+          </Link>
+          <Link to="/">
+            <li>Products</li>
+          </Link>
+          <Link to="/">
+            <li>About</li>
+          </Link>
+          <Link to="/">
+            <li>Contact</li>
+          </Link>
+        </ul>
+      </nav>
+
+      <div className="btn">
+        {userName ? (
+          <span>Hi, {userName}</span>
+        ) : (
+          <>
             <Link to="/">
-                <button>Login</button>
+              <button>Login</button>
             </Link>
             <Link to="/register">
-                <button>Register</button>
+              <button>Register</button>
             </Link>
-            </div>
+          </>
+        )}
+      </div>
+    </div>
+  );
+};
 
-        </div>
-    )
-}
-
-export default Navbar
+export default Navbar;

@@ -1,3 +1,4 @@
+import React, { useState, useEffect, useRef } from 'react';
 import { NavLink } from "react-router-dom";
 import { FaBars, FaHome, FaLock, FaUser } from "react-icons/fa";
 import {FaOpencart,} from "react-icons/fa"
@@ -6,11 +7,12 @@ import {BiSearch } from "react-icons/bi";
 import { BiCog } from "react-icons/bi";
 import { BsCartCheck } from "react-icons/bs";
 import {HiTemplate} from "react-icons/hi"
-import { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import SidebarMenu from "../Header/SidebarMenu";
 import { CgFramer } from "react-icons/cg";
 import '../Header/Header.css';
+import { useCookies } from 'react-cookie';
+import jwt_decode from 'jwt-decode';
 
 
 
@@ -79,7 +81,7 @@ const routes = [
         path: "/settings/2fa",
         name: "Logout",
         icon: <FaLock />,
-        // onClick:{handleLogout},
+        
       },
 
     ],
@@ -88,18 +90,33 @@ const routes = [
 ];
 
 const SideBar = ({ children }) => {
-// const [, , removeCookie] = useCookies(['user']);
-// const navigate = useNavigate();
+
   const [isOpen, setIsOpen] = useState(false);
   const toggle = () => setIsOpen(!isOpen);
+  const [cookies] = useCookies(['token']);
+  const userNameRef = useRef(null);
+
+  // Function to decode the JWT token and extract user information
+  const decodeToken = (token) => {
+    try {
+      const decoded = jwt_decode(token);
+      return decoded.user;
+    } catch (error) {
+      console.error('Error decoding token:', error);
+      return null;
+    }
+  };
+
+  useEffect(() => {
+    if (cookies.token) {
+      const decodedUser = decodeToken(cookies.token);
+      if (decodedUser) {
+        userNameRef.current = decodedUser.name;
+      }
+    }
+  }, [cookies.token]);
   
-  // const handleLogout = () => {
-  //   // Remove the user cookie
-  //   removeCookie('user', { path: '/' });
-  
-  //   // Redirect to the login page or any other desired URL
-  //   navigate('/');
-  // };
+ 
 
   const inputAnimation = {
     hidden: {
@@ -162,7 +179,7 @@ const SideBar = ({ children }) => {
                   exit="hidden"
                   className="logo"
                 >
-                  Admin
+                  {userNameRef.current}
                 </motion.h1>
               )}
             </AnimatePresence>

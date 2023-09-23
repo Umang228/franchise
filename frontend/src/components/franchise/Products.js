@@ -6,33 +6,24 @@ export default function Products() {
   const [selectedProductIds, setSelectedProductIds] = useState([]);
   const [productsData, setProductsData] = useState([]);
 
-  // Function to fetch selected product IDs from the backend
   const fetchSelectedProductIds = async () => {
     try {
-      const response = await axios.get(
-        // Replace with your backend API endpoint to retrieve selected product IDs
-        'http://localhost:8081/franchise/products'
-      );
+      const response = await axios.get('http://localhost:8081/franchise/products');
 
       if (response.status === 200) {
-        // Split the comma-separated string into an array of product IDs
-        const ids = response.data.split(',').map((id) => parseInt(id));
-        setSelectedProductIds(ids);
+        setSelectedProductIds(response.data);
       }
     } catch (error) {
       console.error('Error fetching selected product IDs:', error);
     }
   };
 
-  // Function to fetch product details by product ID
   const fetchProductDetails = async (id) => {
     try {
-      const response = await axios.get(
-        // Replace with your backend API endpoint to retrieve product details by ID
-        `http://localhost:8081/franchise/products/${id}`
-      );
+      const response = await axios.get(`http://localhost:8081/franchise/products/${id}`);
 
       if (response.status === 200) {
+        // Append the new product details to the existing productsData
         setProductsData((prevData) => [...prevData, response.data]);
       }
     } catch (error) {
@@ -40,19 +31,18 @@ export default function Products() {
     }
   };
 
-  // Call fetchSelectedProductIds when the component mounts
   useEffect(() => {
     fetchSelectedProductIds();
   }, []);
 
-  // Fetch product details for each selected product ID
   useEffect(() => {
+    // Fetch product details for each selected product ID
+    setProductsData([]); // Clear existing product data before fetching new data
     selectedProductIds.forEach((id) => {
       fetchProductDetails(id);
     });
   }, [selectedProductIds]);
 
-  // Define your table headers
   const tableHeaders = [
     'Product Name',
     'Faculty Name',
@@ -78,8 +68,8 @@ export default function Products() {
           </tr>
         </thead>
         <tbody>
-          {productsData.map((product) => (
-            <tr key={product.id}>
+          {productsData.map((product, index) => (
+            <tr key={index}>
               <td>{product.productName}</td>
               <td>{product.facultyName}</td>
               <td>{product.productID}</td>
