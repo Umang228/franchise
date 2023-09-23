@@ -1,30 +1,78 @@
-// Authentication.js
-import { useCookies } from 'react-cookie';
+import React, { useEffect, useState } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
+import { useCookies } from 'react-cookie';
+import jwt_decode from 'jwt-decode';
 
-const Authentication = ({ children }) => {
-  const [cookies] = useCookies(['token']);
+const Authentication = ({ children, allowedRoles }) => {
   const location = useLocation();
+  const [cookies] = useCookies(['token']);
+  const [token, setToken] = useState(cookies.token);
+  const navigate = useNavigate();
 
-  const token = cookies.token;
+  useEffect(() => {
+    // Update token state when the cookie changes
+    setToken(cookies.token);
+  }, [cookies.token]);
 
+  useEffect(() => {
+    if (!token && location.pathname !== '/' && location.pathname !== '/register') {
+      // Redirect to login if token is null (cookie was deleted)
+      navigate('/');
+    } else {
+      try {
+        if (token) {
+          const decodedToken = jwt_decode(token);
+          const userRole = decodedToken.user.role;
+  
+          if (Date.now() < decodedToken.exp * 1000) {
+            // Redirect to the respective dashboard based on the user's role
+            let targetDashboard;
+            if (userRole === 'admin') {
+              targetDashboard = '/admin/dashboard';
+            } else if (userRole === 'franchise') {
+              targetDashboard = '/franchise/dashboard';
+            } else {
+              targetDashboard = '/user/dashboard';
+            }
+            navigate(targetDashboard);
+          } else {
+            // Token expired, redirect to login
+            navigate('/');
+          }
+        }
+      } catch (error) {
+        console.error('Error decoding token:', error);
+        // Handle invalid token error here
+        navigate('/');
+      }
+    }
+  }, [token, location.pathname, navigate]);
+  
 
-  // If the token does not exist, allow access to the login and register pages
+  // Allow access to the register and login pages if no token
   if (location.pathname === '/' || location.pathname === '/register') {
     return children;
   }
 
-  // If the token does not exist and the user is on any other page, redirect to the login page
-  return <Navigate to="/" />;
-};
+  // Check if the user role matches the allowedRoles
+  const decodedToken = token ? jwt_decode(token) : null;
+  const userRole = decodedToken ? decodedToken.user.role : null;
+  if (userRole && allowedRoles.includes(userRole)) {
+    return children;
+  }
 
-// Function to decode the token (you'll need to implement this)
-const decodeToken = (token) => {
-  // Implement token decoding logic here
-  // For example:
-  // const decodedToken = jwt_decode(token);
-  // return decodedToken;
-  return null;
+  // Redirect to the respective dashboard based on the user's role
+  let targetDashboard;
+  if (userRole === 'admin') {
+    targetDashboard = '/admin/dashboard';
+  } else if (userRole === 'franchise') {
+    targetDashboard = '/franchise/dashboard';
+  } else {
+    targetDashboard = '/user/dashboard';
+  }
+
+  return <Navigate to={targetDashboard} />;
 };
 
 export default Authentication;

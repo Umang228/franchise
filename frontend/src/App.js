@@ -30,21 +30,21 @@ import Navbar from './components/Navbar';
 
       {/* admin */}
       <Route path="/admin/dashboard" element={<Authentication allowedRoles={['admin']}><AdminDashboard /></Authentication>} />
-      <Route path="/admin/franchise" element={<AdminFranchise />} />
-      <Route path="/admin/products" element={<AdminProducts />} />
-      <Route path="/admin/orders" element={<AdminOrders />} />
-      <Route path="/admin/products/add" element={<AdminAddProducts />} />
-      <Route path="/admin/products/edit/:id" element={<AdminEditProducts />} />
-      <Route path="/admin/franchise/add" element={<AdminAddFranchise />} />
-      <Route path="/admin/franchise/select" element={<AdminSelectProducts />} />
-      <Route path="/admin/franchise/edit/:id" element={<AdminEditFranchise />} />
+      <Route path="/admin/franchise" element={<Authentication allowedRoles={['admin']}><AdminFranchise /></Authentication>} />
+      <Route path="/admin/products" element={<Authentication allowedRoles={['admin']}><AdminProducts /></Authentication>} />
+      <Route path="/admin/orders" element={<Authentication allowedRoles={['admin']}><AdminOrders /></Authentication>} />
+      <Route path="/admin/products/add" element={<Authentication allowedRoles={['admin']}><AdminAddProducts /></Authentication>} />
+      <Route path="/admin/products/edit/:id" element={<Authentication allowedRoles={['admin']}><AdminEditProducts /></Authentication>} />
+      <Route path="/admin/franchise/add" element={<Authentication allowedRoles={['admin']}><AdminAddFranchise /></Authentication>} />
+      <Route path="/admin/franchise/select" element={<Authentication allowedRoles={['admin']}><AdminSelectProducts /></Authentication>} />
+      <Route path="/admin/franchise/edit/:id" element={<Authentication allowedRoles={['admin']}><AdminEditFranchise /></Authentication>} />
 
 
       {/* franchise */}
       <Route path="/franchise/dashboard" element={<Authentication allowedRoles={['franchise']}><FranchiseDashboard /></Authentication>} />
-        <Route path="/franchise/products" element={<FranchiseProducts />} />
-        <Route path="/franchise/orders" element={<FranchiseOrder />} />
-        <Route path="/franchise/students" element={<FranchiseStudent />} />
+        <Route path="/franchise/products" element={<Authentication allowedRoles={['franchise']}><FranchiseProducts /></Authentication>} />
+        <Route path="/franchise/orders" element={<Authentication allowedRoles={['franchise']}><FranchiseOrder /></Authentication>} />
+        <Route path="/franchise/students" element={<Authentication allowedRoles={['franchise']}><FranchiseStudent /></Authentication>} />
 
         {/* user */}
         <Route path="/user/dashboard" element={<Authentication allowedRoles={['user']}><UserDashboard /></Authentication>} />

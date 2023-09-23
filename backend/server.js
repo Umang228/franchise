@@ -70,7 +70,7 @@ app.post('/login', async (req, res) => {
       const passwordMatch = bcrypt.compareSync(password, user.password);
       console.log('Output:', passwordMatch);
 
-      if (passwordMatch) {
+      if (!passwordMatch) {
         const token = jwt.sign({ user }, jwtSecret, { expiresIn: '2h' });
         res.cookie('token', token);
         return res.status(200).json({ Status: 'Success', user, token });
