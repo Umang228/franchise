@@ -1,24 +1,31 @@
 const express = require("express");
 const router = express.Router();
-// const multer = require("multer");
-// const path = require("path");
 const { db } = require("../db");
-// const storage = multer.diskStorage({
-//   destination:(req,file,cb)=>{
-//      cb(null,'images/products')
-//   },
-//   filename:(req,file,cb)=>{
-//     cb (null,file.fieldname+"_"+Date.now() + path.extname(file.originalname))
-//   }
-// });
-// const upload = multer({
-//   storage: storage
-// })
+const multer = require('multer'); // for image handling
+const fs = require('fs'); // for image deleting and editing
 
-// Define your routes here
+
+/* --------------------------------
+
+ Products
+
+ --------------------------------*/
+
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, 'images/products');
+  },
+  filename: (req, file, cb) => {
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
+    cb(null, file.fieldname + '-' + uniqueSuffix + '.jpg'); 
+  }
+});
+
+const upload = multer({ storage });
+
 
 //add product
-router.post("/add-product", (req, res) => {
+router.post("/add-product", upload.single('productImage'),(req, res) => {
   const {
     productName,
     facultyName,
@@ -39,12 +46,13 @@ router.post("/add-product", (req, res) => {
     slug,
     category_id,
   } = req.body;
+  const image = req.file.path;
 
   const sql = `INSERT INTO products 
                (productName, facultyName, productID, productType, course, group_name, 
                 subject, deliveryType, isFranchise, isWhatsapp, priceUpdate, price, discountPrice, 
-                description, shortDescription, featured, slug, category_id) 
-               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+                description, shortDescription, featured, slug, category_id,image) 
+               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?)`;
 
   const values = [
     productName,
@@ -65,6 +73,7 @@ router.post("/add-product", (req, res) => {
     featured,
     slug,
     category_id,
+    image,
   ];
 
   db.query(sql, values, (err, result) => {
@@ -95,26 +104,51 @@ router.get("/products", (req, res) => {
 //delete product
 router.delete("/products/:id", (req, res) => {
   const id = req.params.id;
-  const sql = "DELETE FROM products WHERE id = ?";
+  const sqlSelectImage = "SELECT image FROM products WHERE id = ?";
 
-  db.query(sql, [id], (err, result) => {
+  db.query(sqlSelectImage, [id], (err, result) => {
     if (err) {
       console.error("Database query error:", err);
-      return res.status(500).json({ message: "Error deleting product" });
+      return res.status(500).json({ message: "Error fetching product image" });
     }
 
-    return res.status(200).json({ message: "Product deleted successfully" });
+    if (result.length === 0) {
+      return res.status(404).json({ message: "Product not found" });
+    }
+
+    const imagePath = result[0].image;
+
+    // Delete the image file
+    fs.unlink(imagePath, (err) => {
+      if (err) {
+        console.error("Error deleting image:", err);
+        return res.status(500).json({ message: "Error deleting product image" });
+      }
+
+      // Now delete the product from the database
+      const sqlDeleteProduct = "DELETE FROM products WHERE id = ?";
+
+      db.query(sqlDeleteProduct, [id], (err, result) => {
+        if (err) {
+          console.error("Database query error:", err);
+          return res.status(500).json({ message: "Error deleting product" });
+        }
+
+        return res.status(200).json({ message: "Product deleted successfully" });
+      });
+    });
   });
 });
 
-// Update product
-router.put("/products/:id", (req, res) => {
+
+// edit product
+router.put("/products/:id", upload.single('productImage'), (req, res) => {
   const id = req.params.id;
   const {
     productName,
     facultyName,
-    productID,
     productType,
+    productID,
     course,
     group_name,
     subject,
@@ -130,41 +164,76 @@ router.put("/products/:id", (req, res) => {
     slug,
     category_id,
   } = req.body;
+  
+  let image;
+  if (req.file) {
+    image = req.file.path;
+  }
 
-  const sql =
-    "UPDATE products SET productName=?, facultyName=?, productID=?, productType=?, course=?, group_name=?, subject=?, deliveryType=?, isFranchise=?, isWhatsapp=?, priceUpdate=?, price=?, discountPrice=?, description=?, shortDescription=?, featured=?, slug=?, category_id=? WHERE id=?";
-
-  const values = [
-    productName,
-    facultyName,
-    productID,
-    productType,
-    course,
-    group_name,
-    subject,
-    deliveryType,
-    isFranchise,
-    isWhatsapp,
-    priceUpdate,
-    price,
-    discountPrice,
-    description,
-    shortDescription,
-    featured,
-    slug,
-    category_id,
-    id
-  ];
-
-  db.query(sql, values, (err, result) => {
-    if (err) {
-      console.error("Database query error:", err);
+  // Fetch the existing image path from the database
+  const getImageQuery = 'SELECT image FROM products WHERE id = ?';
+  db.query(getImageQuery, [id], (getImageError, getImageResult) => {
+    if (getImageError) {
+      console.error("Database query error:", getImageError);
       return res.status(500).json({ message: "Error updating product" });
     }
 
-    return res.status(200).json({ message: "Product updated successfully" });
+    // If an image exists in the database, delete it from the filesystem
+    if (getImageResult[0].image) {
+      const imagePath = getImageResult[0].image;
+
+
+      fs.unlink(imagePath, (unlinkError) => {
+        if (unlinkError) {
+          console.error("Error deleting image:", unlinkError);
+          // Handle the error if needed, but continue with the product update
+        } else {
+          console.log("Image deleted successfully.");
+        }
+      });
+    }
+
+    const sql = `UPDATE products 
+                 SET productName=?, facultyName=?, productType=?, productID=?, course=?, group_name=?, 
+                     subject=?, deliveryType=?, isFranchise=?, isWhatsapp=?, priceUpdate=?, 
+                     price=?, discountPrice=?, description=?, shortDescription=?, featured=?, 
+                     slug=?, category_id=?, image=?
+                 WHERE id=?`;
+
+    const values = [
+      productName,
+      facultyName,
+      productType,
+      productID,
+      course,
+      group_name,
+      subject,
+      deliveryType,
+      isFranchise,
+      isWhatsapp,
+      priceUpdate,
+      price,
+      discountPrice,
+      description,
+      shortDescription,
+      featured,
+      slug,
+      category_id,
+      image,
+      id,
+    ];
+
+    db.query(sql, values, (err, result) => {
+      if (err) {
+        console.error("Database query error:", err);
+        return res.status(500).json({ message: "Error updating product" });
+      }
+
+      return res.json({ message: "Product updated successfully" });
+    });
   });
 });
+
 
 
 // Fetch a single product
@@ -185,6 +254,13 @@ router.get("/products/:id", (req, res) => {
     return res.status(200).json({ products: result[0] });
   });
 });
+
+
+/* --------------------------------
+
+ Franchise
+
+ --------------------------------*/
 
 let franchiseId;
 // Add franchise
@@ -267,6 +343,20 @@ router.post('/select', (req, res) => {
   });
 });
 
+// Fetch products for select
+router.get("/product", (req, res) => {
+  const sql = "SELECT * FROM products WHERE isFranchise = 1";
+
+  db.query(sql, (err, result) => {
+    if (err) {
+      console.error("Database query error:", err);
+      return res.status(500).json({ message: "Error fetching products" });
+    }
+
+    return res.json(result);
+  });
+});
+
 
 
 // Fetch all franchise
@@ -334,7 +424,6 @@ router.delete("/franchise/:id", (req, res) => {
 });
 
 
-
 // Update franchise
 router.put("/franchise/:id", (req, res) => {
   const { id } = req.params;
@@ -346,34 +435,63 @@ router.put("/franchise/:id", (req, res) => {
     gst_number,
     franchise_type,
     mode_of_payment,
-    selected_products,
   } = req.body;
 
-  // Update the franchise data in the database based on the provided id
-  const sql =
-    "UPDATE franchises SET name = ?, email = ?, phone_number = ?, password = ?, gst_number = ?, franchise_type = ?, mode_of_payment = ?, selected_products = ? WHERE id = ?";
-
-  const values = [
-    name,
-    email,
-    phone_number,
-    password,
-    gst_number,
-    franchise_type,
-    mode_of_payment,
-    selected_products,
-    id,
-  ];
-
-  db.query(sql, values, (err, result) => {
-    if (err) {
-      console.error("Database query error:", err);
-      return res.status(500).json({ message: "Error updating franchise" });
+  // Fetch the previous email associated with the franchise
+  const getEmailQuery = "SELECT email FROM franchises WHERE id = ?";
+  db.query(getEmailQuery, [id], (getEmailErr, getEmailResult) => {
+    if (getEmailErr) {
+      console.error("Database query error:", getEmailErr);
+      return res.status(500).json({ message: "Error getting franchise email" });
     }
 
-    return res.status(200).json({ message: "Franchise updated successfully" });
+    if (getEmailResult.length === 0) {
+      return res.status(404).json({ message: "Franchise not found" });
+    }
+
+    const prevEmail = getEmailResult[0].email;
+
+    // Update the franchise data in the database based on the provided id
+    const franchiseSql =
+      "UPDATE franchises SET name = ?, email = ?, phone_number = ?, password = ?, gst_number = ?, franchise_type = ?, mode_of_payment = ? WHERE id = ?";
+
+    const franchiseValues = [
+      name,
+      email,
+      phone_number,
+      password,
+      gst_number,
+      franchise_type,
+      mode_of_payment,
+      id,
+    ];
+
+    db.query(franchiseSql, franchiseValues, (err, franchiseResult) => {
+      if (err) {
+        console.error("Database query error:", err);
+        return res.status(500).json({ message: "Error updating franchise" });
+      }
+
+      // Update the corresponding user's email and password in the "user" table
+      const userSql =
+        "UPDATE user SET name =?, email = ?, password = ? WHERE email = ?";
+
+      const userValues = [name, email, password, prevEmail];  
+
+      db.query(userSql, userValues, (userErr, userResult) => {
+        if (userErr) {
+          console.error("Database query error:", userErr);
+          return res.status(500).json({ message: "Error updating user" });
+        }
+
+        return res.status(200).json({ message: "Franchise and user updated successfully" });
+      });
+    });
   });
 });
+
+
+
 
 // Fetch a single franchise
 router.get("/franchise/:id", (req, res) => {
@@ -392,6 +510,52 @@ router.get("/franchise/:id", (req, res) => {
 
     return res.status(200).json({ franchise: result[0] });
   });
+});
+
+
+
+// Fetch already associated products
+router.get('/product/:id', (req, res) => {
+  const { id } = req.params;
+
+  const sql = 'SELECT product_id FROM selected_product WHERE franchise_id = ?';
+  db.query(sql, [id], (err, result) => {
+    if (err) {
+      console.error('Database query error:', err);
+      return res.status(500).json({ message: 'Error fetching selected products' });
+    }
+  
+    const selectedProducts = result.map((row) => row.product_id);
+    return res.json(selectedProducts);
+    
+  });
+});
+
+
+
+// Update selected products for a given franchise ID
+router.post('/update_selected_products', async (req, res) => {
+  const { id, selectedProducts } = req.body;
+
+  if (!id || !Array.isArray(selectedProducts)) {
+    return res.status(400).json({ message: 'Invalid request data' });
+  }
+
+  try {
+    // Delete existing selected products for this franchise
+    await db.query('DELETE FROM selected_product WHERE franchise_id = ?', [id]);
+
+    // Insert the updated selected products
+    const insertQuery = 'INSERT INTO selected_product (franchise_id, product_id) VALUES ?';
+    const values = selectedProducts.map(productId => [id, productId]);
+
+    await db.query(insertQuery, [values]);
+
+    return res.status(200).json({ message: 'Selected products updated successfully' });
+  } catch (error) {
+    console.error('Error updating selected products:', error);
+    return res.status(500).json({ message: 'Internal server error' });
+  }
 });
 
 module.exports = router;

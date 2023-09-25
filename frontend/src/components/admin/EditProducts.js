@@ -26,8 +26,10 @@ export default function EditProduct() {
     featured: false,
     slug: "",
     category_id: "",
+    productImage: null,
   });
   const [successMessage, setSuccessMessage] = useState("");
+  const [imagePreview, setImagePreview] = useState(null);
 
   // Fetch the existing product data based on the id from the URL
   useEffect(() => {
@@ -52,11 +54,24 @@ export default function EditProduct() {
 
   // Handle changes in the form fields
   const handleChange = (e) => {
-    const { name, value, type, checked } = e.target;
-    setProductInfo((prevInfo) => ({
-      ...prevInfo,
-      [name]: type === "checkbox" ? checked : value,
-    }));
+    const { name, value, type, checked, files } = e.target;
+    
+    if (type === "file") {
+      // Update the image preview
+      const file = files[0];
+      setImagePreview(URL.createObjectURL(file));
+
+      // Update the productInfo with the selected image
+      setProductInfo((prevInfo) => ({
+        ...prevInfo,
+        productImage: file,
+      }));
+    } else {
+      setProductInfo((prevInfo) => ({
+        ...prevInfo,
+        [name]: type === "checkbox" ? checked : value,
+      }));
+    }
   };
 
   // Handle form submission to update the product
@@ -64,9 +79,15 @@ export default function EditProduct() {
     e.preventDefault();
 
     try {
+      const formData = new FormData();
+      for (const key in productInfo) {
+        // converting boolean values into 0 and 1
+        const value = typeof productInfo[key] === "boolean" ? Number(productInfo[key]) : productInfo[key];
+        formData.append(key, value);
+      }
       const response = await axios.put(
         `http://localhost:8081/admin/products/${id}`,
-        productInfo
+        formData
       );
 
       if (response.status === 200) {
@@ -254,6 +275,22 @@ export default function EditProduct() {
               value={productInfo.category_id}
               onChange={handleChange}
             />
+          </div>
+          <div>
+            <label>Upload Image:</label>
+            <input
+              type="file"
+              name="productImage"
+              onChange={handleChange}
+              accept="image/*"
+            />
+              {imagePreview && (
+            <img
+              src={imagePreview}
+              alt="Product Preview"
+              style={{ maxWidth: "100px", maxHeight: "100px", marginTop: "10px" }}
+            />
+          )}
           </div>
           <div>
             <label>Additional Services:</label>

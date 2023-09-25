@@ -24,38 +24,64 @@ export default function AddProducts() {
     featured: false,
     slug: "",
     category_id: "",
+    productImage: null,
   });
-  
+
   const [successMessage, setSuccessMessage] = useState("");
+  const [imagePreview, setImagePreview] = useState(null);
+
   const navigate = useNavigate();
 
-  
   const handleChange = (event) => {
-    const { name, value, type, checked } = event.target;
+    const { name, type, value, checked,files } = event.target;
   
-    setProductInfo((prevProductInfo) => ({
-      ...prevProductInfo,
-      [name]: type === 'checkbox' ? checked : value,
-    }));
+    if (type === "checkbox") {
+      setProductInfo((prevProductInfo) => ({
+        ...prevProductInfo,
+        [name]: checked,
+      }));
+    } else if (type === "file") {
+      const file = files[0];
+      setImagePreview(URL.createObjectURL(file));
+      setProductInfo((prevProductInfo) => ({
+        ...prevProductInfo,
+        productImage: event.target.files[0],
+      }));
+    } else {
+      setProductInfo((prevProductInfo) => ({
+        ...prevProductInfo,
+        [name]: value,
+      }));
+    }
+    
   };
   
   
+  
+
   const handleSubmit = async (event) => {
     event.preventDefault();
-  
+
     try {
-      const response = await axios.post('http://localhost:8081/admin/add-product', productInfo);
+    
+      const formData = new FormData();
+      for (const key in productInfo) {
+        // converting boolean values into 0 and 1
+        const value = typeof productInfo[key] === "boolean" ? Number(productInfo[key]) : productInfo[key];
+        formData.append(key, value);
+      }
+      const response = await axios.post(
+        "http://localhost:8081/admin/add-product",
+        formData
+      );
       if (response.status === 200) {
-        setSuccessMessage('Product added successfully.');
-        navigate('/admin/products');
+        setSuccessMessage("Product added successfully.");
+        navigate("/admin/products");
       }
     } catch (error) {
-      console.error('Error adding product:', error);
+      console.error("Error adding product:", error);
     }
   };
-  
-  
-  
 
   return (
     <div>
@@ -179,7 +205,7 @@ export default function AddProducts() {
               </label>
             </div>
           </div>
-          
+
           <div>
             <label>Price:</label>
             <input
@@ -199,13 +225,6 @@ export default function AddProducts() {
               onChange={handleChange}
             />
           </div>
-          {/* <div>
-            <label>Upload Image:</label>
-            <input
-              type="file"
-              onChange={e => setFile(e.target.files[0])}
-            />
-          </div> */}
           <div>
             <label>Description:</label>
             <textarea
@@ -222,7 +241,7 @@ export default function AddProducts() {
               onChange={handleChange}
             />
           </div>
-        
+
           <div>
             <label>Slug:</label>
             <input
@@ -240,6 +259,22 @@ export default function AddProducts() {
               value={productInfo.category_id}
               onChange={handleChange}
             />
+          </div>
+          <div>
+            <label>Upload Image:</label>
+            <input
+              type="file"
+              name="productImage"
+              onChange={handleChange}
+              accept="image/*"
+            />
+              {imagePreview && (
+            <img
+              src={imagePreview}
+              alt="Product Preview"
+              style={{ maxWidth: "100px", maxHeight: "100px", marginTop: "10px" }}
+            />
+          )}
           </div>
           <div>
             <label>Additional Services:</label>
@@ -281,9 +316,9 @@ export default function AddProducts() {
                 />
                 Featured
               </label>
-            
             </div>
           </div>
+         
           <button type="submit" id="btnn">
             Add Product
           </button>

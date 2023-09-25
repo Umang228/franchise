@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState,useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
 import Sidebar from './Sidebar';
@@ -15,37 +15,11 @@ export default function EditFranchise() {
     gst_number: "",
     franchise_type: "Regular",
     mode_of_payment: "Wallet",
-    selected_products: "",
   });
 
-  const [products, setProducts] = useState([]);
   const [successMessage, setSuccessMessage] = useState("");
 
-  useEffect(() => {
-    // Fetch the list of products from the server
-    axios
-      .get("http://localhost:8081/admin/products") // Replace with your API endpoint
-      .then((response) => {
-        if (response.status === 200) {
-          setProducts(response.data);
-        }
-      })
-      .catch((error) => {
-        console.error("Error fetching products:", error);
-      });
-
-    // Fetch franchise data based on franchiseId
-    axios
-      .get(`http://localhost:8081/admin/franchise/${id}`)
-      .then((response) => {
-        if (response.status === 200) {
-          setFormData(response.data.franchise);
-        }
-      })
-      .catch((error) => {
-        console.error("Error fetching franchise data:", error);
-      });
-  }, [id]);
+ 
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -54,6 +28,27 @@ export default function EditFranchise() {
       [name]: value,
     }));
   };
+
+    // Fetch the existing franchise data based on the id from the URL
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await axios.get(
+          `http://localhost:8081/admin/franchise/${id}`
+        );
+
+        if (response.status === 200) {
+          setFormData(response.data.franchise);
+        } else {
+          console.log("Error fetching product data");
+        }
+      } catch (error) {
+        console.error("Error:", error);
+      }
+    };
+
+    fetchData();
+  }, [id]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -66,7 +61,7 @@ export default function EditFranchise() {
 
       if (response.status === 200) {
         setSuccessMessage("Franchise updated successfully");
-        navigate(`/admin/franchise`);
+        navigate(`/admin/franchise/select/edit/${id}`);
       } else {
         console.log("Error updating franchise");
       }
@@ -168,29 +163,16 @@ export default function EditFranchise() {
               name="mode_of_payment"
               value={formData.mode_of_payment}
               onChange={handleChange}
+              className="modeOfPayment"
             >
               <option value="Wallet">Wallet</option>
               <option value="Payment Gateway">Payment Gateway</option>
               <option value="Both">Both</option>
             </select>
           </div>
+        
           <div>
-            <label>Select Products:</label>
-            <select
-              name="selected_products"
-              value={formData.selected_products}
-              onChange={handleChange}
-            >
-              <option value="">Select a Product</option>
-              {products.map((product) => (
-                <option key={product.id} value={product.id}>
-                  {product.name}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <button type="submit">Update Franchise</button>
+          <button type="submit" id="addBtnn">Next</button>
           </div>
         </form>
       </div>

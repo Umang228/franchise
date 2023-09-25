@@ -43,7 +43,7 @@ export default function SelectProducts() {
    // Function to fetch product data from the backend
    const fetchProducts = async () => {
     try {
-      const response = await axios.get('http://localhost:8081/admin/products');
+      const response = await axios.get('http://localhost:8081/admin/product');
       if (response.status === 200) {
         setProducts(response.data);
         
