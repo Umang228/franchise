@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from "react-router-dom";
 import Sidebar from './Sidebar';
 import axios from 'axios';
 
 export default function Products() {
   const [selectedProductIds, setSelectedProductIds] = useState([]);
   const [productsData, setProductsData] = useState([]);
+  const navigate = useNavigate();
 
   const fetchSelectedProductIds = async () => {
     try {
@@ -43,6 +45,11 @@ export default function Products() {
     });
   }, [selectedProductIds]);
 
+  const handleRowClick = (id) => {
+    // Navigate to the product details page when a row is clicked
+    navigate(`/franchise/product/${id}`);
+  };
+
   const tableHeaders = [
     'Product Name',
     'Faculty Name',
@@ -69,8 +76,8 @@ export default function Products() {
         </thead>
         <tbody>
           {productsData.map((product, index) => (
-            <tr key={index}>
-              <td>{product.productName}</td>
+            <tr key={index} onClick={() => handleRowClick(product.id)}>
+            <td>{product.productName}</td>
               <td>{product.facultyName}</td>
               <td>{product.productID}</td>
               <td>{product.productType}</td>

@@ -73,6 +73,8 @@ export default function SelectProducts() {
             <th>Course</th>
             <th>Subject</th>
             <th>Delivery Type</th>
+            <th>Price</th>
+            <th>Discounted Price</th>
             <th>Action</th>
           </tr>
         </thead>
@@ -85,6 +87,8 @@ export default function SelectProducts() {
               <td> {product.course}</td>
               <td>{product.subject}</td>
               <td>{product.deliveryType}</td>
+              <td>{product.price}</td>
+              <td>{product.discountPrice}</td>
               <td className='action'>
               <input
                     type="checkbox"
