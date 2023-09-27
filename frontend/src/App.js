@@ -18,8 +18,10 @@ import FranchiseDashboard from './components/franchise/FranchiseDashboard';
 import FranchiseProducts from './components/franchise/Products';
 import FranchiseOrder from './components/franchise/Order';
 import FranchiseStudent from './components/franchise/Student';
-import UserDashboard from './components/user/UserDashboard';
 import FranchiseSingleProduct from './components/franchise/SingleProduct';
+import FranchiseStudentDetails from './components/franchise/StudentDetails';
+import FranchiseOrderPlaced from './components/franchise/OrderPlaced';
+import UserDashboard from './components/user/UserDashboard';
 import Navbar from './components/Navbar';
 
  function App() {
@@ -41,6 +43,7 @@ import Navbar from './components/Navbar';
       <Route path="/admin/franchise/select" element={<AdminSelectProducts />} />
       <Route path="/admin/franchise/select/edit/:id" element={<AdminEditSelectProducts />} />
       <Route path="/admin/franchise/edit/:id" element={<AdminEditFranchise />} />
+    
 
 
       {/* franchise */}
@@ -49,6 +52,10 @@ import Navbar from './components/Navbar';
         <Route path="/franchise/orders" element={<FranchiseOrder />} />
         <Route path="/franchise/students" element={<FranchiseStudent />} />
         <Route path="/franchise/product/:id" element={<FranchiseSingleProduct/>} />
+        <Route path="/franchise/product/:id" element={<FranchiseSingleProduct/>} />
+        <Route path="/franchise/product/:id" element={<FranchiseSingleProduct/>} />
+        <Route path="/franchise/student-details" element={<FranchiseStudentDetails />} />
+      <Route path="/franchise/order-placed" element={<FranchiseOrderPlaced />} />
 
         {/* user */}
         <Route path="/user/dashboard" element={<Authentication allowedRoles={['user']}><UserDashboard /></Authentication>} />

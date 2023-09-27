@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import '../style/prod.css';
 import axios from 'axios';
 
 export default function Products() {
   const { id } = useParams();
   const [product, setProduct] = useState(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchProductDetails = async () => {
@@ -28,6 +29,10 @@ export default function Products() {
     console.log('Product:', product);
   }, [product]);
 
+  const handleBuyNow = () => {
+    navigate('/franchise/student-details');
+  };
+
   return (
     <div className="prod">
       <div className="child-prod">
@@ -48,6 +53,9 @@ export default function Products() {
               <p className="product-short-desc">{product.shortDescription}</p>
               <p className="product-desc">{product.description}</p>
             </div>
+            <button onClick={handleBuyNow} className="buy-now-button">
+              Buy Now
+            </button>
           </div>
         ) : (
           <p>Loading product details...</p>

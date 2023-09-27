@@ -1,9 +1,8 @@
 const express = require("express");
 const router = express.Router();
 const { db } = require("../db");
-const multer = require('multer'); // for image handling
-const fs = require('fs'); // for image deleting and editing
-
+const multer = require("multer"); // for image handling
+const fs = require("fs"); // for image deleting and editing
 
 /* --------------------------------
 
@@ -13,19 +12,18 @@ const fs = require('fs'); // for image deleting and editing
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, 'images/products');
+    cb(null, "images/products");
   },
   filename: (req, file, cb) => {
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
-    cb(null, file.fieldname + '-' + uniqueSuffix + '.jpg'); 
-  }
+    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
+    cb(null, file.fieldname + "-" + uniqueSuffix + ".jpg");
+  },
 });
 
 const upload = multer({ storage });
 
-
 //add product
-router.post("/add-product", upload.single('productImage'),(req, res) => {
+router.post("/add-product", upload.single("productImage"), (req, res) => {
   const {
     productName,
     facultyName,
@@ -86,7 +84,6 @@ router.post("/add-product", upload.single('productImage'),(req, res) => {
   });
 });
 
-
 // Fetch all products
 router.get("/products", (req, res) => {
   const sql = "SELECT * FROM products";
@@ -122,7 +119,9 @@ router.delete("/products/:id", (req, res) => {
     fs.unlink(imagePath, (err) => {
       if (err) {
         console.error("Error deleting image:", err);
-        return res.status(500).json({ message: "Error deleting product image" });
+        return res
+          .status(500)
+          .json({ message: "Error deleting product image" });
       }
 
       // Now delete the product from the database
@@ -134,15 +133,16 @@ router.delete("/products/:id", (req, res) => {
           return res.status(500).json({ message: "Error deleting product" });
         }
 
-        return res.status(200).json({ message: "Product deleted successfully" });
+        return res
+          .status(200)
+          .json({ message: "Product deleted successfully" });
       });
     });
   });
 });
 
-
 // edit product
-router.put("/products/:id", upload.single('productImage'), (req, res) => {
+router.put("/products/:id", upload.single("productImage"), (req, res) => {
   const id = req.params.id;
   const {
     productName,
@@ -164,14 +164,14 @@ router.put("/products/:id", upload.single('productImage'), (req, res) => {
     slug,
     category_id,
   } = req.body;
-  
+
   let image;
   if (req.file) {
     image = req.file.path;
   }
 
   // Fetch the existing image path from the database
-  const getImageQuery = 'SELECT image FROM products WHERE id = ?';
+  const getImageQuery = "SELECT image FROM products WHERE id = ?";
   db.query(getImageQuery, [id], (getImageError, getImageResult) => {
     if (getImageError) {
       console.error("Database query error:", getImageError);
@@ -181,7 +181,6 @@ router.put("/products/:id", upload.single('productImage'), (req, res) => {
     // If an image exists in the database, delete it from the filesystem
     if (getImageResult[0].image) {
       const imagePath = getImageResult[0].image;
-
 
       fs.unlink(imagePath, (unlinkError) => {
         if (unlinkError) {
@@ -234,8 +233,6 @@ router.put("/products/:id", upload.single('productImage'), (req, res) => {
   });
 });
 
-
-
 // Fetch a single product
 router.get("/products/:id", (req, res) => {
   const { id } = req.params;
@@ -254,7 +251,6 @@ router.get("/products/:id", (req, res) => {
     return res.status(200).json({ products: result[0] });
   });
 });
-
 
 /* --------------------------------
 
@@ -294,8 +290,7 @@ router.post("/add-franchise", (req, res) => {
       console.error("Database query error:", err);
       return res.status(500).json({ message: "Error creating franchise" });
     }
-     franchiseId = franchiseResult.insertId;
-   
+    franchiseId = franchiseResult.insertId;
 
     // Insert the franchise's email and password into the "user" table
     const userSql =
@@ -313,25 +308,28 @@ router.post("/add-franchise", (req, res) => {
 
       return res
         .status(200)
-        .json({ message: "Franchise created successfully" , franchiseId});
+        .json({ message: "Franchise created successfully", franchiseId });
     });
   });
 });
 
 // select products
 router.post('/select', (req, res) => {
-  const { selectedProducts } = req.body;
+  const { selectedProducts,enteredPrices,enteredDiscountPrices } = req.body;
 
   if (!franchiseId) {
     return res.status(400).json({ message: "Franchise ID not found" });
   }
 
   // Prepare the SQL query dynamically with placeholders for each value
-  const insertQuery = 'INSERT INTO selected_product (franchise_id, product_id) VALUES ' +
-    selectedProducts.map(productId => `(?, ${productId})`).join(', ');
+  const insertQuery = 'INSERT INTO selected_product (franchise_id, product_id, price, discount_price) VALUES ' +
+  selectedProducts.map(productId => '(?, ?, ?, ?)').join(', ');
 
-  // Flatten the array of values for the query (only franchiseId is needed)
-  const flattenedValues = selectedProducts.map(() => franchiseId);
+// Flatten the array of values for the query (franchiseId, productId, price, discountPrice)
+const flattenedValues = [];
+selectedProducts.forEach(productId => {
+  flattenedValues.push(franchiseId, productId, enteredPrices[productId], enteredDiscountPrices[productId]);
+});
 
   db.query(insertQuery, flattenedValues, (insertErr) => {
     if (insertErr) {
@@ -356,8 +354,6 @@ router.get("/product", (req, res) => {
     return res.json(result);
   });
 });
-
-
 
 // Fetch all franchise
 router.get("/franchise", (req, res) => {
@@ -401,28 +397,40 @@ router.delete("/franchise/:id", (req, res) => {
 
       // Delete related records from users and selected_product tables based on email
       const deleteUsersQuery = "DELETE FROM user WHERE email = ?";
-      const deleteSelectedProductsQuery = "DELETE FROM selected_product WHERE franchise_id = ?";
-      
+      const deleteSelectedProductsQuery =
+        "DELETE FROM selected_product WHERE franchise_id = ?";
+
       // Execute the delete queries
       db.query(deleteUsersQuery, [franchiseEmail], (userErr, userResult) => {
         if (userErr) {
           console.error("Database query error:", userErr);
-          return res.status(500).json({ message: "Error deleting related user records" });
+          return res
+            .status(500)
+            .json({ message: "Error deleting related user records" });
         }
 
-        db.query(deleteSelectedProductsQuery, [franchiseId], (selectedProductErr, selectedProductResult) => {
-          if (selectedProductErr) {
-            console.error("Database query error:", selectedProductErr);
-            return res.status(500).json({ message: "Error deleting related selected products" });
-          }
+        db.query(
+          deleteSelectedProductsQuery,
+          [franchiseId],
+          (selectedProductErr, selectedProductResult) => {
+            if (selectedProductErr) {
+              console.error("Database query error:", selectedProductErr);
+              return res
+                .status(500)
+                .json({ message: "Error deleting related selected products" });
+            }
 
-          return res.status(200).json({ message: "Franchise and related records deleted successfully" });
-        });
+            return res
+              .status(200)
+              .json({
+                message: "Franchise and related records deleted successfully",
+              });
+          }
+        );
       });
     });
   });
 });
-
 
 // Update franchise
 router.put("/franchise/:id", (req, res) => {
@@ -476,7 +484,7 @@ router.put("/franchise/:id", (req, res) => {
       const userSql =
         "UPDATE user SET name =?, email = ?, password = ? WHERE email = ?";
 
-      const userValues = [name, email, password, prevEmail];  
+      const userValues = [name, email, password, prevEmail];
 
       db.query(userSql, userValues, (userErr, userResult) => {
         if (userErr) {
@@ -484,14 +492,13 @@ router.put("/franchise/:id", (req, res) => {
           return res.status(500).json({ message: "Error updating user" });
         }
 
-        return res.status(200).json({ message: "Franchise and user updated successfully" });
+        return res
+          .status(200)
+          .json({ message: "Franchise and user updated successfully" });
       });
     });
   });
 });
-
-
-
 
 // Fetch a single franchise
 router.get("/franchise/:id", (req, res) => {
@@ -512,50 +519,59 @@ router.get("/franchise/:id", (req, res) => {
   });
 });
 
-
-
 // Fetch already associated products
-router.get('/product/:id', (req, res) => {
+router.get("/product/:id", (req, res) => {
   const { id } = req.params;
 
-  const sql = 'SELECT product_id FROM selected_product WHERE franchise_id = ?';
+  const sql = "SELECT * FROM selected_product WHERE franchise_id = ?";
   db.query(sql, [id], (err, result) => {
     if (err) {
-      console.error('Database query error:', err);
-      return res.status(500).json({ message: 'Error fetching selected products' });
+      console.error("Database query error:", err);
+      return res
+        .status(500)
+        .json({ message: "Error fetching selected products" });
     }
-  
-    const selectedProducts = result.map((row) => row.product_id);
+
+    const selectedProducts = result.reduce((acc, row) => {
+      const { product_id, price, discount_price } = row;
+      acc[product_id] = { price, discountPrice: discount_price };
+      return acc;
+    }, {});
     return res.json(selectedProducts);
-    
   });
 });
 
+router.post("/update_selected_products", async (req, res) => {
+  const { id, selectedProductIds, updatedProducts } = req.body;
 
-
-// Update selected products for a given franchise ID
-router.post('/update_selected_products', async (req, res) => {
-  const { id, selectedProducts } = req.body;
-
-  if (!id || !Array.isArray(selectedProducts)) {
-    return res.status(400).json({ message: 'Invalid request data' });
+  if (!id || !Array.isArray(selectedProductIds) || !Array.isArray(updatedProducts)) {
+    return res.status(400).json({ message: "Invalid request data" });
   }
 
   try {
     // Delete existing selected products for this franchise
-    await db.query('DELETE FROM selected_product WHERE franchise_id = ?', [id]);
+    await db.query("DELETE FROM selected_product WHERE franchise_id = ?", [id]);
 
     // Insert the updated selected products
-    const insertQuery = 'INSERT INTO selected_product (franchise_id, product_id) VALUES ?';
-    const values = selectedProducts.map(productId => [id, productId]);
+    const insertQuery = 'INSERT INTO selected_product (franchise_id, product_id, price, discount_price) VALUES ' +
+      selectedProductIds.map((productId, index) => '(?, ?, ?, ?)').join(', ');
 
-    await db.query(insertQuery, [values]);
+    // Flatten the array of values for the query (franchiseId, productId, price, discountPrice)
+    const flattenedValues = [];
+    selectedProductIds.forEach((productId, index) => {
+      flattenedValues.push(id, productId, updatedProducts[index].price, updatedProducts[index].discountPrice);
+    });
 
-    return res.status(200).json({ message: 'Selected products updated successfully' });
+    await db.query(insertQuery, flattenedValues);
+
+    return res
+      .status(200)
+      .json({ message: "Selected products updated successfully" });
   } catch (error) {
-    console.error('Error updating selected products:', error);
-    return res.status(500).json({ message: 'Internal server error' });
+    console.error("Error updating selected products:", error);
+    return res.status(500).json({ message: "Internal server error" });
   }
 });
+
 
 module.exports = router;

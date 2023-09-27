@@ -11,25 +11,42 @@ export default function EditSelectProducts() {
   const [products, setProducts] = useState([]);
   const [selectedProducts, setSelectedProducts] = useState([]);
   const [successMessage, setSuccessMessage] = useState('');
-  
-
- 
-
-  
+  const [updatedPrices, setUpdatedPrices] = useState({});
+  const [updatedDiscountPrices, setUpdatedDiscountPrices] = useState({});
 
   useEffect(() => {
-    const fetchProductDetails = async () => {
+    const fetchSelectedProducts = async () => {
       try {
         const response = await axios.get(`http://localhost:8081/admin/product/${id}`);
         if (response.status === 200) {
-          setSelectedProducts(response.data);
+          const selectedProductsData = response.data;
+
+          const selectedProductsDetails = Object.keys(selectedProductsData).map(productId => {
+            const { price, discountPrice } = selectedProductsData[productId];
+            const product = products.find(p => p.id === parseInt(productId, 10));
+            if (product) {
+              return {
+                ...product,
+                price,
+                discountPrice
+              };
+            }
+            return null;
+          });
+
+          const filteredSelectedProductsDetails = selectedProductsDetails.filter(product => product !== null);
+
+          setSelectedProducts(filteredSelectedProductsDetails);
         }
       } catch (error) {
         console.error('Error fetching selected products:', error);
       }
     };
-    fetchProductDetails();
 
+    fetchSelectedProducts();
+  }, [id, products]);
+
+  useEffect(() => {
     const fetchAllProducts = async () => {
       try {
         const response = await axios.get('http://localhost:8081/admin/products');
@@ -40,23 +57,50 @@ export default function EditSelectProducts() {
         console.error('Error fetching all products:', error);
       }
     };
+
     fetchAllProducts();
-     
-  }, [id]);
+  }, []);
 
   const handleCheckboxChange = (productId) => {
+    debugger;
     const updatedSelectedProducts = selectedProducts.includes(productId)
       ? selectedProducts.filter((id) => id !== productId)
       : [...selectedProducts, productId];
     setSelectedProducts(updatedSelectedProducts);
   };
-
   
+  
+  
+
+  const handlePriceChange = (productId, value) => {
+    const updatedProducts = selectedProducts.map(product => ({
+      ...product,
+      price: product.id === productId ? parseFloat(value) : product.price,
+    }));
+    setSelectedProducts(updatedProducts);
+  };
+
+  const handleDiscountPriceChange = (productId, value) => {
+    const updatedProducts = selectedProducts.map(product => ({
+      ...product,
+      discountPrice: product.id === productId ? parseFloat(value) : product.discountPrice,
+    }));
+    setSelectedProducts(updatedProducts);
+  };
+
   const handleSubmit = async () => {
     try {
+      const selectedProductIds = selectedProducts.map(product => product.id);
+      const updatedProducts = selectedProducts.map(product => ({
+        id: product.id,
+        price: updatedPrices[product.id] || product.price,
+        discountPrice: updatedDiscountPrices[product.id] || product.discountPrice
+      }));
+  
       await axios.post('http://localhost:8081/admin/update_selected_products', {
         id,
-        selectedProducts,
+        selectedProductIds,
+        updatedProducts,
       });
       setSuccessMessage('Selection updated successfully');
       navigate('/admin/franchise');
@@ -64,6 +108,8 @@ export default function EditSelectProducts() {
       console.error('Error updating selected products:', error);
     }
   };
+  
+  
 
   return (
     <div className="prod">
@@ -81,7 +127,7 @@ export default function EditSelectProducts() {
               <th>Subject</th>
               <th>Delivery Type</th>
               <th>Price</th>
-            <th>Discounted Price</th>
+              <th>Discounted Price</th>
               <th>Action</th>
             </tr>
           </thead>
@@ -94,13 +140,29 @@ export default function EditSelectProducts() {
                 <td>{product.course}</td>
                 <td>{product.subject}</td>
                 <td>{product.deliveryType}</td>
-                <td>{product.price}</td>
-              <td>{product.discountPrice}</td>
+                <td>
+                  <input
+                    type="number"
+                    value={selectedProducts.find(p => p.id === product.id)?.price || 0}
+                    onChange={(e) =>
+                      handlePriceChange(product.id, e.target.value)
+                    }
+                  />
+                </td>
+                <td>
+                  <input
+                    type="number"
+                    value={selectedProducts.find(p => p.id === product.id)?.discountPrice || 0}
+                    onChange={(e) =>
+                      handleDiscountPriceChange(product.id, e.target.value)
+                    }
+                  />
+                </td>
                 <td className="action">
                   <input
                     type="checkbox"
                     onChange={() => handleCheckboxChange(product.id)}
-                    checked={selectedProducts.includes(product.id)}
+                    checked={selectedProducts.some(p => p.id === product.id)}
                   />
                 </td>
               </tr>
@@ -108,12 +170,12 @@ export default function EditSelectProducts() {
           </tbody>
         </table>
 
-        {successMessage && (
-          <p className="success-message">{successMessage}</p>
-        )}
+        {successMessage && <p className="success-message">{successMessage}</p>}
 
         <button onClick={handleSubmit}>Update</button>
       </div>
     </div>
+ 
+
   );
 }
