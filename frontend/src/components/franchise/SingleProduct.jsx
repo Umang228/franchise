@@ -26,7 +26,6 @@ export default function Products() {
     fetchProductDetails();
   }, [id]);
   useEffect(() => {
-    console.log('Product:', product);
   }, [product]);
 
   const handleBuyNow = () => {

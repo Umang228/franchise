@@ -11,25 +11,14 @@ export default function Products() {
   const fetchSelectedProductIds = async () => {
     try {
       const response = await axios.get('http://localhost:8081/franchise/products');
-
+  
       if (response.status === 200) {
-        setSelectedProductIds(response.data);
+        const productsWithPrices = response.data;
+        setSelectedProductIds(productsWithPrices.map(product => product.product_id));
+        setProductsData(productsWithPrices); // Update productsData with price and discount
       }
     } catch (error) {
       console.error('Error fetching selected product IDs:', error);
-    }
-  };
-
-  const fetchProductDetails = async (id) => {
-    try {
-      const response = await axios.get(`http://localhost:8081/franchise/products/${id}`);
-
-      if (response.status === 200) {
-        // Append the new product details to the existing productsData
-        setProductsData((prevData) => [...prevData, response.data]);
-      }
-    } catch (error) {
-      console.error('Error fetching product details:', error);
     }
   };
 
@@ -38,11 +27,27 @@ export default function Products() {
   }, []);
 
   useEffect(() => {
-    // Fetch product details for each selected product ID
-    setProductsData([]); // Clear existing product data before fetching new data
-    selectedProductIds.forEach((id) => {
-      fetchProductDetails(id);
-    });
+    const fetchProductDetails = async () => {
+      try {
+        setProductsData([]);  // Clear existing product data before fetching new data
+        const productDetailsPromises = selectedProductIds.map((id) => axios.get(`http://localhost:8081/franchise/products/${id}`));
+        const productDetailsResponses = await Promise.all(productDetailsPromises);
+    
+        const newProductsData = productDetailsResponses
+          .filter((response) => response.status === 200)
+          .map((response, index) => ({
+            ...response.data,
+            price: productsData[index].price, // Use price from productsData
+            discountPrice: productsData[index].discount_price // Use discount price from productsData
+          }));
+    
+        setProductsData(newProductsData);
+      } catch (error) {
+        console.error('Error fetching product details:', error);
+      }
+    };
+  
+    fetchProductDetails();
   }, [selectedProductIds]);
 
   const handleRowClick = (id) => {
@@ -59,7 +64,8 @@ export default function Products() {
     'Group',
     'Subject',
     'Delivery Type',
-    'Actions',
+    'Price',  
+    'Discount Price'  
   ];
 
   return (
@@ -77,7 +83,7 @@ export default function Products() {
         <tbody>
           {productsData.map((product, index) => (
             <tr key={index} onClick={() => handleRowClick(product.id)}>
-            <td>{product.productName}</td>
+              <td>{product.productName}</td>
               <td>{product.facultyName}</td>
               <td>{product.productID}</td>
               <td>{product.productType}</td>
@@ -85,9 +91,9 @@ export default function Products() {
               <td>{product.group}</td>
               <td>{product.subject}</td>
               <td>{product.deliveryType}</td>
-              <td>
-                <button>Edit</button>
-              </td>
+              <td>{product.price}</td>  
+              <td>{product.discountPrice}</td>  
+             
             </tr>
           ))}
         </tbody>

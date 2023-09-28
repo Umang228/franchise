@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
-import axios from 'axios';
-import Sidebar from './Sidebar';
-import '../style/prod.css';
+import React, { useState, useEffect, useRef } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import axios from "axios";
+import Sidebar from "./Sidebar";
+import "../style/prod.css";
 
 export default function EditSelectProducts() {
   const { id } = useParams();
@@ -10,36 +10,42 @@ export default function EditSelectProducts() {
 
   const [products, setProducts] = useState([]);
   const [selectedProducts, setSelectedProducts] = useState([]);
-  const [successMessage, setSuccessMessage] = useState('');
+  const [successMessage, setSuccessMessage] = useState("");
   const [updatedPrices, setUpdatedPrices] = useState({});
   const [updatedDiscountPrices, setUpdatedDiscountPrices] = useState({});
 
   useEffect(() => {
     const fetchSelectedProducts = async () => {
       try {
-        const response = await axios.get(`http://localhost:8081/admin/product/${id}`);
+        const response = await axios.get(`
+          http://localhost:8081/admin/product/${id}`);
         if (response.status === 200) {
           const selectedProductsData = response.data;
 
-          const selectedProductsDetails = Object.keys(selectedProductsData).map(productId => {
-            const { price, discountPrice } = selectedProductsData[productId];
-            const product = products.find(p => p.id === parseInt(productId, 10));
-            if (product) {
-              return {
-                ...product,
-                price,
-                discountPrice
-              };
+          const selectedProductsDetails = Object.keys(selectedProductsData).map(
+            (productId) => {
+              const { price, discountPrice } = selectedProductsData[productId];
+              const product = products.find(
+                (p) => p.id === parseInt(productId, 10)
+              );
+              if (product) {
+                return {
+                  ...product,
+                  price,
+                  discountPrice,
+                };
+              }
+              return null;
             }
-            return null;
-          });
+          );
 
-          const filteredSelectedProductsDetails = selectedProductsDetails.filter(product => product !== null);
+          const filteredSelectedProductsDetails =
+            selectedProductsDetails.filter((product) => product !== null);
 
           setSelectedProducts(filteredSelectedProductsDetails);
         }
       } catch (error) {
-        console.error('Error fetching selected products:', error);
+        console.error("Error fetching selected products:", error);
       }
     };
 
@@ -49,31 +55,44 @@ export default function EditSelectProducts() {
   useEffect(() => {
     const fetchAllProducts = async () => {
       try {
-        const response = await axios.get('http://localhost:8081/admin/products');
+        const response = await axios.get(
+          "http://localhost:8081/admin/products"
+        );
         if (response.status === 200) {
           setProducts(response.data);
         }
       } catch (error) {
-        console.error('Error fetching all products:', error);
+        console.error("Error fetching all products:", error);
       }
     };
 
     fetchAllProducts();
   }, []);
 
+  const checkboxesRef = useRef({});
   const handleCheckboxChange = (productId) => {
-    debugger;
-    const updatedSelectedProducts = selectedProducts.includes(productId)
-      ? selectedProducts.filter((id) => id !== productId)
-      : [...selectedProducts, productId];
-    setSelectedProducts(updatedSelectedProducts);
+    // Check if the product is already selected
+    const isProductSelected = selectedProducts.some((p) => p.id === productId);
+
+    if (isProductSelected) {
+      // If it's selected, remove it from the list
+      setSelectedProducts((prevSelectedProducts) =>
+        prevSelectedProducts.filter((p) => p.id !== productId)
+      );
+    } else {
+      // If it's not selected, add it to the list
+      const productToAdd = products.find((p) => p.id === productId);
+      if (productToAdd) {
+        setSelectedProducts((prevSelectedProducts) => [
+          ...prevSelectedProducts,
+          productToAdd,
+        ]);
+      }
+    }
   };
-  
-  
-  
 
   const handlePriceChange = (productId, value) => {
-    const updatedProducts = selectedProducts.map(product => ({
+    const updatedProducts = selectedProducts.map((product) => ({
       ...product,
       price: product.id === productId ? parseFloat(value) : product.price,
     }));
@@ -81,35 +100,35 @@ export default function EditSelectProducts() {
   };
 
   const handleDiscountPriceChange = (productId, value) => {
-    const updatedProducts = selectedProducts.map(product => ({
+    const updatedProducts = selectedProducts.map((product) => ({
       ...product,
-      discountPrice: product.id === productId ? parseFloat(value) : product.discountPrice,
+      discountPrice:
+        product.id === productId ? parseFloat(value) : product.discountPrice,
     }));
     setSelectedProducts(updatedProducts);
   };
 
   const handleSubmit = async () => {
     try {
-      const selectedProductIds = selectedProducts.map(product => product.id);
-      const updatedProducts = selectedProducts.map(product => ({
+      const selectedProductIds = selectedProducts.map((product) => product.id);
+      const updatedProducts = selectedProducts.map((product) => ({
         id: product.id,
         price: updatedPrices[product.id] || product.price,
-        discountPrice: updatedDiscountPrices[product.id] || product.discountPrice
+        discountPrice:
+          updatedDiscountPrices[product.id] || product.discountPrice,
       }));
-  
-      await axios.post('http://localhost:8081/admin/update_selected_products', {
+
+      await axios.post("http://localhost:8081/admin/update_selected_products", {
         id,
         selectedProductIds,
         updatedProducts,
       });
-      setSuccessMessage('Selection updated successfully');
-      navigate('/admin/franchise');
+      setSuccessMessage("Selection updated successfully");
+      navigate("/admin/franchise");
     } catch (error) {
-      console.error('Error updating selected products:', error);
+      console.error("Error updating selected products:", error);
     }
   };
-  
-  
 
   return (
     <div className="prod">
@@ -144,6 +163,7 @@ export default function EditSelectProducts() {
                   <input
                     type="number"
                     value={selectedProducts.find(p => p.id === product.id)?.price || 0}
+
                     onChange={(e) =>
                       handlePriceChange(product.id, e.target.value)
                     }
@@ -153,16 +173,19 @@ export default function EditSelectProducts() {
                   <input
                     type="number"
                     value={selectedProducts.find(p => p.id === product.id)?.discountPrice || 0}
+
                     onChange={(e) =>
                       handleDiscountPriceChange(product.id, e.target.value)
                     }
                   />
                 </td>
+
                 <td className="action">
                   <input
                     type="checkbox"
+                    ref={(el) => (checkboxesRef.current[product.id] = el)}
                     onChange={() => handleCheckboxChange(product.id)}
-                    checked={selectedProducts.some(p => p.id === product.id)}
+                    checked={selectedProducts.some((p) => p.id === product.id)}
                   />
                 </td>
               </tr>
@@ -175,7 +198,5 @@ export default function EditSelectProducts() {
         <button onClick={handleSubmit}>Update</button>
       </div>
     </div>
- 
-
   );
 }

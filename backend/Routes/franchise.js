@@ -3,6 +3,25 @@ const router = express.Router();
 const { db } = require('../db');
 const multer = require("multer"); // for image handling
 const fs = require("fs"); // for image deleting and editing
+const jwt = require('jsonwebtoken');
+
+
+const getEmailFromToken = (token) => {
+  try {
+    const decodedToken = jwt.verify(token, 'lecturevecture'); 
+    return decodedToken.email;
+  } catch (error) {
+    console.error('Error decoding token:', error);
+    return null;
+  }
+};
+
+const getTokenFromCookie = (req) => {  
+  const token = req.cookies.token;
+  return token;
+};
+
+
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     cb(null, "images/student");
@@ -18,14 +37,48 @@ const upload = multer({ storage });
 
 // Route to get selected product IDs
 router.get('/products', (req, res) => {
-  db.query('SELECT product_id FROM selected_product', (error, results) => {
+  const token = getTokenFromCookie(req);
+ 
+
+  if (!token) {
+    return res.status(401).json({ message: 'Token not provided' });
+  }
+
+  const email = getEmailFromToken(token);
+
+ 
+  if (!email) {
+    return res.status(401).json({ message: 'Invalid token' });
+  }
+
+  db.query('SELECT id FROM franchises WHERE email = ?', [email], (error, results) => {
     if (error) {
-      console.error('Error fetching selected product IDs:', error);
-      res.status(500).send('Internal Server Error');
-    } else {
-      const productIds = results.map((result) => result.product_id);
-      res.status(200).json(productIds);
+      console.error('Error fetching franchise ID:', error);
+      return res.status(500).send('Internal Server Error');
     }
+
+    if (results.length === 0) {
+      return res.status(404).send('Franchise not found');
+    }
+
+    const franchiseId = results[0].id;
+   
+
+    const productQuery = 'SELECT product_id, price, discount_price FROM selected_product WHERE franchise_id = ?';
+
+    db.query(productQuery, [franchiseId], (error, productsResults) => {
+      if (error) {
+        console.error('Error fetching selected product IDs:', error);
+        res.status(500).send('Internal Server Error');
+      } else {
+        const products = productsResults.map((result) => ({
+          product_id: result.product_id,
+          price: result.price,
+          discount_price: result.discount_price
+        }));
+        res.status(200).json(products);
+      }
+    });
   });
 });
 

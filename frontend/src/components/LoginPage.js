@@ -46,7 +46,7 @@ axios.defaults.withCredentials = true;
             const token = res.data.token;
   
             // Store token as a cookie
-            setCookie('token', token, { path: '/' });
+            setCookie('token', token, { path: '/', maxAge: 7200 });
   
             // Navigate based on user role
             if (userRole === 'admin') {
