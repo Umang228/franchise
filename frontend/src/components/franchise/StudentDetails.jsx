@@ -1,41 +1,49 @@
-import React, { useState } from 'react';
-import axios from 'axios';
+import React, { useState } from "react";
+import axios from "axios";
+
+const generateRandomKey = () => {
+  const characters =
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+  let result = "";
+  const charactersLength = characters.length;
+  for (let i = 0; i < 10; i++) {
+    result += characters.charAt(Math.floor(Math.random() * charactersLength));
+  }
+  return result;
+};
 
 export default function StudentDetails() {
   const [studentInfo, setStudentInfo] = useState({
     avatar: null,
-    name: '',
-    mobileNumber: '',
-    email: '',
-    address: '',
-    city: '',
-    state: '',
-    pinCode: '',
+    name: "",
+    mobileNumber: "",
+    email: "",
+    address: "",
+    city: "",
+    state: "",
+    pinCode: "",
+    serial_key: generateRandomKey(),
   });
   const [showConfirmationDialog, setShowConfirmationDialog] = useState(false);
   const [imagePreview, setImagePreview] = useState(null);
 
-  const handleChange = (event) => {
-    const { name, type, value, files } = event.target;
-  
-  
-     if (type === "file") {
-      const file = files[0];
-      setImagePreview(URL.createObjectURL(file));
-      setStudentInfo((prevStudentInfo) => ({
-        ...prevStudentInfo,
-        avatar: event.target.files[0],
-      }));
-    } else {
-        setStudentInfo((prevStudentInfo) => ({
-        ...prevStudentInfo,
-        [name]: value,
-      }));
-    }
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setStudentInfo((prevStudentInfo) => ({
+      ...prevStudentInfo,
+      [name]: value,
+    }));
   };
-  
 
-  
+  const handleImageUpload = (e) => {
+    const file = e.target.files[0];
+    setImagePreview(URL.createObjectURL(file));
+    setStudentInfo((prevStudentInfo) => ({
+      ...prevStudentInfo,
+      avatar: file,
+    }));
+  };
+
   // Function to open the confirmation dialog for deletion
   const handleOpenConfirmationDialog = () => {
     setShowConfirmationDialog(true);
@@ -46,53 +54,40 @@ export default function StudentDetails() {
     setShowConfirmationDialog(false);
   };
 
-  const generateRandomKey = () => {
-    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-    let result = '';
-    const charactersLength = characters.length;
-    for (let i = 0; i < 10; i++) {
-      result += characters.charAt(Math.floor(Math.random() * charactersLength));
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    console.log(studentInfo);
+    try {
+      const response = await axios.post(
+        "http://localhost:8081/franchise/add-student",
+        studentInfo
+      );
+
+    } catch (error) {
+      console.error("Error submitting student data:", error);
     }
-    return result;
   };
-
-const handleSubmit = async (e) => {
-  e.preventDefault();
-  const serial_key = generateRandomKey();
-
-  try {
-    const response = await axios.post('http://localhost:8081/franchise/add-student', {
-      ...studentInfo,
-      serial_key,
-    });
-
-    console.log('Student data sent:', response.data);
-  } catch (error) {
-    console.error('Error submitting student data:', error);
-  }
-};
-
 
   return (
     <div>
       <h2>Student Details</h2>
       <form>
-      <div>
-            <label>Upload Image:</label>
-            <input
-              type="file"
-              name="avatar"
-              onChange={handleChange}
-              accept="image/*"
-            />
-              {imagePreview && (
+        <div>
+          <label htmlFor="name">Upload Image:</label>
+          <input
+            type="file"
+            name="avatar"
+            accept="image/*"
+            onChange={handleImageUpload}
+          />
+             {imagePreview && (
             <img
               src={imagePreview}
-              alt="Product Preview"
+              alt="Avatar Preview"
               style={{ maxWidth: "100px", maxHeight: "100px", marginTop: "10px" }}
             />
-          )}
-          </div>
+            )}
+        </div>
         <div>
           <label htmlFor="name">Student Name:</label>
           <input
@@ -170,8 +165,10 @@ const handleSubmit = async (e) => {
             required
           />
         </div>
-       
-        <button type="button" onClick={() => handleOpenConfirmationDialog()}>Submit</button>
+
+        <button type="button" onClick={() => handleOpenConfirmationDialog()}>
+          Submit
+        </button>
       </form>
       {showConfirmationDialog && (
         <div className="confirmation-dialog">
@@ -181,6 +178,5 @@ const handleSubmit = async (e) => {
         </div>
       )}
     </div>
-    
   );
 }
