@@ -1,5 +1,7 @@
 import React, { useState } from "react";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
+
 
 const generateRandomKey = () => {
   const characters =
@@ -54,6 +56,7 @@ export default function StudentDetails() {
     setShowConfirmationDialog(false);
   };
 
+  const navigate = useNavigate();
   const handleSubmit = async (e) => {
     e.preventDefault();
     console.log(studentInfo);
@@ -62,6 +65,12 @@ export default function StudentDetails() {
         "http://localhost:8081/franchise/add-student",
         studentInfo
       );
+
+      navigate("/franchise/order-placed");
+
+      setTimeout(() => {
+        navigate("/franchise/orders");
+      }, 15000); // 15 seconds 
 
     } catch (error) {
       console.error("Error submitting student data:", error);

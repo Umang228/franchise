@@ -573,5 +573,75 @@ router.post("/update_selected_products", async (req, res) => {
   }
 });
 
+/* --------------------------------
+
+ Order
+
+ --------------------------------*/
+
+
+ router.get('/order-details', async (req, res) => {
+  try {
+
+    const studentQuery = `
+      SELECT franchise_id, product_id, name as student_name FROM student `;
+    const studentResults = await db.query(studentQuery);
+
+    if (studentResults.length === 0) {
+      return res.status(404).send('Student Details not found');
+    }
+    const firstStudent = studentResults[0];
+
+    if (!firstStudent) {
+      return res.status(404).send('No student details found');
+    }
+
+    const { franchise_id, product_id, student_name } = firstStudent;
+
+    // Fetch franchise name and email using franchise_id
+    const franchiseQuery = `
+      SELECT name as franchise_name, email as franchise_email
+      FROM franchises
+      WHERE id = ?
+    `;
+    const franchiseResults = await db.query(franchiseQuery, [franchise_id]);
+
+    if (franchiseResults.length === 0) {
+      return res.status(404).send('Franchise not found for the given franchise_id');
+    }
+
+    const { franchise_name, franchise_email } = franchiseResults[0];
+
+    // Fetch product name using product_id
+    const productQuery = `
+      SELECT name as product_name
+      FROM products
+      WHERE id = ?
+    `;
+    const productResults = await db.query(productQuery, [product_id]);
+
+    if (productResults.length === 0) {
+      return res.status(404).send('Product not found for the given product_id');
+    }
+
+    const { product_name } = productResults[0];
+
+    // Prepare the response with the gathered information
+    const orderDetails = {
+      franchise_name,
+      franchise_email,
+      student_name,
+      product_name,
+    };
+
+    res.status(200).json(orderDetails);
+  } catch (error) {
+    console.error('Error:', error);
+    res.status(500).send('Internal Server Error');
+  }
+});
+
+
+
 
 module.exports = router;

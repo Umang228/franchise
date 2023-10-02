@@ -36,7 +36,7 @@ import Navbar from './components/Navbar';
       <Route path="/admin/dashboard" element={<Authentication allowedRoles={['admin']}><AdminDashboard /></Authentication>} />
       <Route path="/admin/franchise" element={<AdminFranchise />} />
       <Route path="/admin/products" element={<AdminProducts />} />
-      <Route path="/admin/orders" element={<Authentication allowedRoles={['admin']}><AdminOrders /></Authentication>} />
+      <Route path="/admin/orders" element={<AdminOrders />} />
       <Route path="/admin/products/add" element={<AdminAddProducts />} />
       <Route path="/admin/products/edit/:id" element={<AdminEditProducts />} />
       <Route path="/admin/franchise/add" element={<AdminAddFranchise />} />

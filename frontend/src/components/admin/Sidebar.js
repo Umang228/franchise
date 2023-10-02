@@ -62,7 +62,7 @@ const routes = [
     ],
   },
   {
-    path: "/order",
+    path: "/admin/orders",
     name: "Order",
     icon: <BsCartCheck />,
   },

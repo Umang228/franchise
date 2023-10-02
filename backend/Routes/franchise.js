@@ -3,7 +3,8 @@ const router = express.Router();
 const { db } = require('../db');
 const multer = require("multer"); // for image handling
 const fs = require("fs"); // for image deleting and editing
-
+const verifyToken = require('../verifyToken');
+const jwt = require('jsonwebtoken');
 
 
 
@@ -20,18 +21,41 @@ const upload = multer({ storage });
 
 
 
-// Route to get selected product IDs
-router.get('/products', (req, res) => {
-  db.query('SELECT product_id FROM selected_product', (error, results) => {
+router.get('/products', verifyToken, (req, res) => {
+  const userEmail = req.email; // Access the email from the request object
+
+  // Use userEmail to fetch the franchise ID from the database
+  db.query('SELECT id FROM franchises WHERE email = ?', [userEmail], (error, results) => {
     if (error) {
-      console.error('Error fetching selected product IDs:', error);
+      console.error('Error fetching franchise ID:', error);
       res.status(500).send('Internal Server Error');
     } else {
-      const productIds = results.map((result) => result.product_id);
-      res.status(200).json(productIds);
+      if (results.length === 0) {
+        res.status(404).send('Franchise not found for the given email');
+      } else {
+       const franchiseId = results[0].id;
+        // Now you have the franchise ID, you can use it in your logic
+        db.query('SELECT * FROM selected_product WHERE franchise_id = ?', [franchiseId], (error, productResults) => {
+          if (error) {
+            console.error('Error fetching selected products:', error);
+            res.status(500).send('Internal Server Error');
+          } else {
+            // Map and format the results to include price and discount_price
+            const formattedProductResults = productResults.map(result => ({
+              product_id: result.product_id,
+              franchise_id: result.franchise_id,
+              price: result.price,
+              discount_price: result.discount_price
+              // Add other fields as needed
+            }));
+            res.status(200).json(formattedProductResults);
+          }
+        });
+      }
     }
   });
 });
+
 
 
 let productId;
@@ -71,8 +95,8 @@ router.post("/add-student", upload.single('avatar'), (req, res) => {
   const avatar = req.file;
 
   const sql = `INSERT INTO student 
-      (avatar, name, mobileNumber, email, address, city, state, pinCode, serial_key) 
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+  (avatar, name, mobileNumber, email, address, city, state, pinCode, serial_key, franchise_id, product_id, isUsed) 
+  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
 
   const values = [
     avatar,
@@ -84,6 +108,9 @@ router.post("/add-student", upload.single('avatar'), (req, res) => {
     state,
     pinCode,
     serial_key,
+    franchiseId,
+    productId,
+    false,
   ];
 
   db.query(sql, values, (err, result) => {
@@ -95,6 +122,53 @@ router.post("/add-student", upload.single('avatar'), (req, res) => {
     return res.json({ message: "Student added successfully" });
   });
 });
+
+
+router.get('/order-details', verifyToken, async (req, res) => {
+  try {
+    const userEmail = req.email; // Access the email from the request object
+
+    // Use userEmail to fetch the franchise ID from the database
+    db.query('SELECT id FROM franchises WHERE email = ?', [userEmail], (error, results) => {
+      if (error) {
+        console.error('Error fetching franchise ID:', error);
+        res.status(500).send('Internal Server Error');
+      } else {
+        if (results.length === 0) {
+          res.status(404).send('Franchise not found for the given email');
+        } else {
+          const franchiseId = results[0].id;
+          db.query(`SELECT name, email, mobileNumber, city, product_id, address 
+                    FROM student 
+                    WHERE franchise_id = ?`, [franchiseId], (error, results) => {
+            if (error) {
+              console.error('Error fetching student data:', error);
+              res.status(500).send('Internal Server Error');
+            } else {
+              // Extract the data from the results
+              const orderDetails = results.map(result => ({
+                name: result.name,
+                email: result.email,
+                mobileNumber: result.mobileNumber,
+                city: result.city,
+                product_id: result.product_id,
+                address: result.address,
+              }));
+              res.status(200).json(orderDetails);
+            }
+          });
+        }
+      }
+    });
+  } catch (error) {
+    console.error('Error:', error);
+    res.status(500).send('Internal Server Error');
+  }
+});
+
+
+
+
 
 
 
