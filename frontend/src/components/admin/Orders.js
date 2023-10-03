@@ -41,7 +41,7 @@ function Order() {
                 <td>{order.franchise_email}</td>
                 <td>{order.student_name}</td>
                 <td>{order.product_name}</td>
-                <td>{/* Add the status here */}</td>
+                <td>Completed</td>
               </tr>
             ))}
           </tbody>

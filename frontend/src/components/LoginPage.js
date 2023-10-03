@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react'; 
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { useCookies } from 'react-cookie';
@@ -17,8 +17,6 @@ const LoginPage = () => {
   const navigate = useNavigate();
 
 
-
-axios.defaults.withCredentials = true;
 
   const handleInput = (e) => {
     const inputName = e.target.name;
@@ -47,7 +45,7 @@ axios.defaults.withCredentials = true;
   
             // Store token as a cookie
             setCookie('token', token, { path: '/', maxAge: 7200 });
-            axios.defaults.headers.common['authorization'] = `Bearer ${token}`;
+            axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
 
   
             // Navigate based on user role

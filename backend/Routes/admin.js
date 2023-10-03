@@ -582,64 +582,70 @@ router.post("/update_selected_products", async (req, res) => {
 
  router.get('/order-details', async (req, res) => {
   try {
+    // Fetch student details
+    db.query('SELECT * FROM student', async (error, studentsResults, fields) => {
+      if (error) {
+        console.error('Error executing the query:', error);
+        res.status(500).json({ error: 'Internal Server Error' });
+      } else {
+        const students = studentsResults.map(row => ({
+          franchise_id: row.franchise_id,
+          product_id: row.product_id,
+          student_name: row.name,
+        }));
 
-    const studentQuery = `
-      SELECT franchise_id, product_id, name as student_name FROM student `;
-    const studentResults = await db.query(studentQuery);
+        const promises = students.map(student => {
+          const franchiseQuery = 'SELECT name, email FROM franchises WHERE id = ?';
+          const productQuery = 'SELECT productName FROM products WHERE id = ?';
 
-    if (studentResults.length === 0) {
-      return res.status(404).send('Student Details not found');
-    }
-    const firstStudent = studentResults[0];
+          const franchisePromise = new Promise((resolve, reject) => {
+            db.query(franchiseQuery, [student.franchise_id], (error, franchiseResults) => {
+              if (error) {
+                reject(error);
+              } else {
+                resolve(franchiseResults[0]);
+              }
+            });
+          });
 
-    if (!firstStudent) {
-      return res.status(404).send('No student details found');
-    }
+          const productPromise = new Promise((resolve, reject) => {
+            db.query(productQuery, [student.product_id], (error, productResults) => {
+              if (error) {
+                reject(error);
+              } else {
+                resolve(productResults[0]);
+              }
+            });
+          });
 
-    const { franchise_id, product_id, student_name } = firstStudent;
+          return Promise.all([franchisePromise, productPromise])
+            .then(([franchise, product]) => ({
+              franchise_name: franchise.name,
+              franchise_email: franchise.email,
+              product_name: product.productName,
+              student_name: student.student_name,
+            }));
+        });
 
-    // Fetch franchise name and email using franchise_id
-    const franchiseQuery = `
-      SELECT name as franchise_name, email as franchise_email
-      FROM franchises
-      WHERE id = ?
-    `;
-    const franchiseResults = await db.query(franchiseQuery, [franchise_id]);
-
-    if (franchiseResults.length === 0) {
-      return res.status(404).send('Franchise not found for the given franchise_id');
-    }
-
-    const { franchise_name, franchise_email } = franchiseResults[0];
-
-    // Fetch product name using product_id
-    const productQuery = `
-      SELECT name as product_name
-      FROM products
-      WHERE id = ?
-    `;
-    const productResults = await db.query(productQuery, [product_id]);
-
-    if (productResults.length === 0) {
-      return res.status(404).send('Product not found for the given product_id');
-    }
-
-    const { product_name } = productResults[0];
-
-    // Prepare the response with the gathered information
-    const orderDetails = {
-      franchise_name,
-      franchise_email,
-      student_name,
-      product_name,
-    };
-
-    res.status(200).json(orderDetails);
+        Promise.all(promises)
+          .then(data => {
+            res.status(200).json(data);
+          })
+          .catch(error => {
+            console.error('Error:', error);
+            res.status(500).send('Internal Server Error');
+          });
+      }
+    });
   } catch (error) {
     console.error('Error:', error);
     res.status(500).send('Internal Server Error');
   }
 });
+
+
+
+
 
 
 
