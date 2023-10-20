@@ -4,7 +4,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import React from 'react';
 import LoginPage from './components/LoginPage';
 import RegisterPage from './components/RegisterPage';
-import AdminDashboard from './components/admin/AdminDashboard';
+import Dashboard from './components/admin/Dashboard';
 import AdminFranchise from './components/admin/Franchise';
 import AdminProducts from './components/admin/Products';
 import AdminOrders from './components/admin/Orders';
@@ -14,7 +14,7 @@ import AdminAddFranchise from './components/admin/AddFranchise';
 import AdminSelectProducts from './components/admin/SelectProducts';
 import AdminEditSelectProducts from './components/admin/EditSelectProducts';
 import AdminEditFranchise from './components/admin/EditFranchise';
-import FranchiseDashboard from './components/franchise/FranchiseDashboard';
+import Fdashboard from './components/franchise/Fdashboard';
 import FranchiseProducts from './components/franchise/Products';
 import FranchiseOrder from './components/franchise/Order';
 import FranchiseStudent from './components/franchise/Student';
@@ -27,13 +27,12 @@ import Navbar from './components/Navbar';
  function App() {
   return (
     <BrowserRouter>
-    <Navbar/>
       <Routes>
       <Route path="/" element={<Authentication allowedRoles={[]}><LoginPage /></Authentication>} />
       <Route path="/register" element={<Authentication allowedRoles={[]}><RegisterPage /></Authentication>} />
 
       {/* admin */}
-      <Route path="/admin/dashboard" element={<Authentication allowedRoles={['admin']}><AdminDashboard /></Authentication>} />
+      <Route path="/admin/dashboard" element={<Authentication allowedRoles={['admin']}><  Dashboard /></Authentication>} />
       <Route path="/admin/franchise" element={<AdminFranchise />} />
       <Route path="/admin/products" element={<AdminProducts />} />
       <Route path="/admin/orders" element={<AdminOrders />} />
@@ -47,7 +46,7 @@ import Navbar from './components/Navbar';
 
 
       {/* franchise */}
-      <Route path="/franchise/dashboard" element={<Authentication allowedRoles={['franchise']}><FranchiseDashboard /></Authentication>} />
+      <Route path="/franchise/dashboard" element={<Authentication allowedRoles={['franchise']}><Fdashboard /></Authentication>} />
         <Route path="/franchise/products" element={<FranchiseProducts />} />
         <Route path="/franchise/orders" element={<FranchiseOrder />} />
         <Route path="/franchise/students" element={<FranchiseStudent />} />

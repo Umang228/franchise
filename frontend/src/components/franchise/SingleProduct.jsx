@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import '../style/prod.css';
+import './SingleProd.css';
 import axios from 'axios';
+import SideBar from './Sidebar';
 
 export default function Products() {
   const { id } = useParams();
@@ -33,26 +34,25 @@ export default function Products() {
   };
 
   return (
-    <div className="prod">
-      <div className="child-prod">
+    <div>
+      <SideBar/>
+      <div className="app">
         {product ? (
-          <div>
-            <br />
-            <br />
-            <br />
-            <br />
-            <br />
-            <br />
-            <br />
-            <br />
-            <img src={product.image} alt={product.productName} className="product-image" />
-            <div className="product-details">
-              <h1 className="product-name">{product.productName}</h1>
-              <p className="product-price">Price: ${product.price}</p>
+          <div className="details">
+            <div className="big-img">
+            <img src={product.image} alt={product.productName}/>
+            </div>
+            
+            <div className="box">
+            <div className="row">
+            <h1 className="product-name">{product.productName}</h1>
+              <p className="product-price">Price: Rs {product.price}</p>
+            </div>
+
               <p className="product-short-desc">{product.shortDescription}</p>
               <p className="product-desc">{product.description}</p>
             </div>
-            <button onClick={handleBuyNow} className="buy-now-button">
+            <button onClick={handleBuyNow} className="btn-4">
               Buy Now
             </button>
           </div>

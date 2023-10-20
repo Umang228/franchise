@@ -10,8 +10,8 @@
     align-items: center;
 }
 .circle{
-    width: 750px;
-    height: 700px;
+    width: 550px;
+    height: 500px;
     border-radius: 50%;
     top: -200px;
     left: -200px;
@@ -21,8 +21,8 @@
     text-align: center;
 }
 .circle-c{
-    width: 750px;
-    height: 700px;
+    width: 650px;
+    height: 600px;
     border-radius: 50%;
     top: -200px;
     left: -200px;
@@ -60,6 +60,13 @@ p{
     position: relative;
     top: 60px;
 }
+.left-side{
+    overflow: hidden;
+}
+.left-side p{
+    margin-top: -70px;
+    margin-left: 170px;
+}
 .left-side button{
     position: relative;
     top: 50px;
@@ -71,6 +78,7 @@ p{
     padding: 11px;
     width: 140px;
     transition: all 0.5s;
+    z-index: 100;
 }
 .left-side button:hover{
     box-shadow: 1px 1px 10px #fff;
@@ -115,6 +123,15 @@ h2{
 }
 
 .right-form button{
-    background-color: #7464BC;
+    background-color: #7464BC !important;
     border-radius: 23px;
+}
+
+.login-btn{
+    border: none;
+    color: #fff;
+    padding: 13px;
+}
+.c-btn{
+    color: #000 !important;
 }

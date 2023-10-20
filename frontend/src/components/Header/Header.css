@@ -1,114 +1,119 @@
-
 .main-container {
-    display: flex;
+  display: flex;
+}
+main {
+  padding: 12px;
+}
 
-  }
-  main {
-    padding: 10px;
-  }
+.title {
+  font-size: 3rem;
+  display: grid;
+  place-items: center;
+}
+
+/* Sidebar */
+.sidebar {
+  z-index: 100;
+  background: #ffffff;
+  color: rgb(26, 26, 26);
+  height: 100vh;
+  overflow-y: scroll;
+  position: fixed;
+  border-top-right-radius: 10px;
+  border-bottom-right-radius:10px;
+}
+.icon{
+  padding-top: 15px;
+}
+.top_section {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 15px 15px;
+}
+.top_section .logo {
+  top: 0 !important;
+  font-size: 18px;
+  line-height: 0;
+  color: #000000 !important;
+}
+.bars {
+  width: 30px;
+}
+.hide {
+  display: none;
+}
+
+.search {
+  display: flex;
+  align-items: center;
+  margin: 10px 0;
+  height: 30px;
+  padding: 12px;
+  color: #000000;
+}
+.search input {
+  border: none;
+  margin-left: 10px;
+  border-radius: 5px;
+  background: rgb(255, 255, 255); 
+  color: rgb(26, 26, 26);
+}
+
+.routes {
+  margin-top: 15px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  color: rgb(26, 26, 26);
+
+}
+.link {
+  display: flex;
+  color: rgb(0, 0, 0);
+  gap: 10px;
+  padding: 5px 12px;
+  border-right: 4px solid transparent;
+  transition: 0.2s cubic-bezier(0.6, -0.28, 0.735, 0.045);
+  text-decoration: none;
   
-  .title {
-    font-size: 3rem;
-    display: grid;
-    place-items: center;
-  }
-  
-  /* Sidebar */
-  .sidebar {
-    z-index: 100;
-    background: rgb(0, 4, 35);
-    color: white;
-    height: 100vh;
-    overflow-y: auto;
-    position: fixed;
-    top: 90px;
-  }
-  .icon{
-    padding-top: 13px;
-  }
-  .top_section {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 15px 15px;
-  }
-  .logo {
-    top: 0 !important;
-    font-size: 18px;
-    line-height: 0;
-  }
-  .bars {
-    width: 30px;
-  }
-  .hide {
-    display: none;
-  }
-  
-  .search {
-    display: flex;
-    align-items: center;
-    margin: 10px 0;
-    height: 30px;
-    padding: 13px;
-    color: #fff;
-  }
-  .search input {
-    border: none;
-    margin-left: 10px;
-    border-radius: 5px;
-    background: rgb(238, 238, 238);
-  
-    color: black;
-  }
-  
-  .routes {
-    margin-top: 15px;
-    display: flex;
-    flex-direction: column;
-    gap: 5px;
-  }
-  .link {
-    display: flex;
-    color: white;
-    gap: 10px;
-    padding: 5px 10px;
-    border-right: 4px solid transparent;
-    transition: 0.2s cubic-bezier(0.6, -0.28, 0.735, 0.045);
-    text-decoration: none;
-  }
-  .link:hover {
-    border-right: 4px solid white;
-    background: rgb(45, 51, 89);
-    transition: 0.2s cubic-bezier(0.6, -0.28, 0.735, 0.045);
-  }
-  .active {
-    border-right: 4px solid white;
-    background: rgb(45, 51, 89);
-  }
-  .link_text {
-    white-space: nowrap;
-    font-size: 15px;
-    padding: 13px;
-  }
-  
-  .menu {
-    display: flex;
-    color: white;
-  
-    padding: 5px 10px;
-    border-right: 4px solid transparent;
-    transition: 0.2s cubic-bezier(0.6, -0.28, 0.735, 0.045);
-    justify-content: space-between;
-  }
-  .menu_item {
-    display: flex;
-    gap: 10px;
-  }
-  .menu_container {
-    display: flex;
-    flex-direction: column;
-  }
-  .menu_container .link {
-    padding-left: 20px;
-    border-bottom: #fff 0.5px solid;
-  }
+
+}
+.link:hover {
+  background: rgb(17, 25, 77);
+  transition: 0.2s cubic-bezier(0.6, -0.28, 0.735, 0.045);
+  color: #fff;
+}
+.active {
+  background: rgb(17, 25, 77);
+  color: #fff !important;
+  /* border-radius:5px; */
+  padding: 12px;
+}
+.link_text {
+  white-space: nowrap;
+  font-size: 15px;
+  padding: 13px;
+
+}
+
+.menu {
+  display: flex;
+  color: rgb(26, 26, 26);
+  padding: 10px 12px;
+  border-right: 4px solid transparent;
+  transition: 0.2s cubic-bezier(0.6, -0.28, 0.735, 0.045);
+  justify-content: space-between;
+}
+.menu_item {
+  display: flex;
+  gap: 12px;
+}
+.menu_container {
+  display: flex;
+  flex-direction: column;
+}
+.menu_container .link {
+  padding-left: 20px;
+  border-bottom: rgb(17, 25, 77)0.5px solid;
+}

@@ -36,12 +36,12 @@ function Order() {
           </thead>
           <tbody>
             {orderDetails.map((order, index) => (
-              <tr key={index}>
+              <tr key={index} className='row'>
                 <td>{order.franchise_name}</td>
                 <td>{order.franchise_email}</td>
                 <td>{order.student_name}</td>
                 <td>{order.product_name}</td>
-                <td>Completed</td>
+                <td className='order-com'>Completed</td>
               </tr>
             ))}
           </tbody>

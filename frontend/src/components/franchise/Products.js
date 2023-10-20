@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from "react-router-dom";
 import Sidebar from './Sidebar';
 import axios from 'axios';
-
+import '../style/prod.css'
 
 
 export default function Products() {
@@ -68,10 +68,11 @@ useEffect(() => {
     'Discount Price'  
   ];
   return (
-    <div>
+    <div className='prod'>
       <Sidebar />
-      <h1>Selected Products</h1>
-      <table>
+        <div className="child-prod">
+        <h1 className='heading1'>Selected Products</h1>
+      <table className='utable'>
         <thead>
           <tr>
             {tableHeaders.map((header) => (
@@ -81,7 +82,7 @@ useEffect(() => {
         </thead>
         <tbody>
           {productsData.map((product, index) => (
-            <tr key={index} onClick={() => handleRowClick(product.id)}>
+            <tr key={index} onClick={() => handleRowClick(product.id)} className='row'>
               <td>{product.productName}</td>
               <td>{product.facultyName}</td>
               <td>{product.productID}</td>
@@ -98,6 +99,8 @@ useEffect(() => {
           ))}
         </tbody>
       </table>
-    </div>
+ 
+        </div>
+     </div>
   );
 }

@@ -92,7 +92,7 @@ export default function Franchise() {
       <div className="child-prod">
       <h1 className='heading1'>All Franchise</h1>
       <form>
-        <input type="text" placeholder="Search here" onChange={(e)=>setSearch(e.target.value)}/>
+        <input type="text" placeholder="Search here" onChange={(e)=>setSearch(e.target.value)} className='searchable'/>
       </form>
       <table className='utable'>
         <thead>
@@ -114,11 +114,11 @@ export default function Franchise() {
             <tr key={franchise.id} className='row'>
               <td>{franchise.id}</td>
               <td>{franchise.name}</td>
-              <td><AiTwotoneMail className='mail'/> {franchise.email}</td>
+            <td>{franchise.email}</td>
               <td>{franchise.phone_number}</td>
               <td>{franchise.gst_number}</td>
               <td>{franchise.franchise_type}</td>
-              <td><MdPayment className='gold'/> {franchise.mode_of_payment}</td>
+              <td>{franchise.mode_of_payment}</td>
               <td className='action'>
                 <button onClick={() => navigate(`/admin/franchise/edit/${franchise.id}`)} className='edit'><AiFillEdit/> Edit</button>
                 <button onClick={() => handleOpenConfirmationDialog(franchise.id)} className='delete'><AiFillDelete/> Delete</button>

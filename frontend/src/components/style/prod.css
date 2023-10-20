@@ -5,17 +5,18 @@
 }
 
 .prod{
-    background-color: rgb(225, 226, 254);
+    background-color: #eee;
     width:100%;
     height: 100vh;
-    overflow-y: hidden;
+    overflow-y: scroll;
 }
 
 .prod .heading1{
     margin: 70px;
-    position: relative;
-    top: 20px;
-    text-align: center;
+    position: absolute;
+    top: -20px;
+    left: 20px;
+    
 }
 
 .utable{
@@ -25,6 +26,8 @@
     width: 90%;
     padding: 23px;
     box-shadow: 1.5px 1.5px 13px lightgray;
+    position: relative;
+    top: 100px;
 }
 
 
@@ -59,6 +62,98 @@
 .gold,.course{
     color:gold;
 }
+.searchable{
+    position: relative;
+    top: 30px;
+    left: 480px;
+    border: none;
+    outline: none;
+    border-radius: 10px;
+    padding: 10px;
+}
+.child-prod nav ul{
+    display: flex;
+    position: relative;
+    flex-direction: row;
+    flex-wrap: wrap;
+    top: 100px;
+    margin-top:23px ;
+    padding: 13px;
 
+}
+.child-prod nav ul li a{
+    text-decoration: none;
+    color: #000000;
+    padding: 13px;
+    transition: 0.5S all;
+}
+.child-prod nav ul li a .page-item .active{
+    color: #fff;
+}
 
-  
+.child-prod button{
+    margin: 23px;
+    padding: 11px;
+    background-color: transparent;
+    border: none;
+    outline: none;
+    color: #fff;
+    font-size: 15px;
+    cursor:pointer
+}
+.nv ul{
+        margin: 23px;
+        padding: 11px;
+        background-color: transparent;
+        border: none;
+        outline: none;
+        color: #fff;
+        font-size: 15px;
+        cursor:pointer
+}
+
+.confirmation-dialog{
+    position: absolute;
+    z-index: 100;
+    color: #000 !important;
+    width: 500px;
+    border-radius: 13px;
+    background: #fff;
+    top: 100px;
+    box-shadow: 2px 2px 10px lightgray;
+    padding: 23px;
+}
+.confirmation-dialog p{
+    color: #000;
+    position: absolute;
+    width: 500px;
+    top: 20px;
+    left: 2px;
+}
+
+.confirmation-dialog button{
+    color: #000;
+    position: relative;
+    top: 10px;
+}
+
+.btn-1{
+    border: none;
+    border: none;
+    outline: none;
+    background-color: #fff;
+}
+
+.order-com{
+    color: #fff;
+    background-color: rgb(123, 205, 0);
+    border-radius: 10px;
+}
+
+.subm{
+    z-index: 100;
+    color: #000000 !important;
+    background-color: blue;
+    position: relative;
+    top: 160px !important;
+}

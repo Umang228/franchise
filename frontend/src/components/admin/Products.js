@@ -97,7 +97,7 @@ export default function Products() {
     <div className="child-prod">
     <h1 className='heading1'>Products</h1>
     <form>
-        <input type="text" placeholder="Search here" onChange={(e)=>setSearch(e.target.value)}/>
+        <input type="text" placeholder="Search here" onChange={(e)=>setSearch(e.target.value)} className='searchable'/>
       </form>
       <table class='utable'>
         <thead>
@@ -130,7 +130,7 @@ export default function Products() {
           ))}
         </tbody>
       </table>
-      <nav>
+      <nav className='nv'>
         <ul>
           <li>
             <a href="#0" onClick={prePage}>Prev</a>

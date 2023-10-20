@@ -1,22 +1,36 @@
 
 /* add product */
-.add-product-form h2{
-margin: 120px 120px 60px 120px;
-font-size: 27px;
+.add-product-form{
+    background-color: #fff;
+    width: 800px;
+    margin: 83px auto;
+    box-shadow: 3px 3px 10px gray;
+    border-radius: 13px;
 }
-
+.add-product-form h2{
+margin: 30px 120px 60px 120px;
+font-size: 27px;
+text-align: center;
+position: relative;
+top: 23px;
+}
+.editor{
+    padding: 12px;
+    margin: 13px;
+    border: 0.3px solid lightgray;
+    border-radius: 12px;
+    width: 630px;
+}
 .add-product-form form{
     display: flex;
-    /* flex-direction: column; */
+    flex-direction: column;
     margin-left: 80px;
-    align-items: center;
-    flex-wrap: wrap;
+    align-items: flex-start;
 }
 .add-product-form form>div{
     flex: 50%;
     display: flex;
     flex-direction: column;
-    /* align-items: flex-start; */
     justify-content: space-around;
 }
 
@@ -25,12 +39,14 @@ font-size: 27px;
     margin: 13px;
     border: 0.3px solid lightgray;
     border-radius: 12px;
+    width: 630px;
 }
 .add-product-form form>div>textarea{
     padding: 12px;
     margin: 13px;
     border: 0.3px solid lightgray;
     border-radius: 12px;
+    width: 630px;
 }
 
 .add-product-form form>div>input[type=radio]{
@@ -52,8 +68,22 @@ font-size: 27px;
     background-color: rgb(37, 37, 255);
     border-radius: 13px;
     padding: 13px;
+    margin-top: 55px;
 }
 
+.flabel{
+    margin: 13.8px;
+}
+.fprice{
+    font-weight: bolder;
+}
+.product-imgs{
+    padding: 12px;
+    margin: 13px;
+    border: 0.3px solid lightgray;
+    border-radius: 12px;
+    display: inline-block !important;
+}
 /* edit products */
 
 .edit-product-form h2{
@@ -160,6 +190,7 @@ font-size: 27px;
     margin: 13px;
     border: 0.3px solid lightgray;
     border-radius: 12px;
+    width: 630px;
 }
 
 .selectProducts{
@@ -225,4 +256,36 @@ font-size: 27px;
     border: 0.3px solid lightgray;
     border-radius: 12px;
     width: 97% !important;
+}
+
+.prod-header{
+    display: flex;
+    justify-content: center;
+    margin-bottom: 75px;
+}
+
+.prod-header nav ul{
+    display: flex;
+    align-items: center;
+}
+
+.prod-header nav ul li a{
+    color: black;
+    margin: 14px;
+    transition: all 0.5s;
+    padding: 12px;
+}
+.prod-header nav ul li.active{
+    background: transparent !important;
+    border-bottom:2px solid rgb(17, 25, 77);
+    border-radius: 3px;
+}
+.prod-header nav ul li.active a{
+    color: rgb(17, 25, 77);
+}
+
+.btn-10{
+    color: #fff;
+    background-color: #202020;
+    font-size: 11px;
 }

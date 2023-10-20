@@ -23,22 +23,15 @@ function Order() {
 
   return (
     
-    <div>
-       <br />
-            <br />
-            <br />
-            <br />
-            <br />
-            <br />
-            <br />
-            <br />
-            <br />
-            <br />
-            <br />
-           
+    <div>           
       <Sidebar />
 
-      <table>
+    <div className="prod">
+      <div className="child-prod">
+        <h1 className='heading1'>
+      Orders
+        </h1>
+        <table className='utable'>
         <thead>
           <tr>
             <th>Name</th>
@@ -51,7 +44,7 @@ function Order() {
         </thead>
         <tbody>
           {orderDetails.map((order, index) => (
-            <tr key={index}>
+            <tr key={index} className='row'>
               <td>{order.name}</td>
               <td>{order.email}</td>
               <td>{order.mobileNumber}</td>
@@ -62,6 +55,9 @@ function Order() {
           ))}
         </tbody>
       </table>
+      </div>
+    </div>
+
     </div>
   );
 }
