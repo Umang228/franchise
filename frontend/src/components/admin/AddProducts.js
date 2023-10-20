@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState,useRef,useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import "../style/addprod.css";
 import Sidebar from "./Sidebar";
@@ -37,6 +37,24 @@ export default function AddProducts() {
     optionName: "",
     optionValues: [],
   });
+  const [showLivePreview, setShowLivePreview] = useState(false); 
+  const livePreviewRef = useRef(null);
+
+  useEffect(() => {
+    // Add an event listener to handle clicks outside the Live Preview
+    function handleClickOutside(event) {
+      if (livePreviewRef.current && !livePreviewRef.current.contains(event.target)) {
+        setShowLivePreview(false);
+      }
+    }
+
+    window.addEventListener("mousedown", handleClickOutside);
+    
+    return () => {
+      window.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
   // Handle changes in the HTML editor
   const handleHtmlChange = (content) => {
     setHtmlContent(content);
@@ -54,6 +72,59 @@ const addVariant = () => {
     }));
   }
 };
+
+const LivePreview = ({ productInfo, htmlContent, imagePreview }) => {
+    // Add inline styles to make it look attractive
+    const previewStyle = {
+      position: "fixed",
+      top: "10%",
+      left: "10%",
+      width: "80%",
+      height: "80%",
+      background: "white",
+      border: "1px solid #ccc",
+      padding: "20px",
+      zIndex: "999",
+      overflow: "auto",
+    };
+  
+    return (
+      <div style={previewStyle}>
+        <h2>{productInfo.productName}</h2>
+        <div>
+          <label>Product Title:</label>
+          <p>{productInfo.productName}</p>
+        </div>
+        <div>
+          <label>Product Description:</label>
+          <div dangerouslySetInnerHTML={{ __html: htmlContent }} />
+        </div>
+        <div>
+          <label>Images:</label>
+          <div className="product-imgs">
+            {imagePreview.map((preview, index) => (
+              <img
+                key={index}
+                src={preview}
+                alt={`Image Preview ${index}`}
+                style={{ width: "100px", height: "auto", margin: "5px" }}
+              />
+            ))}
+          </div>
+        </div>
+  
+        {/* Render other form fields here */}
+        {/* Example:
+        <div>
+          <label>MRP:</label>
+          <p>{productInfo.price}</p>
+        </div>
+        */}
+        
+        <button onClick={() => setShowLivePreview(false)}>Close</button>
+      </div>
+    );
+  };
 
 const addOptionValue = (variantIndex, optionValue) => {
   if (productInfo.variants[variantIndex].optionValues.length < 4) {
@@ -177,8 +248,12 @@ const addOptionValue = (variantIndex, optionValue) => {
     "code-block",
   ];
 
-
-
+  const handleShowLivePreview = () => {
+    setShowLivePreview(true)
+  };
+  const closeLivePreview = () => {
+    setShowLivePreview(false);
+  };
   return (
     <div>
       <Sidebar />
@@ -497,7 +572,19 @@ const addOptionValue = (variantIndex, optionValue) => {
               </div>
             ))}
           </div>
-
+          <div>
+        <button type="button" onClick={handleShowLivePreview} id="preview-button" className="btn-10">
+          Live Preview
+        </button>
+        {showLivePreview && (
+          <div ref={livePreviewRef} className="live-preview-popup">
+            <LivePreview productInfo={productInfo} htmlContent={htmlContent} imagePreview={imagePreview} />
+            <button onClick={closeLivePreview} className="btn-10">
+              Close
+            </button>
+          </div>
+        )}
+      </div>
           {/* <div>
             <label>Faculty Name:</label>
             <input
