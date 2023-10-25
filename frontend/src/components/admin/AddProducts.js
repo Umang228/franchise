@@ -7,26 +7,34 @@ import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
 export default function AddProducts() {
   const [productInfo, setProductInfo] = useState({
+    productUrl:"", 
     productName: "",
     facultyName: "",
     productID: "",
     productType: "Combo",
     course: "",
-    group_name: "",
-    subject: "",
     deliveryType: "Regular",
     isFranchise: false,
     isWhatsapp: false,
     priceUpdate: false,
     price: 0,
+    finalPrice: 0,
     discountPrice: 0,
     description: "",
     shortDescription: "",
     featured: false,
     slug: "",
-    category_id: "",
     productImage: null,
     variants: [],
+    mrpText:"",
+    discountText:"",
+    rank:0,
+    topLeft:"",
+    topRight:"",
+    bottomLeft:"",
+    bottomRight:"",
+    highlights:"",
+    productDetails:"",
   });
 
   const [successMessage, setSuccessMessage] = useState("");
@@ -39,6 +47,30 @@ export default function AddProducts() {
   });
   const [showLivePreview, setShowLivePreview] = useState(false); 
   const livePreviewRef = useRef(null);
+
+  useEffect(() => {
+    // Function to calculate and set the final price
+    const calculateFinalPrice = () => {
+      const mrp = parseFloat(productInfo.price) || 0;
+      const discount = parseFloat(productInfo.discountPrice) || 0;
+      const finalPrice = mrp - discount;
+      setProductInfo((prevProductInfo) => ({
+        ...prevProductInfo,
+        finalPrice,
+      }));
+    };
+
+    // Calculate and set the final price immediately
+    calculateFinalPrice();
+
+    // Update the final price every second
+    const interval = setInterval(calculateFinalPrice, 1000);
+
+    // Clean up the interval when the component unmounts
+    return () => {
+      clearInterval(interval);
+    };
+  }, [productInfo.price, productInfo.discountPrice]);
 
   useEffect(() => {
     // Add an event listener to handle clicks outside the Live Preview
@@ -58,7 +90,12 @@ export default function AddProducts() {
   // Handle changes in the HTML editor
   const handleHtmlChange = (content) => {
     setHtmlContent(content);
+    setProductInfo((prevProductInfo) => ({
+      ...prevProductInfo,
+      description: content, 
+    }));
   };
+  
   const navigate = useNavigate();
 // handle variants
 const addVariant = () => {
@@ -112,14 +149,6 @@ const LivePreview = ({ productInfo, htmlContent, imagePreview }) => {
             ))}
           </div>
         </div>
-  
-        {/* Render other form fields here */}
-        {/* Example:
-        <div>
-          <label>MRP:</label>
-          <p>{productInfo.price}</p>
-        </div>
-        */}
         
         <button onClick={() => setShowLivePreview(false)}>Close</button>
       </div>
@@ -142,54 +171,60 @@ const addOptionValue = (variantIndex, optionValue) => {
 
 
 
-  const handleChange = (event) => {
-    const { name, type, value, checked, files } = event.target;
+const handleChange = (event) => {
+  const { name, type, value, checked, files } = event.target;
 
-    if (type === "checkbox") {
-      setProductInfo((prevProductInfo) => ({
-        ...prevProductInfo,
-        [name]: checked,
-      }));
-    } else if (type === "file") {
-      const file = files[0];
-      setImagePreview(URL.createObjectURL(file));
-      setProductInfo((prevProductInfo) => ({
-        ...prevProductInfo,
-        productImage: event.target.files[0],
-      }));
-    } else {
-      setProductInfo((prevProductInfo) => ({
-        ...prevProductInfo,
-        [name]: value,
-      }));
+  if (type === "checkbox") {
+    setProductInfo((prevProductInfo) => ({
+      ...prevProductInfo,
+      [name]: checked,
+    }));
+  } else if (type === "file") {
+    const file = files[0];
+    setImagePreview(URL.createObjectURL(file));
+    setProductInfo((prevProductInfo) => ({
+      ...prevProductInfo,
+      productImage: event.target.files[0],
+    }));
+  } else {
+    setProductInfo((prevProductInfo) => ({
+      ...prevProductInfo,
+      [name]: value,
+    }));
+  }
+};
+
+const handleSubmit = async (event) => {
+  event.preventDefault();
+
+  // Convert boolean values to 0 and 1
+  const productInfoWithBooleanConversion = { ...productInfo };
+  for (const key in productInfoWithBooleanConversion) {
+    if (typeof productInfoWithBooleanConversion[key] === "boolean") {
+      productInfoWithBooleanConversion[key] = productInfoWithBooleanConversion[key] ? 1 : 0;
     }
-  };
+  }
 
-  const handleSubmit = async (event) => {
-    event.preventDefault();
 
-    try {
-      const formData = new FormData();
-      for (const key in productInfo) {
-        // converting boolean values into 0 and 1
-        const value =
-          typeof productInfo[key] === "boolean"
-            ? Number(productInfo[key])
-            : productInfo[key];
-        formData.append(key, value);
+  try {
+    const response = await axios.post(
+      "http://localhost:8081/admin/add-product",
+      productInfoWithBooleanConversion, // Send productInfo with boolean conversion
+      {
+        headers: {
+          'Content-Type': 'application/json', // Set the content type to JSON
+        },
       }
-      const response = await axios.post(
-        "http://localhost:8081/admin/add-product",
-        formData
-      );
-      if (response.status === 200) {
-        setSuccessMessage("Product added successfully.");
-        navigate("/admin/products");
-      }
-    } catch (error) {
-      console.error("Error adding product:", error);
+    );
+    if (response.status === 200) {
+      setSuccessMessage("Product added successfully.");
+      navigate("/admin/products");
     }
-  };
+  } catch (error) {
+    console.error("Error adding product:", error);
+  }
+};
+
   // const handleTabClick = (tab) => {
   //   setActiveTab(tab);
   // };
@@ -301,8 +336,8 @@ const addOptionValue = (variantIndex, optionValue) => {
             <label>Product URL:</label>
             <input
               type="text"
-              name="productName"
-              value={productInfo.productName}
+              name="productUrl"
+              value={productInfo.productUrl}
               onChange={handleChange}
               required
             />
@@ -313,7 +348,7 @@ const addOptionValue = (variantIndex, optionValue) => {
             <label>Product Title</label>
             <input
               type="text"
-              name="productTitle"
+              name="productName"
               value={productInfo.productName}
               onChange={handleChange}
               required
@@ -323,7 +358,8 @@ const addOptionValue = (variantIndex, optionValue) => {
             <label htmlFor="htmlEditor">Product Description</label>
             <ReactQuill
               id="htmlEditor"
-              value={htmlContent}
+              name="description"
+              value={productInfo.description}
               onChange={handleHtmlChange}
               modules={htmlEditorModules}
               formats={htmlEditorFormats}
@@ -338,16 +374,16 @@ const addOptionValue = (variantIndex, optionValue) => {
             <label>MRP</label>
             <input
               type="text"
-              name="productTitle"
-              value={productInfo.productName}
+              name="price"
+              value={productInfo.price}
               onChange={handleChange}
               required
             />
             <label>Discount</label>
             <input
               type="text"
-              name="productTitle"
-              value={productInfo.productName}
+              name="discountPrice"
+              value={productInfo.discountPrice}
               onChange={handleChange}
               required
             />
@@ -355,7 +391,7 @@ const addOptionValue = (variantIndex, optionValue) => {
               <label>Final Price : </label>
               <span> Rs. </span>
               <span className="fprice" style={{ color: "#5E2BFF" }}>
-                {productInfo.productName}
+                {productInfo.finalPrice}
               </span>
             </div>
           </div>
@@ -363,8 +399,8 @@ const addOptionValue = (variantIndex, optionValue) => {
             <label>Display MRP Text</label>
             <input
               type="text"
-              name="productTitle"
-              value={productInfo.productName}
+              name="mrpText"
+              value={productInfo.mrpText}
               onChange={handleChange}
               required
             />
@@ -373,15 +409,18 @@ const addOptionValue = (variantIndex, optionValue) => {
             <label>Display Discount Text</label>
             <input
               type="text"
-              name="productTitle"
-              value={productInfo.productName}
+              name="discountText"
+              value={productInfo.discountText}
               onChange={handleChange}
               required
             />
           </div>
           <div>
             <label>Course</label>
-            <select name="" id="" className="modeOfPayment"></select>
+            <select name="" id="" className="modeOfPayment">
+              <option value="Course1">Course 1</option>
+            </select>
+            
           </div>
           <div>
             <label>Inventory</label>
@@ -393,34 +432,46 @@ const addOptionValue = (variantIndex, optionValue) => {
             <label>Rank</label>
             <input
               type="number"
-              name="productTitle"
-              value={productInfo.productName}
+              name="rank"
+              value={productInfo.rank}
               onChange={handleChange}
               required
             />
           </div>
           <div>
             <label>Subjects</label>
-            <select name="" id="" className="modeOfPayment"></select>
+            <select name="" id="" className="modeOfPayment">
+            <option value="Subject1">Subject 1</option>
+
+            </select>
           </div>
           <div>
             <label>Categories</label>
-            <select name="" id="" className="modeOfPayment"></select>
+            <select name="" id="" className="modeOfPayment">
+            <option value="Categories1">Categorie 1</option>
+
+            </select>
           </div>
           <div>
             <label>Sub Categories</label>
-            <select name="" id="" className="modeOfPayment"></select>
+            <select name="" id="" className="modeOfPayment">
+            <option value="Categories1">Categorie 1</option>
+
+            </select>
           </div>
           <div>
             <label>Authors</label>
-            <select name="" id="" className="modeOfPayment"></select>
+            <select name="" id="" className="modeOfPayment">
+            <option value="Author1">Authors 1</option>
+
+            </select>
           </div>
           <div>
             <label>Top Left Tag</label>
             <input
               type="text"
-              name="productTitle"
-              value={productInfo.productName}
+              name="topLeft"
+              value={productInfo.topLeft}
               onChange={handleChange}
               required
             />
@@ -429,8 +480,8 @@ const addOptionValue = (variantIndex, optionValue) => {
             <label>Top Right Tag</label>
             <input
               type="text"
-              name="productTitle"
-              value={productInfo.productName}
+              name="topRight"
+              value={productInfo.topRight}
               onChange={handleChange}
               required
             />
@@ -439,8 +490,8 @@ const addOptionValue = (variantIndex, optionValue) => {
             <label>Bottom Left Tag</label>
             <input
               type="text"
-              name="productTitle"
-              value={productInfo.productName}
+              name="bottomLeft"
+              value={productInfo.bottomLeft}
               onChange={handleChange}
               required
             />
@@ -449,8 +500,8 @@ const addOptionValue = (variantIndex, optionValue) => {
             <label>Bottom Right Tag</label>
             <input
               type="text"
-              name="productTitle"
-              value={productInfo.productName}
+              name="bottomRight"
+              value={productInfo.bottomRight}
               onChange={handleChange}
               required
             />
@@ -462,6 +513,7 @@ const addOptionValue = (variantIndex, optionValue) => {
               type="file"
               multiple
               accept="image/*"
+              name="productImage"
               onChange={handleFileUpload}
             />
           </div>
@@ -480,8 +532,8 @@ const addOptionValue = (variantIndex, optionValue) => {
             <label>Product Highlights</label>
             <input
               type="text"
-              name="producthighlights"
-              value={productInfo.productName}
+              name="highlights"
+              value={productInfo.highlights}
               onChange={handleChange}
               required
             />
@@ -490,11 +542,154 @@ const addOptionValue = (variantIndex, optionValue) => {
             <label>Product Details</label>
             <input
               type="text"
-              name="producthighlights"
-              value={productInfo.productName}
+              name="productDetails"
+              value={productInfo.productDetails}
               onChange={handleChange}
               required
             />
+          </div>
+         
+          <div>
+            <label>Faculty Name:</label>
+            <input
+              type="text"
+              name="facultyName"
+              value={productInfo.facultyName}
+              onChange={handleChange}
+              required
+            />
+          </div>
+          <div>
+            <label>Product ID (SKU):</label>
+            <input
+              type="text"
+              name="productID"
+              value={productInfo.productID}
+              onChange={handleChange}
+              required
+            />
+          </div>
+          <div>
+            <label>Product Type:</label>
+            <div>
+              <label>
+                <input
+                  type="radio"
+                  name="productType"
+                  value="Combo"
+                  checked={productInfo.productType === "Combo"}
+                  onChange={handleChange}
+                  className="rdio"
+                />
+                Combo
+              </label>
+              <label>
+                <input
+                  type="radio"
+                  name="productType"
+                  value="Single"
+                  checked={productInfo.productType === "Single"}
+                  onChange={handleChange}
+                  className="rdio"
+                />
+                Single
+              </label>
+            </div>
+          </div>
+       
+          
+        
+          <div>
+            <label>Delivery Type:</label>
+            <div>
+              <label>
+                <input
+                  type="radio"
+                  name="deliveryType"
+                  value="Regular"
+                  checked={productInfo.deliveryType === "Regular"}
+                  onChange={handleChange}
+                  className="rdio"
+                />
+                Regular
+              </label>
+              <label>
+                <input
+                  type="radio"
+                  name="deliveryType"
+                  value="Fast Track"
+                  checked={productInfo.deliveryType === "Fast Track"}
+                  onChange={handleChange}
+                  className="rdio"
+                />
+                Fast Track
+              </label>
+            </div>
+          </div>
+
+        
+         
+          <div>
+            <label>Short Description:</label>
+            <textarea
+              name="shortDescription"
+              value={productInfo.shortDescription}
+              onChange={handleChange}
+            />
+          </div>
+
+          <div>
+            <label>Slug:</label>
+            <input
+              type="text"
+              name="slug"
+              value={productInfo.slug}
+              onChange={handleChange}
+            />
+          </div>
+  
+         
+          <div>
+            <label>Additional Services:</label>
+            <div>
+              <label style={{ color: "black", padding: 15 }}>
+                <input
+                  type="checkbox"
+                  name="isFranchise"
+                  checked={productInfo.isFranchise}
+                  onChange={handleChange}
+                  className="rdio"
+                />
+                Is Franchise
+              </label>
+              <label style={{ color: "black", padding: 15 }}>
+                <input
+                  type="checkbox"
+                  name="isWhatsapp"
+                  checked={productInfo.isWhatsapp}
+                  onChange={handleChange}
+                />
+                Broadcast To Whatsapp
+              </label>
+              <label style={{ color: "black", padding: 15 }}>
+                <input
+                  type="checkbox"
+                  name="priceUpdate"
+                  checked={productInfo.priceUpdate}
+                  onChange={handleChange}
+                />
+                Price Update
+              </label>
+              <label style={{ color: "black", padding: 15 }}>
+                <input
+                  type="checkbox"
+                  name="featured"
+                  checked={productInfo.featured}
+                  onChange={handleChange}
+                />
+                Featured
+              </label>
+            </div>
           </div>
           <div>
             <button type="button" onClick={addVariant} className="btn-10">
@@ -585,223 +780,6 @@ const addOptionValue = (variantIndex, optionValue) => {
           </div>
         )}
       </div>
-          {/* <div>
-            <label>Faculty Name:</label>
-            <input
-              type="text"
-              name="facultyName"
-              value={productInfo.facultyName}
-              onChange={handleChange}
-              required
-            />
-          </div>
-          <div>
-            <label>Product ID (SKU):</label>
-            <input
-              type="text"
-              name="productID"
-              value={productInfo.productID}
-              onChange={handleChange}
-              required
-            />
-          </div>
-          <div>
-            <label>Product Type:</label>
-            <div>
-              <label>
-                <input
-                  type="radio"
-                  name="productType"
-                  value="Combo"
-                  checked={productInfo.productType === "Combo"}
-                  onChange={handleChange}
-                  className="rdio"
-                />
-                Combo
-              </label>
-              <label>
-                <input
-                  type="radio"
-                  name="productType"
-                  value="Single"
-                  checked={productInfo.productType === "Single"}
-                  onChange={handleChange}
-                  className="rdio"
-                />
-                Single
-              </label>
-            </div>
-          </div>
-          <div>
-            <label>Course:</label>
-            <input
-              type="text"
-              name="course"
-              value={productInfo.course}
-              onChange={handleChange}
-              required
-            />
-          </div>
-          <div>
-            <label>Group:</label>
-            <input
-              type="text"
-              name="group_name"
-              value={productInfo.group_name}
-              onChange={handleChange}
-              required
-            />
-          </div>
-          <div>
-            <label>Subject:</label>
-            <input
-              type="text"
-              name="subject"
-              value={productInfo.subject}
-              onChange={handleChange}
-              required
-            />
-          </div>
-          <div>
-            <label>Delivery Type:</label>
-            <div>
-              <label>
-                <input
-                  type="radio"
-                  name="deliveryType"
-                  value="Regular"
-                  checked={productInfo.deliveryType === "Regular"}
-                  onChange={handleChange}
-                  className="rdio"
-                />
-                Regular
-              </label>
-              <label>
-                <input
-                  type="radio"
-                  name="deliveryType"
-                  value="Fast Track"
-                  checked={productInfo.deliveryType === "Fast Track"}
-                  onChange={handleChange}
-                  className="rdio"
-                />
-                Fast Track
-              </label>
-            </div>
-          </div>
-
-          <div>
-            <label>Price:</label>
-            <input
-              type="number"
-              name="price"
-              value={productInfo.price}
-              onChange={handleChange}
-              required
-            />
-          </div>
-          <div>
-            <label>Discount Price:</label>
-            <input
-              type="number"
-              name="discountPrice"
-              value={productInfo.discountPrice}
-              onChange={handleChange}
-            />
-          </div>
-          <div>
-            <label>Description:</label>
-            <textarea
-              name="description"
-              value={productInfo.description}
-              onChange={handleChange}
-            />
-          </div>
-          <div>
-            <label>Short Description:</label>
-            <textarea
-              name="shortDescription"
-              value={productInfo.shortDescription}
-              onChange={handleChange}
-            />
-          </div>
-
-          <div>
-            <label>Slug:</label>
-            <input
-              type="text"
-              name="slug"
-              value={productInfo.slug}
-              onChange={handleChange}
-            />
-          </div>
-          <div>
-            <label>Category ID:</label>
-            <input
-              type="text"
-              name="category_id"
-              value={productInfo.category_id}
-              onChange={handleChange}
-            />
-          </div>
-          <div>
-            <label>Upload Image:</label>
-            <input
-              type="file"
-              name="productImage"
-              onChange={handleChange}
-              accept="image/*"
-            />
-              {imagePreview && (
-            <img
-              src={imagePreview}
-              alt="Product Preview"
-              style={{ maxWidth: "100px", maxHeight: "100px", marginTop: "10px" }}
-            />
-          )}
-          </div>
-          <div>
-            <label>Additional Services:</label>
-            <div>
-              <label style={{ color: "black", padding: 15 }}>
-                <input
-                  type="checkbox"
-                  name="isFranchise"
-                  checked={productInfo.isFranchise}
-                  onChange={handleChange}
-                  className="rdio"
-                />
-                Is Franchise
-              </label>
-              <label style={{ color: "black", padding: 15 }}>
-                <input
-                  type="checkbox"
-                  name="isWhatsapp"
-                  checked={productInfo.isWhatsapp}
-                  onChange={handleChange}
-                />
-                Broadcast To Whatsapp
-              </label>
-              <label style={{ color: "black", padding: 15 }}>
-                <input
-                  type="checkbox"
-                  name="priceUpdate"
-                  checked={productInfo.priceUpdate}
-                  onChange={handleChange}
-                />
-                Price Update
-              </label>
-              <label style={{ color: "black", padding: 15 }}>
-                <input
-                  type="checkbox"
-                  name="featured"
-                  checked={productInfo.featured}
-                  onChange={handleChange}
-                />
-                Featured
-              </label>
-            </div>
-          </div> */}
 
           <button type="submit" id="btnn">
             Add Product

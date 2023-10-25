@@ -16,7 +16,7 @@ const storage = multer.diskStorage({
   },
   filename: (req, file, cb) => {
     const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
-    cb(null, file.fieldname + "-" + uniqueSuffix + ".jpg");
+    cb(null, file.fieldname + '-' + uniqueSuffix + '-' + file.originalname);
   },
 });
 
@@ -25,41 +25,51 @@ const upload = multer({ storage });
 //add product
 router.post("/add-product", upload.single("productImage"), (req, res) => {
   const {
+    productUrl,
     productName,
     facultyName,
     productID,
     productType,
     course,
-    group_name,
-    subject,
     deliveryType,
     isFranchise,
     isWhatsapp,
     priceUpdate,
     price,
+    finalPrice,
     discountPrice,
     description,
     shortDescription,
     featured,
     slug,
-    category_id,
+    mrpText,
+    discountText,
+    rank,
+    topLeft,
+    topRight,
+    bottomLeft,
+    bottomRight,
+    highlights,
+    productDetails,
   } = req.body;
+
   const image = req.file.path;
+  
 
   const sql = `INSERT INTO products 
-               (productName, facultyName, productID, productType, course, group_name, 
-                subject, deliveryType, isFranchise, isWhatsapp, priceUpdate, price, discountPrice, 
-                description, shortDescription, featured, slug, category_id,image) 
-               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?)`;
+               (productName, facultyName, productID, productType, course, productUrl,finalPrice,
+                 deliveryType, isFranchise, isWhatsapp, priceUpdate, price, discountPrice, 
+                description, shortDescription, featured, slug, image, mrpText, discountText, rank, topLeft, topRight, bottomLeft, bottomRight, highlights, productDetails) 
+               VALUES (?, ? , ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
 
   const values = [
+    productUrl,
+    finalPrice,
     productName,
     facultyName,
     productID,
     productType,
     course,
-    group_name,
-    subject,
     deliveryType,
     isFranchise,
     isWhatsapp,
@@ -70,8 +80,16 @@ router.post("/add-product", upload.single("productImage"), (req, res) => {
     shortDescription,
     featured,
     slug,
-    category_id,
     image,
+    mrpText,
+    discountText,
+    rank,
+    topLeft,
+    topRight,
+    bottomLeft,
+    bottomRight,
+    highlights,
+    productDetails,
   ];
 
   db.query(sql, values, (err, result) => {
@@ -83,6 +101,7 @@ router.post("/add-product", upload.single("productImage"), (req, res) => {
     return res.json({ message: "Product added successfully" });
   });
 });
+
 
 // Fetch all products
 router.get("/products", (req, res) => {
