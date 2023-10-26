@@ -1,4 +1,4 @@
-import React, { useState,useRef,useEffect } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import "../style/addprod.css";
 import Sidebar from "./Sidebar";
@@ -7,7 +7,7 @@ import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
 export default function AddProducts() {
   const [productInfo, setProductInfo] = useState({
-    productUrl:"", 
+    productUrl: "",
     productName: "",
     facultyName: "",
     productID: "",
@@ -26,26 +26,32 @@ export default function AddProducts() {
     slug: "",
     productImage: null,
     variants: [],
-    mrpText:"",
-    discountText:"",
-    rank:0,
-    topLeft:"",
-    topRight:"",
-    bottomLeft:"",
-    bottomRight:"",
-    highlights:"",
-    productDetails:"",
+    mrpText: "",
+    discountText: "",
+    rank: 0,
+    topLeft: "",
+    topRight: "",
+    bottomLeft: "",
+    bottomRight: "",
+    highlights: "",
+    productDetails: "",
   });
 
   const [successMessage, setSuccessMessage] = useState("");
   const [imagePreview, setImagePreview] = useState([]);
+  const [isDescriptionExpanded, setDescriptionExpanded] = useState(false);
+  const toggleDescriptionExpand = () => {
+    setDescriptionExpanded(!isDescriptionExpanded);
+  };
+  const [uploadedImages, setUploadedImages] = useState([]);
+  const inputRef = React.createRef();
   const [activeTab, setActiveTab] = useState("basicdetails");
   const [htmlContent, setHtmlContent] = useState("");
   const [variantInput, setVariantInput] = useState({
     optionName: "",
     optionValues: [],
   });
-  const [showLivePreview, setShowLivePreview] = useState(false); 
+  const [showLivePreview, setShowLivePreview] = useState(false);
   const livePreviewRef = useRef(null);
 
   useEffect(() => {
@@ -75,13 +81,16 @@ export default function AddProducts() {
   useEffect(() => {
     // Add an event listener to handle clicks outside the Live Preview
     function handleClickOutside(event) {
-      if (livePreviewRef.current && !livePreviewRef.current.contains(event.target)) {
+      if (
+        livePreviewRef.current &&
+        !livePreviewRef.current.contains(event.target)
+      ) {
         setShowLivePreview(false);
       }
     }
 
     window.addEventListener("mousedown", handleClickOutside);
-    
+
     return () => {
       window.removeEventListener("mousedown", handleClickOutside);
     };
@@ -92,25 +101,25 @@ export default function AddProducts() {
     setHtmlContent(content);
     setProductInfo((prevProductInfo) => ({
       ...prevProductInfo,
-      description: content, 
+      description: content,
     }));
   };
-  
-  const navigate = useNavigate();
-// handle variants
-const addVariant = () => {
-  if (productInfo.variants.length < 4) {
-    setProductInfo((prevProductInfo) => ({
-      ...prevProductInfo,
-      variants: [
-        ...prevProductInfo.variants,
-        { optionName: variantInput.optionName, optionValues: [] },
-      ],
-    }));
-  }
-};
 
-const LivePreview = ({ productInfo, htmlContent, imagePreview }) => {
+  const navigate = useNavigate();
+  // handle variants
+  const addVariant = () => {
+    if (productInfo.variants.length < 4) {
+      setProductInfo((prevProductInfo) => ({
+        ...prevProductInfo,
+        variants: [
+          ...prevProductInfo.variants,
+          { optionName: variantInput.optionName, optionValues: [] },
+        ],
+      }));
+    }
+  };
+
+  const LivePreview = ({ productInfo, htmlContent, imagePreview }) => {
     // Add inline styles to make it look attractive
     const previewStyle = {
       position: "fixed",
@@ -124,7 +133,10 @@ const LivePreview = ({ productInfo, htmlContent, imagePreview }) => {
       zIndex: "999",
       overflow: "auto",
     };
-  
+
+    const toggleDescriptionExpand = () => {
+      setDescriptionExpanded(!isDescriptionExpanded);
+    };
     return (
       <div style={previewStyle}>
         <h2>{productInfo.productName}</h2>
@@ -149,81 +161,91 @@ const LivePreview = ({ productInfo, htmlContent, imagePreview }) => {
             ))}
           </div>
         </div>
-        
+
         <button onClick={() => setShowLivePreview(false)}>Close</button>
       </div>
     );
   };
 
-const addOptionValue = (variantIndex, optionValue) => {
-  if (productInfo.variants[variantIndex].optionValues.length < 4) {
-    setProductInfo((prevProductInfo) => {
-      const updatedVariants = [...prevProductInfo.variants];
-      updatedVariants[variantIndex].optionValues.push(optionValue);
-      return {
+  const addOptionValue = (variantIndex, optionValue) => {
+    if (productInfo.variants[variantIndex].optionValues.length < 4) {
+      setProductInfo((prevProductInfo) => {
+        const updatedVariants = [...prevProductInfo.variants];
+        updatedVariants[variantIndex].optionValues.push(optionValue);
+        return {
+          ...prevProductInfo,
+          variants: updatedVariants,
+        };
+      });
+    }
+  };
+
+  const handleChange = (event) => {
+    const { name, type, value, checked, files } = event.target;
+
+    if (type === "checkbox") {
+      setProductInfo((prevProductInfo) => ({
         ...prevProductInfo,
-        variants: updatedVariants,
-      };
-    });
-  }
-};
-
-
-
-
-const handleChange = (event) => {
-  const { name, type, value, checked, files } = event.target;
-
-  if (type === "checkbox") {
-    setProductInfo((prevProductInfo) => ({
-      ...prevProductInfo,
-      [name]: checked,
-    }));
-  } else if (type === "file") {
-    const file = files[0];
-    setImagePreview(URL.createObjectURL(file));
-    setProductInfo((prevProductInfo) => ({
-      ...prevProductInfo,
-      productImage: event.target.files[0],
-    }));
-  } else {
-    setProductInfo((prevProductInfo) => ({
-      ...prevProductInfo,
-      [name]: value,
-    }));
-  }
-};
-
-const handleSubmit = async (event) => {
-  event.preventDefault();
-
-  // Convert boolean values to 0 and 1
-  const productInfoWithBooleanConversion = { ...productInfo };
-  for (const key in productInfoWithBooleanConversion) {
-    if (typeof productInfoWithBooleanConversion[key] === "boolean") {
-      productInfoWithBooleanConversion[key] = productInfoWithBooleanConversion[key] ? 1 : 0;
+        [name]: checked,
+      }));
+    } else if (type === "file") {
+      const file = files[0];
+      setImagePreview(URL.createObjectURL(file));
+      setProductInfo((prevProductInfo) => ({
+        ...prevProductInfo,
+        productImage: event.target.files[0],
+      }));
+    } else {
+      setProductInfo((prevProductInfo) => ({
+        ...prevProductInfo,
+        [name]: value,
+      }));
     }
-  }
+  };
 
+  const handleSubmit = async (event) => {
+    event.preventDefault();
 
-  try {
-    const response = await axios.post(
-      "http://localhost:8081/admin/add-product",
-      productInfoWithBooleanConversion, // Send productInfo with boolean conversion
-      {
-        headers: {
-          'Content-Type': 'application/json', // Set the content type to JSON
-        },
+    
+    // Convert boolean values to 0 and 1
+    const productInfoWithBooleanConversion = { ...productInfo };
+    for (const key in productInfoWithBooleanConversion) {
+      if (typeof productInfoWithBooleanConversion[key] === "boolean") {
+        productInfoWithBooleanConversion[key] =
+          productInfoWithBooleanConversion[key] ? 1 : 0;
       }
-    );
-    if (response.status === 200) {
-      setSuccessMessage("Product added successfully.");
-      navigate("/admin/products");
     }
-  } catch (error) {
-    console.error("Error adding product:", error);
+
+  const formData = new FormData();
+
+  // Append productInfo fields to the FormData
+  for (const key in productInfo) {
+    formData.append(key, productInfo[key]);
   }
-};
+
+  // Append uploaded images to the FormData
+  for (const image of uploadedImages) {
+    formData.append("productImages", image);
+  }
+
+    try {
+      const response = await axios.post(
+        "http://localhost:8081/admin/add-product",
+        productInfoWithBooleanConversion, // Send productInfo with boolean conversion
+        {
+          headers: {
+            "Content-Type": "application/json", // Set the content type to JSON
+          },
+        }
+      );
+      if (response.status === 200) {
+        setSuccessMessage("Product added successfully.");
+        navigate("/admin/products");
+      }
+    } catch (error) {
+      console.error("Error adding product:", error);
+    }
+  };
 
   // const handleTabClick = (tab) => {
   //   setActiveTab(tab);
@@ -239,24 +261,19 @@ const handleSubmit = async (event) => {
     for (let i = 0; i < selectedFiles.length; i++) {
       const file = selectedFiles[i];
       const reader = new FileReader();
-
-      // Define a callback function for when the file is loaded
+  
       reader.onload = (e) => {
-        previews.push(e.target.result); // Add the image data URI to the previews array
-
-        // If all files have been processed, update the state with the image previews
+        previews.push(e.target.result);
+  
         if (previews.length === selectedFiles.length) {
-          setImagePreview(previews);
-          setProductInfo((prevProductInfo) => ({
-            ...prevProductInfo,
-            productImage: selectedFiles, // Store all selected files in state
-          }));
+          setImagePreview((prevPreviews) => [...prevPreviews, ...previews]);
+          setUploadedImages((prevImages) => [...prevImages, ...selectedFiles]);
         }
       };
-
-      // Read the file as a data URL (base64)
+  
       reader.readAsDataURL(file);
     }
+  
   };
 
   const htmlEditorModules = {
@@ -284,11 +301,17 @@ const handleSubmit = async (event) => {
   ];
 
   const handleShowLivePreview = () => {
-    setShowLivePreview(true)
+    setShowLivePreview(true);
   };
   const closeLivePreview = () => {
     setShowLivePreview(false);
   };
+
+  const handleAddMoreImages = () => {
+    // Trigger a click on the file input element to allow users to select more images
+    inputRef.current.click();
+  };
+
   return (
     <div>
       <Sidebar />
@@ -356,15 +379,21 @@ const handleSubmit = async (event) => {
           </div>
           <div className="form-group">
             <label htmlFor="htmlEditor">Product Description</label>
-            <ReactQuill
-              id="htmlEditor"
-              name="description"
-              value={productInfo.description}
-              onChange={handleHtmlChange}
-              modules={htmlEditorModules}
-              formats={htmlEditorFormats}
-              className="editor"
-            />
+            <div
+              className={`editor-container${
+                isDescriptionExpanded ? " expanded" : ""
+              }`}
+              onClick={toggleDescriptionExpand}
+            >
+              <ReactQuill
+                id="htmlEditor"
+                name="description"
+                value={productInfo.description}
+                onChange={(content) =>
+                  setProductInfo({ ...productInfo, description: content })
+                }
+              />
+            </div>
           </div>
           <div>
             <label>Detailed Title - SEO</label>
@@ -420,7 +449,6 @@ const handleSubmit = async (event) => {
             <select name="" id="" className="modeOfPayment">
               <option value="Course1">Course 1</option>
             </select>
-            
           </div>
           <div>
             <label>Inventory</label>
@@ -441,29 +469,25 @@ const handleSubmit = async (event) => {
           <div>
             <label>Subjects</label>
             <select name="" id="" className="modeOfPayment">
-            <option value="Subject1">Subject 1</option>
-
+              <option value="Subject1">Subject 1</option>
             </select>
           </div>
           <div>
             <label>Categories</label>
             <select name="" id="" className="modeOfPayment">
-            <option value="Categories1">Categorie 1</option>
-
+              <option value="Categories1">Categorie 1</option>
             </select>
           </div>
           <div>
             <label>Sub Categories</label>
             <select name="" id="" className="modeOfPayment">
-            <option value="Categories1">Categorie 1</option>
-
+              <option value="Categories1">Categorie 1</option>
             </select>
           </div>
           <div>
             <label>Authors</label>
             <select name="" id="" className="modeOfPayment">
-            <option value="Author1">Authors 1</option>
-
+              <option value="Author1">Authors 1</option>
             </select>
           </div>
           <div>
@@ -511,23 +535,30 @@ const handleSubmit = async (event) => {
             <label>Upload Images</label>
             <input
               type="file"
-              multiple
               accept="image/*"
               name="productImage"
               onChange={handleFileUpload}
+              ref={inputRef}
+              style={{ display: "none" }}
+              multiple
             />
+            <button onClick={handleAddMoreImages} className="btn-10">
+              +
+            </button>
           </div>
 
-          <div className="product-imgs">
-            {imagePreview.map((preview, index) => (
-              <img
-                key={index}
-                src={preview}
-                alt={`Image Preview ${index}`}
-                style={{ width: "100px", height: "auto", margin: "5px" }}
-              />
-            ))}
-          </div>
+          {imagePreview.length > 0 && (
+            <div className="product-imgs">
+              {imagePreview.map((preview, index) => (
+                <img
+                  key={index}
+                  src={preview}
+                  alt={`Image Preview ${index}`}
+                  style={{ width: "100px", height: "auto", margin: "5px" }}
+                />
+              ))}
+            </div>
+          )}
           <div>
             <label>Product Highlights</label>
             <input
@@ -548,7 +579,7 @@ const handleSubmit = async (event) => {
               required
             />
           </div>
-         
+
           <div>
             <label>Faculty Name:</label>
             <input
@@ -596,9 +627,7 @@ const handleSubmit = async (event) => {
               </label>
             </div>
           </div>
-       
-          
-        
+
           <div>
             <label>Delivery Type:</label>
             <div>
@@ -627,8 +656,6 @@ const handleSubmit = async (event) => {
             </div>
           </div>
 
-        
-         
           <div>
             <label>Short Description:</label>
             <textarea
@@ -647,8 +674,7 @@ const handleSubmit = async (event) => {
               onChange={handleChange}
             />
           </div>
-  
-         
+
           <div>
             <label>Additional Services:</label>
             <div>
@@ -768,18 +794,27 @@ const handleSubmit = async (event) => {
             ))}
           </div>
           <div>
-        <button type="button" onClick={handleShowLivePreview} id="preview-button" className="btn-10">
-          Live Preview
-        </button>
-        {showLivePreview && (
-          <div ref={livePreviewRef} className="live-preview-popup">
-            <LivePreview productInfo={productInfo} htmlContent={htmlContent} imagePreview={imagePreview} />
-            <button onClick={closeLivePreview} className="btn-10">
-              Close
+            <button
+              type="button"
+              onClick={handleShowLivePreview}
+              id="preview-button"
+              className="btn-10"
+            >
+              Live Preview
             </button>
+            {showLivePreview && (
+              <div ref={livePreviewRef} className="live-preview-popup">
+                <LivePreview
+                  productInfo={productInfo}
+                  htmlContent={htmlContent}
+                  imagePreview={imagePreview}
+                />
+                <button onClick={closeLivePreview} className="btn-10">
+                  Close
+                </button>
+              </div>
+            )}
           </div>
-        )}
-      </div>
 
           <button type="submit" id="btnn">
             Add Product
