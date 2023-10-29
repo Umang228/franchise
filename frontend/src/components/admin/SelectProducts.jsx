@@ -137,7 +137,7 @@ export default function SelectProducts() {
             ))}
           </tbody>
         </table>
-        <button onClick={handleSubmit}>Submit</button>
+        <button onClick={handleSubmit} className="btn-10" style={{position:'absolute',top:"500px",color:'white',background:"black"}}>Submit</button>
 
         <nav>
           <ul>

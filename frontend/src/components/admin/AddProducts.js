@@ -13,6 +13,10 @@ export default function AddProducts() {
     productID: "",
     productType: "Combo",
     course: "",
+    subject: "",
+    category: "",
+    subCategory: "",
+    author: "",
     deliveryType: "Regular",
     isFranchise: false,
     isWhatsapp: false,
@@ -24,7 +28,7 @@ export default function AddProducts() {
     shortDescription: "",
     featured: false,
     slug: "",
-    productImage: null,
+    productImage: "",
     variants: [],
     mrpText: "",
     discountText: "",
@@ -35,10 +39,16 @@ export default function AddProducts() {
     bottomRight: "",
     highlights: "",
     productDetails: "",
+    youtubeLink: "",
   });
 
   const [successMessage, setSuccessMessage] = useState("");
   const [imagePreview, setImagePreview] = useState([]);
+  const [courses, setCourses] = useState([]);
+  const [subjects, setSubjects] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [subCategories, setSubCategories] = useState([]);
+  const [authors, setAuthors] = useState([]);
   const [isDescriptionExpanded, setDescriptionExpanded] = useState(false);
   const toggleDescriptionExpand = () => {
     setDescriptionExpanded(!isDescriptionExpanded);
@@ -52,6 +62,7 @@ export default function AddProducts() {
     optionValues: [],
   });
   const [showLivePreview, setShowLivePreview] = useState(false);
+  const [imageFiles, setImageFiles] = useState([]);
   const livePreviewRef = useRef(null);
 
   useEffect(() => {
@@ -65,7 +76,46 @@ export default function AddProducts() {
         finalPrice,
       }));
     };
-
+    axios
+      .get("http://localhost:8081/admin/courses")
+      .then((response) => {
+        console.log("Response from server:", response.data);
+        const courses = response.data;
+        if (courses.length > 0) {
+          // Access the first course and its related properties
+          const firstCourse = courses[0];
+          console.log("Course Subjects:", firstCourse.courseSubjects);
+          console.log("Course Categories:", firstCourse.courseCategories);
+          console.log("Course SubCategories:", firstCourse.courseSubCategories);
+          setCourses(courses);
+          const subjectsArray = Array.isArray(firstCourse.courseSubjects)
+            ? firstCourse.courseSubjects.map((subject) => subject.subjectName)
+            : [];
+          setSubjects(subjectsArray);
+          let categoriesArray = Array.isArray(firstCourse.courseCategories)
+            ? firstCourse.courseCategories
+            : [firstCourse.courseCategories];
+          setCategories(categoriesArray);
+          let subCategoriesArray = Array.isArray(
+            firstCourse.subCourseCategories
+          )
+            ? firstCourse.subCourseCategories
+            : [firstCourse.subCourseCategories];
+          setCategories(subCategoriesArray);
+          let authorsArray = Array.isArray(firstCourse.courseAuthors)
+            ? firstCourse.courseAuthors
+            : [firstCourse.courseAuthors];
+          setAuthors(authorsArray);
+        } else {
+          setSubjects([]);
+          setCategories([]);
+          setSubCategories([]);
+          setAuthors([]);
+        }
+      })
+      .catch((error) => {
+        console.error("Error fetching courses:", error);
+      });
     // Calculate and set the final price immediately
     calculateFinalPrice();
 
@@ -104,7 +154,12 @@ export default function AddProducts() {
       description: content,
     }));
   };
-
+  const handleYoutubeLinkChange = (event) => {
+    setProductInfo((prevProductInfo) => ({
+      ...prevProductInfo,
+      youtubeLink: event.target.value,
+    }));
+  };
   const navigate = useNavigate();
   // handle variants
   const addVariant = () => {
@@ -204,9 +259,9 @@ export default function AddProducts() {
   };
 
   const handleSubmit = async (event) => {
+    debugger;
     event.preventDefault();
 
-    
     // Convert boolean values to 0 and 1
     const productInfoWithBooleanConversion = { ...productInfo };
     for (const key in productInfoWithBooleanConversion) {
@@ -216,28 +271,45 @@ export default function AddProducts() {
       }
     }
 
-  const formData = new FormData();
+    // Convert uploaded images to Base64 strings
+    const imagePromises = uploadedImages.map(async (image) => {
+      const reader = new FileReader();
+      const promise = new Promise((resolve, reject) => {
+        reader.onload = () => {
+          resolve(reader.result);
+        };
+        reader.onerror = (error) => {
+          reject(error);
+        };
+        reader.readAsDataURL(image);
+      });
 
-  // Append productInfo fields to the FormData
-  for (const key in productInfo) {
-    formData.append(key, productInfo[key]);
-  }
+      return promise;
+    });
 
-  // Append uploaded images to the FormData
-  for (const image of uploadedImages) {
-    formData.append("productImages", image);
-  }
+    // Wait for all of the image promises to resolve
+    const imageBase64Strings = await Promise.all(imagePromises);
 
+    // Update the productInfo object with the array of image Base64 strings
+    productInfoWithBooleanConversion.productImage = imageBase64Strings;
+
+    const formData = new FormData();
+
+    // Append productInfo fields to the FormData
+    for (const key in productInfoWithBooleanConversion) {
+      formData.append(key, productInfoWithBooleanConversion[key]);
+    }
     try {
       const response = await axios.post(
         "http://localhost:8081/admin/add-product",
-        productInfoWithBooleanConversion, // Send productInfo with boolean conversion
+        formData, // Send productInfo with boolean conversion and image Base64 strings
         {
           headers: {
             "Content-Type": "application/json", // Set the content type to JSON
           },
         }
       );
+
       if (response.status === 200) {
         setSuccessMessage("Product added successfully.");
         navigate("/admin/products");
@@ -250,55 +322,74 @@ export default function AddProducts() {
   // const handleTabClick = (tab) => {
   //   setActiveTab(tab);
   // };
-
-  const handleFileUpload = (event) => {
+  function generateVariantCombinations(variants) {
+    if (!variants || variants.length === 0) {
+      return [];
+    }
+  
+    // Initialize combinations with the first variant's option values
+    let combinations = variants[0].optionValues.map((optionValue) => [{ optionName: variants[0].optionName, optionValue }]);
+  
+    // Iterate over the remaining variants
+    for (let i = 1; i < variants.length; i++) {
+      const variant = variants[i];
+      const newCombinations = [];
+  
+      // For each combination, create new combinations with the current variant's option values
+      combinations.forEach((combination) => {
+        variant.optionValues.forEach((optionValue) => {
+          newCombinations.push([...combination, { optionName: variant.optionName, optionValue }]);
+        });
+      });
+  
+      combinations = newCombinations;
+    }
+  
+    return combinations;
+  }
+  
+  function calculatePrice(combination) {
+    const basePrice = productInfo.finalPrice; // Use your base price
+    // You may need to adjust the price based on the combination
+    // For example, if variant1 is "Small" and variant2 is "Red," adjust the price.
+    return basePrice + 0/* Add adjustments based on combination */;
+  }
+    
+  async function handleFileUpload(event) {
+    debugger;
     const selectedFiles = event.target.files;
-
-    // Create an array to store image previews
     const previews = [];
+    const filesArray = [];
 
-    // Loop through the selected files
     for (let i = 0; i < selectedFiles.length; i++) {
       const file = selectedFiles[i];
       const reader = new FileReader();
-  
-      reader.onload = (e) => {
-        previews.push(e.target.result);
-  
-        if (previews.length === selectedFiles.length) {
-          setImagePreview((prevPreviews) => [...prevPreviews, ...previews]);
-          setUploadedImages((prevImages) => [...prevImages, ...selectedFiles]);
-        }
-      };
-  
-      reader.readAsDataURL(file);
+
+      const preview = await new Promise((resolve) => {
+        reader.onload = (e) => {
+          resolve(e.target.result);
+        };
+
+        reader.onerror = (error) => {
+          console.error("Error reading file:", error);
+        };
+
+        reader.readAsDataURL(file);
+      });
+
+      previews.push(preview);
+      filesArray.push(file);
     }
-  
-  };
 
-  const htmlEditorModules = {
-    toolbar: [
-      [{ header: "1" }, { header: "2" }],
-      ["bold", "italic", "underline", "strike"],
-      [{ list: "ordered" }, { list: "bullet" }],
-      ["code-block"],
-      ["link", "image"],
-      ["clean"],
-    ],
-  };
+    // All files have been processed
+    console.log("Previews:", previews);
+    console.log("Files Array:", filesArray);
+    setImagePreview((prevPreviews) => [...prevPreviews, ...previews]);
+    setUploadedImages((prevImages) => [...prevImages, ...filesArray]);
 
-  const htmlEditorFormats = [
-    "header",
-    "bold",
-    "italic",
-    "underline",
-    "strike",
-    "list",
-    "bullet",
-    "link",
-    "image",
-    "code-block",
-  ];
+    // Return a Promise so that the caller can wait for the function to finish
+    return Promise.resolve();
+  }
 
   const handleShowLivePreview = () => {
     setShowLivePreview(true);
@@ -317,44 +408,8 @@ export default function AddProducts() {
       <Sidebar />
       <div className="add-product-form">
         <h2>Add Product</h2>
-        {/* <header className="prod-header">
-          <nav>
-            <ul>
-              <li className="basicdetails">
-                <a
-                  href="#basicdetails"
-                >
-                  Basic Details
-                </a>
-              </li>
-              <li className="images">
-                <a href="#images">
-                  Images
-                </a>
-              </li>
-              <li className="description">
-                <a href="#desc">
-                  Description
-                </a>
-              </li>
-              <li className="digitalresources">
-                <a
-                  href="#digires"
-                >
-                  Digital Resources
-                </a>
-              </li>
-              <li className="variants">
-                <a href="#variants">
-                  Variants
-                </a>
-              </li>
-            </ul>
-          </nav>
-        </header> */}
         {successMessage && <p className="success-message">{successMessage}</p>}
-
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit} enctype="multipart/form-data">
           <div>
             <label>Product URL:</label>
             <input
@@ -446,10 +501,23 @@ export default function AddProducts() {
           </div>
           <div>
             <label>Course</label>
-            <select name="" id="" className="modeOfPayment">
-              <option value="Course1">Course 1</option>
+            <select
+              name="course"
+              value={productInfo.course}
+              onChange={handleChange} // You should implement handleChange for this field
+              className="modeOfPayment"
+            >
+              <option value="" disabled>
+                Select a Course
+              </option>
+              {courses.map((course) => (
+                <option key={course.id} value={course.id}>
+                  {course.courseName}
+                </option>
+              ))}
             </select>
           </div>
+
           <div>
             <label>Inventory</label>
             <select name="" id="" className="modeOfPayment">
@@ -466,30 +534,85 @@ export default function AddProducts() {
               required
             />
           </div>
+
           <div>
             <label>Subjects</label>
-            <select name="" id="" className="modeOfPayment">
-              <option value="Subject1">Subject 1</option>
+            <select
+              name="subject"
+              value={productInfo.subject}
+              onChange={handleChange} // Implement handleChange for this field
+              className="modeOfPayment"
+            >
+              <option value="" disabled>
+                Select a Subject
+              </option>
+              {subjects.map((course) => (
+                <option key={course.id} value={course.id}>
+                  {course.subjectName}
+                  {console.log(course.subjectName)}
+                </option>
+              ))}
+              <option value="test">test</option>
             </select>
           </div>
           <div>
             <label>Categories</label>
-            <select name="" id="" className="modeOfPayment">
-              <option value="Categories1">Categorie 1</option>
+            <select
+              name="category"
+              value={productInfo.category}
+              onChange={handleChange} // Implement handleChange for this field
+              className="modeOfPayment"
+            >
+              <option value="" disabled>
+                Select a Category
+              </option>
+              {courses.map((category) => (
+                <option key={category.id} value={category.id}>
+                  {category.categoryName}
+                </option>
+              ))}
+              <option value="test">test</option>
             </select>
           </div>
           <div>
             <label>Sub Categories</label>
-            <select name="" id="" className="modeOfPayment">
-              <option value="Categories1">Categorie 1</option>
+            <select
+              name="subCategory"
+              value={productInfo.subCategory}
+              onChange={handleChange} // Implement handleChange for this field
+              className="modeOfPayment"
+            >
+              <option value="" disabled>
+                Select a Sub Category
+              </option>
+              {subCategories.map((subCategory) => (
+                <option key={subCategory.id} value={subCategory.id}>
+                  {subCategory.subCategoryName}
+                </option>
+              ))}
+              <option value="test">test</option>
             </select>
           </div>
           <div>
             <label>Authors</label>
-            <select name="" id="" className="modeOfPayment">
-              <option value="Author1">Authors 1</option>
+            <select
+              name="author"
+              value={productInfo.author}
+              onChange={handleChange} // Implement handleChange for this field
+              className="modeOfPayment"
+            >
+              <option value="" disabled>
+                Select an Author
+              </option>
+              {authors.map((author) => (
+                <option key={author.id} value={author.id}>
+                  {author.authorName}
+                </option>
+              ))}
+              <option value="test">pious</option>
             </select>
           </div>
+
           <div>
             <label>Top Left Tag</label>
             <input
@@ -538,7 +661,7 @@ export default function AddProducts() {
               accept="image/*"
               name="productImage"
               onChange={handleFileUpload}
-              ref={inputRef}
+              ref={inputRef} // Add this ref
               style={{ display: "none" }}
               multiple
             />
@@ -567,6 +690,15 @@ export default function AddProducts() {
               value={productInfo.highlights}
               onChange={handleChange}
               required
+            />
+          </div>
+          <div>
+            <label>YouTube Video Link:</label>
+            <input
+              type="text"
+              name="youtubeLink"
+              value={productInfo.youtubeLink}
+              onChange={handleYoutubeLinkChange}
             />
           </div>
           <div>
@@ -722,7 +854,10 @@ export default function AddProducts() {
               + Add Variant
             </button>
             {productInfo.variants.map((variant, variantIndex) => (
-              <div key={variantIndex}>
+              <div
+                key={variantIndex}
+                style={{ position: "relative", top: "13px", padding: "12px" }}
+              >
                 <div>
                   <label>Option Name:</label>
                   <input
@@ -744,10 +879,13 @@ export default function AddProducts() {
                 </div>
                 <div>
                   <label>Option Values:</label>
-                  <>
+                  <div style={{ display: "flex", alignItems: "center" }}>
                     {variant.optionValues.map(
                       (optionValue, optionValueIndex) => (
-                        <div key={optionValueIndex}>
+                        <div
+                          key={optionValueIndex}
+                          style={{ marginRight: "10px" }}
+                        >
                           <input
                             type="text"
                             value={optionValue}
@@ -775,23 +913,42 @@ export default function AddProducts() {
                         </div>
                       )
                     )}
-                  </>
-
-                  {variant.optionValues.length < 4 && (
-                    <button
-                      type="button"
-                      onClick={() => {
-                        const newOptionValue = "";
-                        addOptionValue(variantIndex, newOptionValue);
-                      }}
-                      className="btn-10"
-                    >
-                      + Add Option Value
-                    </button>
-                  )}
+                    {variant.optionValues.length < 4 && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const newOptionValue = "";
+                          addOptionValue(variantIndex, newOptionValue);
+                        }}
+                        className="btn-10"
+                      >
+                        + Add Option Value
+                      </button>
+                    )}
+                  </div>
                 </div>
               </div>
             ))}
+          </div>
+          <div>
+            <table>
+              <thead>
+                <tr>
+                  <th>Variant 1</th>
+                  <th>Variant 2</th>
+                  <th>Price</th>
+                </tr>
+              </thead>
+              <tbody>
+                {generateVariantCombinations().map((combination, index) => (
+                  <tr key={index}>
+                    <td colSpan={2}>{combination.variant1}</td>
+                    <td colSpan={2}>{combination.variant2}</td>
+                    <td colSpan={2}>{calculatePrice(combination)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
           <div>
             <button
@@ -809,6 +966,19 @@ export default function AddProducts() {
                   htmlContent={htmlContent}
                   imagePreview={imagePreview}
                 />
+                {productInfo.youtubeLink && (
+                  <div>
+                    <iframe
+                      title="YouTube Video"
+                      width="560"
+                      height="315"
+                      src={`https://www.youtube.com/embed/${productInfo.youtubeLink}`}
+                      frameborder="0"
+                      allow="autoplay; encrypted-media"
+                      allowfullscreen
+                    ></iframe>
+                  </div>
+                )}
                 <button onClick={closeLivePreview} className="btn-10">
                   Close
                 </button>

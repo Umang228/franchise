@@ -195,7 +195,7 @@ export default function EditSelectProducts() {
 
         {successMessage && <p className="success-message">{successMessage}</p>}
 
-        <button onClick={handleSubmit}>Update</button>
+        <button onClick={handleSubmit} className="btn-10">Update</button>
       </div>
     </div>
   );

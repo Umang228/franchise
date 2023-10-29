@@ -23,7 +23,10 @@ import FranchiseStudentDetails from './components/franchise/StudentDetails';
 import FranchiseOrderPlaced from './components/franchise/OrderPlaced';
 import UserDashboard from './components/user/UserDashboard';
 import Navbar from './components/Navbar';
-
+import AddCourse from './components/admin/AddCourse';
+import AddCourseDetails from './components/admin/AddCourseDetails';
+import Courses from './components/admin/Courses';
+import UpdateCourse from './components/admin/UpdateCourse';
  function App() {
   return (
     <BrowserRouter>
@@ -42,7 +45,9 @@ import Navbar from './components/Navbar';
       <Route path="/admin/franchise/select" element={<AdminSelectProducts />} />
       <Route path="/admin/franchise/select/edit/:id" element={<AdminEditSelectProducts />} />
       <Route path="/admin/franchise/edit/:id" element={<AdminEditFranchise />} />
-    
+      <Route path='/admin/courses/add' element={<AddCourse/>}/>
+      <Route path="/admin/courses/show" element={<Courses />} />
+      <Route path="/admin/courses/update/:id" element={<UpdateCourse/>} />
 
 
       {/* franchise */}

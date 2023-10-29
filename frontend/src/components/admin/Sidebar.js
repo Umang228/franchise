@@ -10,6 +10,8 @@ import {HiTemplate} from "react-icons/hi"
 import { AnimatePresence, motion } from "framer-motion";
 import SidebarMenu from "../Header/SidebarMenu";
 import { CgFramer } from "react-icons/cg";
+import {SiCoursera} from "react-icons/si"
+import {BsBook} from "react-icons/bs"
 import '../Header/Header.css';
 import { useCookies } from 'react-cookie';
 import jwt_decode from 'jwt-decode';
@@ -24,6 +26,23 @@ const routes = [
     path: "/admin/dashboard",
     name: "Dashboard",
     icon: <FaHome />,
+  },
+  {
+    path:"/courses",
+    name:"Courses",
+    icon:<SiCoursera/>,
+    subRoutes:[
+      {
+        path:"/admin/courses/add",
+        name:"Add Courses",
+        icon: <IoMdAddCircle />,
+      },
+      {
+        path:"/admin/courses/show",
+        name:"Courses",
+        icon: <BsBook />,
+      }
+    ]
   },
   {
     path: "/products",
@@ -42,7 +61,6 @@ const routes = [
       },
     ],
   },
-  
   {
     path: "/franchise",
     name: "Franchise",
