@@ -4,6 +4,123 @@ const { db } = require("../db");
 const multer = require("multer"); // for image handling
 const fs = require("fs"); // for image deleting and editing
 
+
+// Add course
+router.post('/add-course', (req, res) => {
+  const {
+    courseName,
+    courseSubjects,
+    courseCategories,
+    courseSubCategories,
+    courseAuthors,
+  } = req.body;
+
+  // Define your SQL query and values here.
+  const sql = `
+    INSERT INTO courses (courseName, courseSubjects, courseCategories, courseSubCategories, courseAuthors)
+    VALUES (?, ?, ?, ?, ?)
+  `;
+  const values = [courseName, courseSubjects, courseCategories, courseSubCategories, courseAuthors];
+
+  db.query(sql, values, (err, result) => {
+    if (err) {
+      console.error("Database query error:", err);
+      return res.status(500).json({ message: "Error adding course" });
+    }
+
+    return res.status(200).json({ message: "Course added successfully" });
+  });
+});
+
+router.get('/courses', (req, res) => {
+  const sql = 'SELECT * FROM courses';
+
+  db.query(sql, (err, result) => {
+    if (err) {
+      console.error("Database query error:", err);
+      return res.status(500).json({ message: "Error fetching courses" });
+    }
+
+    return res.status(200).json(result);
+  });
+});
+
+router.put('/update-course/:id', (req, res) => {
+  const courseId = req.params.id; // Course ID passed as a URL parameter
+  const {
+    courseName,
+    courseSubjects,
+    courseCategories,
+    courseSubCategories,
+    courseAuthors,
+  } = req.body;
+
+  // Define your SQL query to update the course
+  const sql = `
+    UPDATE courses
+    SET courseName = ?,
+        courseSubjects = ?,
+        courseCategories = ?,
+        courseSubCategories = ?,
+        courseAuthors = ?
+    WHERE id = ?
+  `;
+
+  const values = [courseName, courseSubjects, courseCategories, courseSubCategories, courseAuthors, courseId];
+
+  db.query(sql, values, (err, result) => {
+    if (err) {
+      console.error("Database query error:", err);
+      return res.status(500).json({ message: "Error updating course" });
+    }
+
+    return res.status(200).json({ message: "Course updated successfully" });
+  });
+});
+router.get('/courses/:id', (req, res) => {
+  const courseId = req.params.id; // Course ID passed as a URL parameter
+
+  // Define your SQL query to fetch the course by ID
+  const sql = 'SELECT * FROM courses WHERE id = ?';
+
+  db.query(sql, courseId, (err, result) => {
+    if (err) {
+      console.error('Database query error:', err);
+      return res.status(500).json({ message: 'Error fetching course by ID' });
+    }
+
+    if (result.length === 0) {
+      // If no course is found with the given ID, return a 404 Not Found response
+      return res.status(404).json({ message: 'Course not found' });
+    }
+
+    // Return the course data as JSON
+    return res.status(200).json(result[0]);
+  });
+});
+router.delete('/delete-course/:id', (req, res) => {
+  const courseId = req.params.id; // Course ID passed as a URL parameter
+
+  // Define your SQL query to delete the course by ID
+  const sql = 'DELETE FROM courses WHERE id = ?';
+
+  db.query(sql, courseId, (err, result) => {
+    if (err) {
+      console.error('Database query error:', err);
+      return res.status(500).json({ message: 'Error deleting course' });
+    }
+
+    if (result.affectedRows === 0) {
+      // If no course is deleted (no matching ID found), return a 404 Not Found response
+      return res.status(404).json({ message: 'Course not found' });
+    }
+
+    // Return a success message
+    return res.status(200).json({ message: 'Course deleted successfully' });
+  });
+});
+
+
 /* --------------------------------
 
  Products
@@ -52,9 +169,10 @@ router.post("/add-product", upload.single("productImage"), (req, res) => {
     highlights,
     productDetails,
   } = req.body;
-
+  if (!req.file) {
+    return res.status(400).json({ message: "No image file uploaded" });
+  }
   const image = req.file.path;
-  
 
   const sql = `INSERT INTO products 
                (productName, facultyName, productID, productType, course, productUrl,finalPrice,
@@ -591,6 +709,8 @@ router.post("/update_selected_products", async (req, res) => {
     return res.status(500).json({ message: "Internal server error" });
   }
 });
+
+
 
 /* --------------------------------
 

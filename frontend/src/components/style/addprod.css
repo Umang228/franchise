@@ -1,9 +1,8 @@
-
 /* add product */
 .add-product-form{
     background-color: #fff;
-    width: 800px;
-    margin: 83px auto;
+    width: 850px;
+    margin: 43px auto;
     box-shadow: 3px 3px 10px gray;
     border-radius: 13px;
 }
@@ -86,6 +85,12 @@ top: 23px;
 
 .add-product-form form>div>label{
     margin-left: 13.8px;
+}
+.form-group{
+    margin-bottom: 6px;
+}
+.form-group>label{
+    margin-bottom: 6px;
 }
 
 .rdio{
