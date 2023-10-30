@@ -31,7 +31,7 @@
     position: absolute;
     text-align: center;
 }
-p{
+.circle-c p{
     text-align: center;
     color: #fff;
     position: relative;
@@ -39,14 +39,7 @@ p{
     font-size: 20px;
     top: 70px;
 }
-p{
-    text-align: center;
-    color: #fff;
-    position: relative;
-    right: 200px;
-    font-size: 20px;
-    top: 70px;
-}
+
 #pr{
     text-align: center;
     color: #fff;

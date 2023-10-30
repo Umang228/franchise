@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { NavLink } from "react-router-dom";
 import { FaBars, FaHome, FaLock, FaUser } from "react-icons/fa";
-import {FaOpencart,} from "react-icons/fa"
+import {FaOpencart} from "react-icons/fa"
+import {AiOutlineUserSwitch} from "react-icons/ai"
 import {IoMdAddCircle} from "react-icons/io"
 import {BiSearch } from "react-icons/bi";
 import { BiCog } from "react-icons/bi";
@@ -83,6 +84,11 @@ const routes = [
     path: "/admin/orders",
     name: "Order",
     icon: <BsCartCheck />,
+  },
+  {
+    path: "/admin/users",
+    name: "Users",
+    icon: <AiOutlineUserSwitch />,
   },
   {
     path: "/settings",

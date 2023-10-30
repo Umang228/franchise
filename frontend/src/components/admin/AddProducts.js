@@ -1,10 +1,19 @@
 import React, { useState, useRef, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import {
+  useNavigate,
+  BrowserRouter as Router,
+  Switch,
+  Route,
+  useHistory,
+} from "react-router-dom";
 import "../style/addprod.css";
 import Sidebar from "./Sidebar";
 import axios from "axios";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
+import ReactImageGallery from "react-image-gallery";
+import "react-image-gallery/styles/css/image-gallery.css";
+import LivePreviewPage from "./LivePreviewPage";
 export default function AddProducts() {
   const [productInfo, setProductInfo] = useState({
     productUrl: "",
@@ -45,6 +54,7 @@ export default function AddProducts() {
   const [successMessage, setSuccessMessage] = useState("");
   const [imagePreview, setImagePreview] = useState([]);
   const [courses, setCourses] = useState([]);
+  const [activeSlide, setActiveSlide] = useState(0);
   const [subjects, setSubjects] = useState([]);
   const [categories, setCategories] = useState([]);
   const [subCategories, setSubCategories] = useState([]);
@@ -174,11 +184,23 @@ export default function AddProducts() {
     }
   };
 
-  const LivePreview = ({ productInfo, htmlContent, imagePreview }) => {
-    // Add inline styles to make it look attractive
-    const previewStyle = {
+  const LivePreview = ({
+    productInfo,
+    htmlContent,
+    imagePreview,
+    closeLivePreview,
+  }) => {
+    const images =
+      imagePreview &&
+      imagePreview.map((preview, index) => ({
+        original: preview,
+        thumbnail: preview, // You can use the same image as a thumbnail or specify a different one
+        description: `Image Preview ${index}`,
+      }));
+
+    const galleryStyle = {
       position: "fixed",
-      top: "10%",
+      top: "6%",
       left: "10%",
       width: "80%",
       height: "80%",
@@ -187,37 +209,88 @@ export default function AddProducts() {
       padding: "20px",
       zIndex: "999",
       overflow: "auto",
+      color: "black",
+      display: "flex",
     };
 
-    const toggleDescriptionExpand = () => {
-      setDescriptionExpanded(!isDescriptionExpanded);
+    const contentStyle = {
+      flex: 1,
+      maxHeight: "100%",
+      overflow: "auto",
     };
+
     return (
-      <div style={previewStyle}>
-        <h2>{productInfo.productName}</h2>
-        <div>
-          <label>Product Title:</label>
-          <p>{productInfo.productName}</p>
-        </div>
-        <div>
-          <label>Product Description:</label>
-          <div dangerouslySetInnerHTML={{ __html: htmlContent }} />
-        </div>
-        <div>
+      <div style={galleryStyle} className="slid">
+        <div style={contentStyle}>
+          <h2>{productInfo.productName}</h2>
           <label>Images:</label>
-          <div className="product-imgs">
-            {imagePreview.map((preview, index) => (
-              <img
-                key={index}
-                src={preview}
-                alt={`Image Preview ${index}`}
-                style={{ width: "100px", height: "auto", margin: "5px" }}
-              />
+          <div className="product-imgs-slider">
+            <ReactImageGallery items={images} />
+          </div>
+          <button
+            onClick={closeLivePreview}
+            className="btn-10"
+            style={{ position: "relative", left: "80%", top: "-20px" }}
+          >
+            Close
+          </button>
+          <div>
+            {/* Display the product variants as dropdowns */}
+            {productInfo.variants.map((variant, variantIndex) => (
+              <div key={variantIndex}>
+                <label>{variant.optionName}:</label>
+                <select
+                  name={`variant-${variantIndex}`}
+                  value={productInfo.variants[variantIndex].selectedOption}
+                  onChange={(e) => {
+                    const selectedOption = e.target.value;
+                    setProductInfo((prevProductInfo) => {
+                      const updatedVariants = [...prevProductInfo.variants];
+                      updatedVariants[variantIndex].selectedOption =
+                        selectedOption;
+                      return {
+                        ...prevProductInfo,
+                        variants: updatedVariants,
+                      };
+                    });
+                  }}
+                >
+                  <option value="">Select an option</option>
+                  {variant.optionValues.map((optionValue, optionIndex) => (
+                    <option key={optionIndex} value={optionValue}>
+                      {optionValue}
+                    </option>
+                  ))}
+                </select>
+              </div>
             ))}
           </div>
+          <div>
+            {/* Display the product description */}
+            <div>
+              <div
+                style={{ color: "black" }}
+                dangerouslySetInnerHTML={{ __html: productInfo.description }}
+              ></div>
+            </div>
+          </div>
+          <div>
+            {/* Display the YouTube video */}
+            {productInfo.youtubeLink && (
+              <div>
+                <iframe
+                  title="YouTube Video"
+                  width="100%"
+                  height="315"
+                  src={`https://www.youtube.com/embed/${productInfo.youtubeLink}`}
+                  frameBorder="0"
+                  allow="autoplay; encrypted-media"
+                  allowFullScreen
+                ></iframe>
+              </div>
+            )}
+          </div>
         </div>
-
-        <button onClick={() => setShowLivePreview(false)}>Close</button>
       </div>
     );
   };
@@ -326,35 +399,40 @@ export default function AddProducts() {
     if (!variants || variants.length === 0) {
       return [];
     }
-  
+
     // Initialize combinations with the first variant's option values
-    let combinations = variants[0].optionValues.map((optionValue) => [{ optionName: variants[0].optionName, optionValue }]);
-  
+    let combinations = variants[0].optionValues.map((optionValue) => [
+      { optionName: variants[0].optionName, optionValue },
+    ]);
+
     // Iterate over the remaining variants
     for (let i = 1; i < variants.length; i++) {
       const variant = variants[i];
       const newCombinations = [];
-  
+
       // For each combination, create new combinations with the current variant's option values
       combinations.forEach((combination) => {
         variant.optionValues.forEach((optionValue) => {
-          newCombinations.push([...combination, { optionName: variant.optionName, optionValue }]);
+          newCombinations.push([
+            ...combination,
+            { optionName: variant.optionName, optionValue },
+          ]);
         });
       });
-  
+
       combinations = newCombinations;
     }
-  
+
     return combinations;
   }
-  
+
   function calculatePrice(combination) {
     const basePrice = productInfo.finalPrice; // Use your base price
     // You may need to adjust the price based on the combination
     // For example, if variant1 is "Small" and variant2 is "Red," adjust the price.
-    return basePrice + 0/* Add adjustments based on combination */;
+    return basePrice + 0 /* Add adjustments based on combination */;
   }
-    
+
   async function handleFileUpload(event) {
     debugger;
     const selectedFiles = event.target.files;
@@ -931,7 +1009,7 @@ export default function AddProducts() {
             ))}
           </div>
           <div>
-            <table>
+            {/* <table>
               <thead>
                 <tr>
                   <th>Variant 1</th>
@@ -948,7 +1026,7 @@ export default function AddProducts() {
                   </tr>
                 ))}
               </tbody>
-            </table>
+            </table> */}
           </div>
           <div>
             <button

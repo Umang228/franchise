@@ -32,6 +32,38 @@ router.post('/add-course', (req, res) => {
   });
 });
 
+
+// Route to fetch all users from the "user" table
+router.get('/users', (req, res) => {
+  const sql = 'SELECT * FROM user';
+
+  db.query(sql, (err, result) => {
+    if (err) {
+      console.error("Database query error:", err);
+      return res.status(500).json({ message: "Error fetching users" });
+    }
+
+    return res.status(200).json(result);
+  });
+});
+
+// Route to display all users
+router.get('/display-users', (req, res) => {
+  const sql = 'SELECT * FROM user';
+
+  db.query(sql, (err, result) => {
+    if (err) {
+      console.error("Database query error:", err);
+      return res.status(500).json({ message: "Error fetching users" });
+    }
+
+    // Here, you can render an HTML view or send the user data as JSON to the client-side for display.
+    // Below is an example of sending JSON data to the client:
+
+    return res.status(200).json(result);
+  });
+});
+
 router.get('/courses', (req, res) => {
   const sql = 'SELECT * FROM courses';
 

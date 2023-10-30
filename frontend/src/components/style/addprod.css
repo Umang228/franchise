@@ -330,3 +330,8 @@ top: 23px;
     color: #000 !important;
     position: relative;
 }
+
+.slid::-webkit-scrollbar{
+    scrollbar-color: #6969dd #e0e0e0 !important;
+    scrollbar-width: thin !important;
+}
