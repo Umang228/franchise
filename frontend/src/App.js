@@ -27,6 +27,7 @@ import AddCourse from './components/admin/AddCourse';
 import AddCourseDetails from './components/admin/AddCourseDetails';
 import Courses from './components/admin/Courses';
 import UpdateCourse from './components/admin/UpdateCourse';
+import Users from './components/admin/Users';
  function App() {
   return (
     <BrowserRouter>
@@ -48,6 +49,7 @@ import UpdateCourse from './components/admin/UpdateCourse';
       <Route path='/admin/courses/add' element={<AddCourse/>}/>
       <Route path="/admin/courses/show" element={<Courses />} />
       <Route path="/admin/courses/update/:id" element={<UpdateCourse/>} />
+      <Route path="/admin/users" element={<Users/>} />
 
 
       {/* franchise */}
