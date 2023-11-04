@@ -2,7 +2,36 @@ const express = require("express");
 const router = express.Router();
 const { db } = require("../db");
 const multer = require("multer"); // for image handling
+const Busboy = require('busboy');
+const cloudinary = require("cloudinary").v2;
 const fs = require("fs"); // for image deleting and editing
+
+// const storage = multer.diskStorage({
+//   destination: (req, file, cb) => {
+//     // Define the directory where uploaded files will be saved.
+//     cb(null, `images/products`); // You need to create the 'uploads' directory in your project.
+//   },
+//   filename: (req, file, cb) => {
+//     const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
+//     cb(null, file.fieldname + "-" + uniqueSuffix + "." + file.mimetype.split("/")[1]);
+//   },
+// });
+
+// const upload = multer({ storage: storage });
+
+
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, "images/products"); // Destination directory for uploaded files
+  },
+  filename: (req, file, cb) => {
+    // Generate a unique filename for each uploaded file
+    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
+    cb(null, file.fieldname + "-" + uniqueSuffix + "." + file.mimetype.split("/")[1]);
+  },
+});
+
+const upload = multer({ storage: storage });
 
 
 // Add course
@@ -158,100 +187,131 @@ router.delete('/delete-course/:id', (req, res) => {
  Products
 
  --------------------------------*/
+//add product
+router.post("/add-product", upload.array("productImage", 4), async (req, res) => {
+  try {
+    const {
+      productUrl,
+      productName,
+      facultyName,
+      productID,
+      productType,
+      course,
+      deliveryType,
+      isFranchise,
+      isWhatsapp,
+      priceUpdate,
+      price,
+      discountPrice,
+      description,
+      shortDescription,
+      subject,
+      category_id,
+      featured,
+      slug,
+      mrpText,
+      discountText,
+      rank,
+      topLeft,
+      topRight,
+      bottomLeft,
+      bottomRight,
+      highlights,
+      productDetails,
+      variants,
+      youtubeLink,  // Add youtubeLink to the destructuring
+    } = req.body;
 
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, "images/products");
-  },
-  filename: (req, file, cb) => {
-    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
-    cb(null, file.fieldname + '-' + uniqueSuffix + '-' + file.originalname);
-  },
+    // Create an array to store image file paths
+    const imagePaths = [];
+
+    // Loop through uploaded files and move them to the specified directory
+
+    if (!req.files || req.files.length === 0) {
+      return res.status(400).json({ message: "No files uploaded" });
+    } else {
+      for (const file of req.files) {
+        imagePaths.push(file.path);
+      }
+    }
+
+    const variantsJSON = JSON.stringify(variants);
+
+    // Insert product data into your database with image file paths
+    const sql = `
+    INSERT INTO products (productName, facultyName, productID, productType, course, subject, productUrl, priceUpdate, deliveryType, isFranchise, isWhatsapp, price, discountPrice, description, shortDescription, featured, slug, category_id, image, mrpText, discountText, rank, topLeft, topRight, bottomLeft, bottomRight, highlights, productDetails, variants, youtubeLink) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+    `;
+
+    const values = [
+      productName,
+      facultyName,
+      productID,
+      productType,
+      course,
+      subject,
+      productUrl,
+      priceUpdate,
+      deliveryType,
+      isFranchise,
+      isWhatsapp,
+      price,
+      discountPrice,
+      description,
+      shortDescription,
+      featured,
+      slug,
+      category_id,
+      imagePaths.join(","), // Store file paths as a comma-separated string
+      mrpText,
+      discountText,
+      rank,
+      topLeft,
+      topRight,
+      bottomLeft,
+      bottomRight,
+      highlights,
+      productDetails,
+      variantsJSON,
+      youtubeLink,  // Add youtubeLink to the values
+    ];
+
+    db.query(sql, values, (err, result) => {
+      if (err) {
+        console.error("Database query error:", err);
+        return res.status(500).json({ message: "Error no file data" });
+      }
+
+      return res.json({ message: "Product added successfully" });
+    });
+  } catch (error) {
+    console.error("Error:", error);
+    return res.status(500).json({ message: "Internal server error" });
+  }
 });
 
-const upload = multer({ storage });
 
-//add product
-router.post("/add-product", upload.single("productImage"), (req, res) => {
-  const {
-    productUrl,
-    productName,
-    facultyName,
-    productID,
-    productType,
-    course,
-    deliveryType,
-    isFranchise,
-    isWhatsapp,
-    priceUpdate,
-    price,
-    finalPrice,
-    discountPrice,
-    description,
-    shortDescription,
-    featured,
-    slug,
-    mrpText,
-    discountText,
-    rank,
-    topLeft,
-    topRight,
-    bottomLeft,
-    bottomRight,
-    highlights,
-    productDetails,
-  } = req.body;
-  if (!req.file) {
-    return res.status(400).json({ message: "No image file uploaded" });
-  }
-  const image = req.file.path;
 
-  const sql = `INSERT INTO products 
-               (productName, facultyName, productID, productType, course, productUrl,finalPrice,
-                 deliveryType, isFranchise, isWhatsapp, priceUpdate, price, discountPrice, 
-                description, shortDescription, featured, slug, image, mrpText, discountText, rank, topLeft, topRight, bottomLeft, bottomRight, highlights, productDetails) 
-               VALUES (?, ? , ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+router.get("/admin/products/:productId", async (req, res) => {
+  const productId = req.params.id; // Get the product ID from the request params
 
-  const values = [
-    productUrl,
-    finalPrice,
-    productName,
-    facultyName,
-    productID,
-    productType,
-    course,
-    deliveryType,
-    isFranchise,
-    isWhatsapp,
-    priceUpdate,
-    price,
-    discountPrice,
-    description,
-    shortDescription,
-    featured,
-    slug,
-    image,
-    mrpText,
-    discountText,
-    rank,
-    topLeft,
-    topRight,
-    bottomLeft,
-    bottomRight,
-    highlights,
-    productDetails,
-  ];
+  // Replace this with your database query to fetch the product details by ID
+  const sql = "SELECT * FROM products WHERE id = ?";
+  const values = [productId];
 
   db.query(sql, values, (err, result) => {
     if (err) {
       console.error("Database query error:", err);
-      return res.status(500).json({ message: "Error inserting data" });
+      return res.status(500).json({ message: "Error fetching product details" });
     }
 
-    return res.json({ message: "Product added successfully" });
+    if (result.length === 0) {
+      return res.status(404).json({ message: "Product not found" });
+    }
+
+    const product = result[0];
+    return res.json(product);
   });
 });
-
 
 // Fetch all products
 router.get("/products", (req, res) => {
@@ -311,7 +371,7 @@ router.delete("/products/:id", (req, res) => {
 });
 
 // edit product
-router.put("/products/:id", upload.single("productImage"), (req, res) => {
+router.put("/products/:id", (req, res) => {
   const id = req.params.id;
   const {
     productName,

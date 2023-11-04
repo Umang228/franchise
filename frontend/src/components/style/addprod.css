@@ -1,337 +1,377 @@
 /* add product */
-.add-product-form{
-    background-color: #fff;
-    width: 850px;
-    margin: 43px auto;
-    box-shadow: 3px 3px 10px gray;
-    border-radius: 13px;
+.add-product-form {
+  /* background-color: #fff; */
+  width: 75%;
+  /* box-shadow: 3px 3px 10px gray; */
+  position: absolute;
+  top: 0;
+  left: 100px;
 }
-.add-product-form h2{
-margin: 30px 120px 60px 120px;
-font-size: 27px;
-text-align: center;
-position: relative;
-top: 23px;
+.add-product-form h2 {
+  margin: 30px 120px 60px 120px;
+  font-size: 27px;
+  /* text-align: center; */
+  position: relative;
+  top: 23px;
+  right: 370px;
 }
-.editor{
-    padding: 12px;
-    margin: 13px;
-    border: 0.3px solid lightgray;
-    border-radius: 12px;
-    width: 630px;
-    height: 100%;
-    max-height: 300px; /* Set the initial max height */
-    overflow: hidden;
-    transition: max-height 0.3s ease-in-out; /* Add a smooth transition effect */
-    padding: 12px;
+.editor {
+  padding: 12px;
+  margin: 13px;
+  border: 0.3px solid lightgray;
+  border-radius: 12px;
+  width: 630px;
+  height: 100%;
+  max-height: 300px; /* Set the initial max height */
+  overflow: hidden;
+  transition: max-height 0.3s ease-in-out; /* Add a smooth transition effect */
+  padding: 12px;
 }
 .editor-container {
-    border: 1px solid lightgray;
-    border-radius: 12px;
-    max-height: 300px;
-    padding: 12px;
-    overflow: hidden;
-    transition: max-height 0.3s ease-in-out;
-  }
-  
-  /* Style for the ReactQuill component */
-  .editor-container .ql-editor {
-    min-height: 100px; /* Adjust the initial height as needed */
-    max-height: none; /* Remove max-height for the Quill editor */
-    padding: 0;
-    margin: 0;
-    border: none;
-    width: 100%;
-  }
+  /* border: 1px solid lightgray;
+    border-radius: 12px; */
+  max-height: 300px;
+  padding: 12px;
+  overflow: hidden;
+  transition: max-height 0.3s ease-in-out;
+}
+
+/* Style for the ReactQuill component */
+.editor-container .ql-editor {
+  min-height: 100px; /* Adjust the initial height as needed */
+  max-height: none; /* Remove max-height for the Quill editor */
+  padding: 0;
+  margin: 0;
+  border: none;
+  width: 64vw;
+  border-radius: 12px;
+}
 .expandable-description {
-    max-height: 100px; /* Set the initial max height */
-    overflow: hidden;
-    transition: max-height 0.3s ease-in-out; /* Add a smooth transition effect */
-    border: 1px solid #ccc;
-    padding: 8px;
-  }
-  
-.add-product-form form{
-    display: flex;
-    flex-direction: column;
-    margin-left: 80px;
-    align-items: flex-start;
-}
-.add-product-form form>div{
-    flex: 50%;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-around;
+  min-height: 100px; /* Set the initial max height */
+  overflow: hidden;
+  transition: max-height 0.3s ease-in-out; /* Add a smooth transition effect */
+  border: 1px solid #ccc;
+  padding: 8px;
 }
 
-.add-product-form form>div>input{
-    padding: 12px;
-    margin: 13px;
-    border: 0.3px solid lightgray;
-    border-radius: 12px;
-    width: 630px;
+.add-product-form form {
+  display: flex;
+  flex-direction: column;
+  margin-left: 2px;
+  align-items: flex-start;
 }
-.add-product-form form>div>textarea{
-    padding: 12px;
-    margin: 13px;
-    border: 0.3px solid lightgray;
-    border-radius: 12px;
-    width: 630px;
-}
-
-.add-product-form form>div>input[type=radio]{
-    margin: 13px;
-}
-
-.add-product-form form>div>label{
-    margin-left: 13.8px;
-}
-.form-group{
-    margin-bottom: 6px;
-}
-.form-group>label{
-    margin-bottom: 6px;
+.add-product-form form > div {
+  flex: 50%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  background-color: #fff !important;
+  padding: 23px;
+  border-radius: 13px;
+  margin:8px;
+  width: 55vw !important;
 }
 
-.rdio{
-    margin: 13px;
+.add-product-form form > div > input {
+  padding: 12px;
+  margin: 3px;
+  border: 0.3px solid lightgray;
+  border-radius: 12px;
+  width: 50vw;
+}
+.add-product-form form > div > textarea {
+  padding: 12px;
+  margin: 13px;
+  border: 0.3px solid lightgray;
+  border-radius: 12px;
+  width: 50vw;
 }
 
-
-
-#btnn{
-    color: rgb(255, 255, 255);
-    background-color: rgb(37, 37, 255);
-    border-radius: 13px;
-    padding: 13px;
-    margin-top: 55px;
+.add-product-form form > div > input[type="radio"] {
+  margin: 13px;
 }
 
-.flabel{
-    margin: 13.8px;
+.add-product-form form > div > label {
+  margin-left: 13.8px;
 }
-.fprice{
-    font-weight: bolder;
+.form-group {
+  margin-bottom: 6px;
 }
-.product-imgs{
-    padding: 12px;
-    margin: 13px;
-    border: 0.3px solid lightgray;
-    border-radius: 12px;
-    display: inline-block !important;
+.form-group > label {
+  margin-bottom: 6px;
+}
+
+.rdio {
+  margin: 13px;
+}
+
+#btnn {
+  color: rgb(255, 255, 255);
+  background-color: rgb(37, 37, 255);
+  border-radius: 13px;
+  padding: 13px;
+  margin-top: 55px;
+}
+
+.flabel {
+  margin: 13.8px;
+}
+.fprice {
+  font-weight: bolder;
+}
+.product-imgs {
+  padding: 12px;
+  margin: 13px;
+  border: 0.3px solid lightgray;
+  border-radius: 12px;
+  display: inline-block !important;
 }
 /* edit products */
 
-.edit-product-form h2{
-    margin: 120px 120px 60px 120px;
-    font-size: 27px;
-    }
+.edit-product-form h2 {
+  margin: 120px 120px 60px 120px;
+  font-size: 27px;
+}
 
-    .edit-product-form form{
-        display: flex;
-        /* flex-direction: column; */
-        margin-left: 80px;
-        align-items: center;
-        flex-wrap: wrap;
-    }
-    .edit-product-form form>div{
-        flex: 50%;
-        display: flex;
-        flex-direction: column;
-        /* align-items: flex-start; */
-        justify-content: space-around;
-    }
+.edit-product-form form {
+  display: flex;
+  /* flex-direction: column; */
+  margin-left: 80px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.edit-product-form form > div {
+  flex: 50%;
+  display: flex;
+  flex-direction: column;
+  /* align-items: flex-start; */
+  justify-content: space-around;
+}
 
-    .edit-product-form form>div>input{
-        padding: 12px;
-        margin: 13px;
-        border: 0.3px solid lightgray;
-        border-radius: 12px;
-    }
-    .edit-product-form form>div>textarea{
-        padding: 12px;
-        margin: 13px;
-        border: 0.3px solid lightgray;
-        border-radius: 12px;
-    }
+.edit-product-form form > div > input {
+  padding: 12px;
+  margin: 13px;
+  border: 0.3px solid lightgray;
+  border-radius: 12px;
+}
+.edit-product-form form > div > textarea {
+  padding: 12px;
+  margin: 13px;
+  border: 0.3px solid lightgray;
+  border-radius: 12px;
+}
 
-    .edit-product-form form>div>input[type=radio]{
-        margin: 13px;
-    }
+.edit-product-form form > div > input[type="radio"] {
+  margin: 13px;
+}
 
-    .edit-product-form form>div>label{
-        margin-left: 13.8px;
-    }
+.edit-product-form form > div > label {
+  margin-left: 13.8px;
+}
 
-    .rdio{
-        margin: 13px;
-    }
+.rdio {
+  margin: 13px;
+}
 
-    .update-product{
-        color: rgb(255, 255, 255);
-        background-color: rgb(37, 37, 255);
-        border-radius: 13px;
-        padding: 13px;
-    }
-
-
+.update-product {
+  color: rgb(255, 255, 255);
+  background-color: rgb(37, 37, 255);
+  border-radius: 13px;
+  padding: 13px;
+}
 
 /* Franchise */
 
-
-.add-franchise-form h2{
-    margin: 120px 120px 60px 120px;
-    font-size: 27px;
+.add-franchise-form h2 {
+  margin: 120px 120px 60px 120px;
+  font-size: 27px;
 }
-.add-franchise-form form{
-    display: flex;
-    /* flex-direction: column; */
-    margin-left: 80px;
-    align-items: center;
-    flex-wrap: wrap;
-}
-
-.add-franchise-form form>div{
-    flex: 50%;
-    display: flex;
-    flex-direction: column;
-    /* align-items: flex-start; */
-    justify-content: space-around;
+.add-franchise-form form {
+  display: flex;
+  /* flex-direction: column; */
+  margin-left: 80px;
+  align-items: center;
+  flex-wrap: wrap;
 }
 
-.add-franchise-form form>div>input{
-    padding: 12px;
-    margin: 13px;
-    border: 0.3px solid lightgray;
-    border-radius: 12px;
+.add-franchise-form form > div {
+  flex: 50%;
+  display: flex;
+  flex-direction: column;
+  /* align-items: flex-start; */
+  justify-content: space-around;
 }
 
-.add-franchise-form form>div>input[type=radio]{
-    margin: 13px;
+.add-franchise-form form > div > input {
+  padding: 12px;
+  margin: 13px;
+  border: 0.3px solid lightgray;
+  border-radius: 12px;
 }
 
-.add-franchise-form form>div>label{
-    margin-left: 13.8px;
+.add-franchise-form form > div > input[type="radio"] {
+  margin: 13px;
 }
 
-#addBtnn{
-    color: rgb(255, 255, 255);
-    background-color: rgb(37, 37, 255);
-    border-radius: 13px;
-    padding: 13px;
-    width: 180px;
-}
-.modeOfPayment{
-    padding: 12px;
-    margin: 13px;
-    border: 0.3px solid lightgray;
-    border-radius: 12px;
-    width: 630px;
+.add-franchise-form form > div > label {
+  margin-left: 13.8px;
 }
 
-.selectProducts{
-    margin: 13px;
-    border: 0.3px solid lightgray;
-    border-radius: 12px;
-    width: 97% !important;
+#addBtnn {
+  color: rgb(255, 255, 255);
+  background-color: rgb(37, 37, 255);
+  border-radius: 13px;
+  padding: 13px;
+  width: 180px;
+}
+.modeOfPayment {
+  padding: 12px;
+  margin: 13px;
+  border: 0.3px solid lightgray;
+  border-radius: 12px;
+  width: 50vw;
 }
 
+.selectProducts {
+  margin: 13px;
+  border: 0.3px solid lightgray;
+  border-radius: 12px;
+  width: 97% !important;
+}
 
 /* update franchise */
 
-.edit-franchise-form h2{
-    margin: 120px 120px 60px 120px;
-    font-size: 27px;
+.edit-franchise-form h2 {
+  margin: 120px 120px 60px 120px;
+  font-size: 27px;
 }
-.edit-franchise-form form{
-    display: flex;
-    margin-left: 80px;
-    align-items: center;
-    flex-wrap: wrap;
-}
-
-.edit-franchise-form form>div{
-    flex: 50%;
-    display: flex;
-    flex-direction: column;
-    /* align-items: flex-start; */
-    justify-content: space-around;
+.edit-franchise-form form {
+  display: flex;
+  margin-left: 80px;
+  align-items: center;
+  flex-wrap: wrap;
 }
 
-.edit-franchise-form form>div>input{
-    padding: 12px;
-    margin: 13px;
-    border: 0.3px solid lightgray;
-    border-radius: 12px;
+.edit-franchise-form form > div {
+  flex: 50%;
+  display: flex;
+  flex-direction: column;
+  /* align-items: flex-start; */
+  justify-content: space-around;
 }
 
-.edit-franchise-form form>div>input[type=radio]{
-    margin: 13px;
+.edit-franchise-form form > div > input {
+  padding: 12px;
+  margin: 13px;
+  border: 0.3px solid lightgray;
+  border-radius: 12px;
 }
 
-.edit-franchise-form form>div>label{
-    margin-left: 13.8px;
+.edit-franchise-form form > div > input[type="radio"] {
+  margin: 13px;
 }
 
-#updateBtnn{
-    color: rgb(255, 255, 255);
-    background-color: rgb(37, 37, 255);
+.edit-franchise-form form > div > label {
+  margin-left: 13.8px;
+}
+
+#updateBtnn {
+  color: rgb(255, 255, 255);
+  background-color: rgb(37, 37, 255);
+  border-radius: 13px;
+  padding: 13px;
+  width: 180px;
+}
+.modeOfPayment {
+  padding: 12px;
+  margin: 13px;
+  border: 0.3px solid lightgray;
+  border-radius: 12px;
+}
+
+.selectProducts {
+  margin: 13px;
+  border: 0.3px solid lightgray;
+  border-radius: 12px;
+  width: 97% !important;
+}
+
+.prod-header {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 75px;
+}
+
+.prod-header nav ul {
+  display: flex;
+  align-items: center;
+}
+
+.prod-header nav ul li a {
+  color: black;
+  margin: 14px;
+  transition: all 0.5s;
+  padding: 12px;
+}
+.prod-header nav ul li.active {
+  background: transparent !important;
+  border-bottom: 2px solid rgb(17, 25, 77);
+  border-radius: 3px;
+}
+.prod-header nav ul li.active a {
+  color: rgb(17, 25, 77);
+}
+
+.btn-10 {
+  color: #fff;
+  background-color: #202020;
+  font-size: 11px;
+}
+
+.ql-editor p {
+  color: #000 !important;
+  position: relative;
+}
+
+.slid::-webkit-scrollbar {
+  scrollbar-color: #6969dd #e0e0e0 !important;
+  scrollbar-width: thin !important;
+}
+.page-item.active a {
+  color: #fff !important;
+  text-align: center;
+  position: relative;
+  right: 10px;
+  bottom: 8px;
+}
+.page-item.active {
+  color: #fff !important;
+  padding: 10px;
+  text-align: left;
+  width: 30px !important;
+  height: 30px !important;
+}
+.page-item {
+  width: 15% !important;
+  height: 15% !important;
+}
+
+.page-item a {
+  font-size: 13px;
+}
+.left-form{
+    background-color: #fff;
+    word-wrap: break-word;
+    width: 32.5vw;
+    position: absolute;
+    right: 20px;
+    top: 140px;
+    padding: 23px;
     border-radius: 13px;
-    padding: 13px;
-    width: 180px;
 }
-.modeOfPayment{
-    padding: 12px;
-    margin: 13px;
-    border: 0.3px solid lightgray;
-    border-radius: 12px;
+.left-form h3{
+    margin: 15px;
 }
-
-.selectProducts{
-    margin: 13px;
-    border: 0.3px solid lightgray;
-    border-radius: 12px;
-    width: 97% !important;
-}
-
-.prod-header{
-    display: flex;
-    justify-content: center;
-    margin-bottom: 75px;
-}
-
-.prod-header nav ul{
-    display: flex;
-    align-items: center;
-}
-
-.prod-header nav ul li a{
-    color: black;
-    margin: 14px;
-    transition: all 0.5s;
-    padding: 12px;
-}
-.prod-header nav ul li.active{
-    background: transparent !important;
-    border-bottom:2px solid rgb(17, 25, 77);
-    border-radius: 3px;
-}
-.prod-header nav ul li.active a{
-    color: rgb(17, 25, 77);
-}
-
-.btn-10{
-    color: #fff;
-    background-color: #202020;
-    font-size: 11px;
-}
-
-.ql-editor p{
-    color: #000 !important;
-    position: relative;
-}
-
-.slid::-webkit-scrollbar{
-    scrollbar-color: #6969dd #e0e0e0 !important;
-    scrollbar-width: thin !important;
+.left-form p{
+    margin: 15px;
 }

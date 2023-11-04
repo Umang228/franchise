@@ -28,6 +28,7 @@ import AddCourseDetails from './components/admin/AddCourseDetails';
 import Courses from './components/admin/Courses';
 import UpdateCourse from './components/admin/UpdateCourse';
 import Users from './components/admin/Users';
+import ProductDetails from './components/admin/ProductDetails';
  function App() {
   return (
     <BrowserRouter>
@@ -50,6 +51,8 @@ import Users from './components/admin/Users';
       <Route path="/admin/courses/show" element={<Courses />} />
       <Route path="/admin/courses/update/:id" element={<UpdateCourse/>} />
       <Route path="/admin/users" element={<Users/>} />
+      <Route path="/admin/products/view/:productId" element={<ProductDetails/>}/>
+
 
 
       {/* franchise */}
