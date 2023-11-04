@@ -14,13 +14,11 @@ main {
 /* Sidebar */
 .sidebar {
   z-index: 100;
-  background: #ffffff;
-  color: rgb(26, 26, 26);
+  background: #181818;
+  color: rgb(255, 255, 255);
   height: 100vh;
   overflow-y: scroll;
   position: fixed;
-  border-top-right-radius: 10px;
-  border-bottom-right-radius:10px;
 }
 .sidebar::-webkit-scrollbar{
   display: none !important;
@@ -38,7 +36,7 @@ main {
   top: 0 !important;
   font-size: 18px;
   line-height: 0;
-  color: #000000 !important;
+  color: #ffffff !important;
 }
 .bars {
   width: 30px;
@@ -53,7 +51,7 @@ main {
   margin: 10px 0;
   height: 30px;
   padding: 12px;
-  color: #000000;
+  color: #ffffff;
 }
 .search input {
   border: none;
@@ -68,12 +66,12 @@ main {
   display: flex;
   flex-direction: column;
   gap: 5px;
-  color: rgb(26, 26, 26);
+  color: rgb(255, 255, 255);
 
 }
 .link {
   display: flex;
-  color: rgb(0, 0, 0);
+  color: rgb(243, 243, 243);
   gap: 10px;
   padding: 5px 12px;
   border-right: 4px solid transparent;
@@ -102,7 +100,7 @@ main {
 
 .menu {
   display: flex;
-  color: rgb(26, 26, 26);
+  color: rgb(255, 255, 255);
   padding: 10px 12px;
   border-right: 4px solid transparent;
   transition: 0.2s cubic-bezier(0.6, -0.28, 0.735, 0.045);
@@ -115,8 +113,17 @@ main {
 .menu_container {
   display: flex;
   flex-direction: column;
+  cursor: pointer;
 }
 .menu_container .link {
   padding-left: 20px;
   border-bottom: rgb(17, 25, 77)0.5px solid;
+  cursor: pointer;
+}
+.menu>div>svg{
+  position: relative;
+  top: 12px;
+}
+.bars{
+  cursor: pointer;
 }

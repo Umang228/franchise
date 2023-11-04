@@ -14,10 +14,14 @@ import "react-quill/dist/quill.snow.css";
 import ReactImageGallery from "react-image-gallery";
 import "react-image-gallery/styles/css/image-gallery.css";
 import LivePreviewPage from "./LivePreviewPage";
+import { AiOutlineArrowLeft } from "react-icons/ai";
+import { TiStarburst } from "react-icons/ti";
+import { BiFontSize } from "react-icons/bi";
 export default function AddProducts() {
   const [productInfo, setProductInfo] = useState({
     productUrl: "",
     productName: "",
+    productUrl: "",
     facultyName: "",
     productID: "",
     productType: "Combo",
@@ -49,6 +53,8 @@ export default function AddProducts() {
     highlights: "",
     productDetails: "",
     youtubeLink: "",
+    displayField: "", // Selected field from the dropdown
+    customFields: [], // Array to store custom fields
   });
 
   const [successMessage, setSuccessMessage] = useState("");
@@ -222,7 +228,9 @@ export default function AddProducts() {
     return (
       <div style={galleryStyle} className="slid">
         <div style={contentStyle}>
-          <h2>{productInfo.productName}</h2>
+          <h2>
+            <AiOutlineArrowLeft /> {productInfo.productName}
+          </h2>
           <label>Images:</label>
           <div className="product-imgs-slider">
             <ReactImageGallery items={images} />
@@ -332,7 +340,6 @@ export default function AddProducts() {
   };
 
   const handleSubmit = async (event) => {
-    debugger;
     event.preventDefault();
 
     // Convert boolean values to 0 and 1
@@ -344,41 +351,27 @@ export default function AddProducts() {
       }
     }
 
-    // Convert uploaded images to Base64 strings
-    const imagePromises = uploadedImages.map(async (image) => {
-      const reader = new FileReader();
-      const promise = new Promise((resolve, reject) => {
-        reader.onload = () => {
-          resolve(reader.result);
-        };
-        reader.onerror = (error) => {
-          reject(error);
-        };
-        reader.readAsDataURL(image);
-      });
-
-      return promise;
-    });
-
-    // Wait for all of the image promises to resolve
-    const imageBase64Strings = await Promise.all(imagePromises);
-
-    // Update the productInfo object with the array of image Base64 strings
-    productInfoWithBooleanConversion.productImage = imageBase64Strings;
-
+    // Create a new FormData
     const formData = new FormData();
 
     // Append productInfo fields to the FormData
     for (const key in productInfoWithBooleanConversion) {
       formData.append(key, productInfoWithBooleanConversion[key]);
     }
+
+    // Append uploaded images to the FormData
+    for (const image of uploadedImages) {
+      formData.append("productImage", image);
+    }
+
     try {
+      // Send the FormData to the server
       const response = await axios.post(
         "http://localhost:8081/admin/add-product",
-        formData, // Send productInfo with boolean conversion and image Base64 strings
+        formData,
         {
           headers: {
-            "Content-Type": "application/json", // Set the content type to JSON
+            "Content-Type": "multipart/form-data", // Set the content type to multipart/form-data
           },
         }
       );
@@ -400,23 +393,27 @@ export default function AddProducts() {
       return [];
     }
 
-    // Initialize combinations with the first variant's option values
-    let combinations = variants[0].optionValues.map((optionValue) => [
-      { optionName: variants[0].optionName, optionValue },
-    ]);
+    const optionNames = variants.map((variant) => variant.optionName);
 
-    // Iterate over the remaining variants
+    let combinations = [];
+    const firstVariant = variants[0];
+
+    firstVariant.optionValues.forEach((optionValue) => {
+      combinations.push({
+        [firstVariant.optionName]: optionValue,
+      });
+    });
+
     for (let i = 1; i < variants.length; i++) {
       const variant = variants[i];
       const newCombinations = [];
 
-      // For each combination, create new combinations with the current variant's option values
       combinations.forEach((combination) => {
         variant.optionValues.forEach((optionValue) => {
-          newCombinations.push([
+          newCombinations.push({
             ...combination,
-            { optionName: variant.optionName, optionValue },
-          ]);
+            [variant.optionName]: optionValue,
+          });
         });
       });
 
@@ -475,7 +472,43 @@ export default function AddProducts() {
   const closeLivePreview = () => {
     setShowLivePreview(false);
   };
+  const handlePriceChange = (index, newPrice) => {
+    // Create a copy of the current combinations
+    const updatedCombinations = [
+      ...generateVariantCombinations(productInfo.variants),
+    ];
 
+    // Update the price of the specified combination
+    updatedCombinations[index].price = newPrice;
+
+    // Update the state with the new combinations
+    setProductInfo((prevProductInfo) => ({
+      ...prevProductInfo,
+      variants: productInfo.variants.map((variant, i) => ({
+        ...variant,
+        price: updatedCombinations[i].price,
+      })),
+    }));
+  };
+
+  const addCustomField = () => {
+    const newField = prompt("Enter a custom field name:");
+    if (newField) {
+      setProductInfo((prevProductInfo) => ({
+        ...prevProductInfo,
+        customFields: [...prevProductInfo.customFields, newField],
+      }));
+    }
+  };
+  const handleProductNameChange = (e) => {
+    const newProductName = e.target.value;
+    const newProductUrl = newProductName; // Use the product name as the URL
+    setProductInfo((prevProductInfo) => ({
+      ...prevProductInfo,
+      productName: newProductName,
+      productUrl: newProductUrl,
+    }));
+  };
   const handleAddMoreImages = () => {
     // Trigger a click on the file input element to allow users to select more images
     inputRef.current.click();
@@ -489,6 +522,16 @@ export default function AddProducts() {
         {successMessage && <p className="success-message">{successMessage}</p>}
         <form onSubmit={handleSubmit} enctype="multipart/form-data">
           <div>
+            <label>Product Title</label>
+            <input
+              type="text"
+              name="productName"
+              value={productInfo.productName}
+              onChange={handleProductNameChange}
+              required
+            />
+          </div>
+          <div>
             <label>Product URL:</label>
             <input
               type="text"
@@ -499,16 +542,6 @@ export default function AddProducts() {
             />
             {/* <span>Open</span>
             <span>Copy</span> */}
-          </div>
-          <div>
-            <label>Product Title</label>
-            <input
-              type="text"
-              name="productName"
-              value={productInfo.productName}
-              onChange={handleChange}
-              required
-            />
           </div>
           <div className="form-group">
             <label htmlFor="htmlEditor">Product Description</label>
@@ -744,7 +777,7 @@ export default function AddProducts() {
               multiple
             />
             <button onClick={handleAddMoreImages} className="btn-10">
-              +
+              <i class="fa-solid fa-upload"></i>
             </button>
           </div>
 
@@ -1009,25 +1042,46 @@ export default function AddProducts() {
             ))}
           </div>
           <div>
-            {/* <table>
+            <table>
               <thead>
                 <tr>
-                  <th>Variant 1</th>
-                  <th>Variant 2</th>
-                  <th>Price</th>
+                  {productInfo.variants.map((variant) => (
+                    <th key={variant.optionName}>{variant.optionName}</th>
+                  ))}
+                  {productInfo.variants.some(
+                    (variant) => variant.optionValues.length > 0
+                  ) && <th>Price</th>}
                 </tr>
               </thead>
               <tbody>
-                {generateVariantCombinations().map((combination, index) => (
-                  <tr key={index}>
-                    <td colSpan={2}>{combination.variant1}</td>
-                    <td colSpan={2}>{combination.variant2}</td>
-                    <td colSpan={2}>{calculatePrice(combination)}</td>
-                  </tr>
-                ))}
+                {generateVariantCombinations(productInfo.variants).map(
+                  (combination, index) => (
+                    <tr key={index}>
+                      {productInfo.variants.map((variant) => (
+                        <td key={variant.optionName}>
+                          {combination[variant.optionName]}
+                        </td>
+                      ))}
+                      {productInfo.variants.some(
+                        (variant) => variant.optionValues.length > 0
+                      ) && (
+                        <td>
+                          <input
+                            type="text"
+                            value={combination.price} // Use the price value from the combination
+                            onChange={(e) =>
+                              handlePriceChange(index, e.target.value)
+                            }
+                          />
+                        </td>
+                      )}
+                    </tr>
+                  )
+                )}
               </tbody>
-            </table> */}
+            </table>
           </div>
+
           <div>
             <button
               type="button"
@@ -1068,6 +1122,105 @@ export default function AddProducts() {
             Add Product
           </button>
         </form>
+      </div>
+      <div className="left-form">
+      <span>
+  <TiStarburst style={{
+    textAlign:'center',
+    color:'linear-gradient(to right, #FF6B6B, #FFD166)',
+    fontSize:'23px'
+  }}/>
+</span>
+        <h3>Step 1: Product Information</h3>
+        <p>
+          1. Start by entering the product title in the "Product Title" field.
+          This is the main name of your product.
+        </p>
+        <p>
+          2. Provide a product URL, which should be a unique identifier for your
+          product. This helps in SEO and easy access.
+        </p>
+        <p>
+          3. Create a descriptive product description in the "Product
+          Description" field using the rich text editor.
+        </p>
+        <p>4. Add a detailed title for SEO purposes.</p>
+        <p>
+          5. Enter the MRP (Maximum Retail Price) and the discounted price. The
+          final price will be calculated automatically.
+        </p>
+        <p>6. Specify how the MRP should be displayed.</p>
+        <p>7. Indicate how the discount should be displayed.</p>
+        <p>8. Select the relevant course from the dropdown list.</p>
+        <p>9. Choose the inventory status as "In Stock."</p>
+        <p>10. Assign a rank to your product.</p>
+        <p>
+          11. Select the appropriate subject, category, and subcategory from
+          their respective dropdown menus.
+        </p>
+        <p>12. Pick an author from the list.</p>
+        <p>
+          13. Add tags to your product - top left, top right, bottom left, and
+          bottom right.
+        </p>
+        <p>
+          14. Upload images by clicking the "Upload Images" button and selecting
+          multiple images. They will be displayed below the button.
+        </p>
+        <p>15. Enter the product highlights.</p>
+        <p>
+          16. If you have a YouTube video related to the product, provide the
+          link.
+        </p>
+
+        <h3>Step 2: Product Details</h3>
+        <p>1. Enter specific product details.</p>
+        <p>2. Specify the faculty name.</p>
+        <p>3. Assign a unique product ID (SKU).</p>
+        <p>4. Choose the product type - Combo or Single.</p>
+        <p>5. Select the delivery type - Regular or Fast Track.</p>
+        <p>6. Add a short description of the product.</p>
+        <p>7. Specify the product's slug.</p>
+
+        <h3>Step 3: Additional Services</h3>
+        <p>
+          1. Indicate if the product is a franchise, should be broadcasted on
+          WhatsApp, requires price updates, or is featured. You can choose
+          multiple options.
+        </p>
+
+        <h3>Step 4: Variants (if applicable)</h3>
+        <p>
+          1. Click the "+ Add Variant" button to add different product variants.
+        </p>
+        <p>
+          2. For each variant, provide an option name and values. You can add
+          multiple values for each option.
+        </p>
+        <p>
+          3. Set prices for each combination of variant options in the table at
+          the bottom of the form.
+        </p>
+
+        <h3>Step 5: Live Preview</h3>
+        <p>
+          1. Click the "Live Preview" button to see how your product will
+          appear.
+        </p>
+        <p>
+          2. A pop-up will display the live preview, including the product
+          description, images, and any embedded YouTube video.
+        </p>
+        <p>
+          3. You can close the live preview by clicking the "Close" button
+          within the pop-up.
+        </p>
+
+        <h3>Step 6: Submit Your Product</h3>
+        <p>
+          1. Finally, click the "Add Product" button at the end of the form to
+          submit your product.
+        </p>
       </div>
     </div>
   );
