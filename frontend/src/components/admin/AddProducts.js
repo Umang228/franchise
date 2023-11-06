@@ -82,7 +82,9 @@ export default function AddProducts() {
   });
   const [tabs, setTabs] = useState([
     { name: "Description", content: "" },
-    // You can include initial tabs here
+    { name: "Youtube Links", content: "" },
+    { name: "Reviews", content: "" },
+
   ]);
 
   const [showLivePreview, setShowLivePreview] = useState(false);
