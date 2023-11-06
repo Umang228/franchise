@@ -9,6 +9,7 @@ import "react-responsive-carousel/lib/styles/carousel.min.css";
 import Rating from "react-rating-stars-component";
 
 export default function ProductDetails() {
+  debugger;  
   const { productId } = useParams();
   const [product, setProduct] = useState(null);
   const [selectedVariants, setSelectedVariants] = useState({});
@@ -22,6 +23,9 @@ export default function ProductDetails() {
     axios
       .get(`http://localhost:8081/admin/products/${productId}`)
       .then((response) => {
+        if (response.data.products && typeof response.data.products.variants === "string") {
+            response.data.products.variants = JSON.parse(response.data.products.variants);
+          }
         setProduct(response.data.products);
       });
   }, [productId]);
@@ -70,19 +74,7 @@ export default function ProductDetails() {
     });
   };
 
-  product.variants = [
-    {
-      optionName: "Course Type",
-      optionValues: ["Pendrive", "Online", "Classroom"],
-      priceAdjustment: 0,
-    },
-    {
-      optionName: "Course Duration",
-      optionValues: ["3 Months", "6 Months", "12 Months"],
-      priceAdjustment: 30,
-    },
-    // ... other variants
-  ];
+
 
   // Define tab content
   const descriptionContent = product.description; // Replace with actual data
