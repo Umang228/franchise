@@ -86,6 +86,21 @@ export default function ProductDetails() {
     // Implement the review submission logic here, e.g., send data to the server
     // You can access the 'name', 'email', 'rating', and 'review' state variables here
   };
+
+  product.variants = [
+    {
+      optionName: "Course Type",
+      optionValues: ["Pendrive", "Online", "Classroom"],
+      priceAdjustment: 0,
+    },
+    {
+      optionName: "Course Duration",
+      optionValues: ["3 Months", "6 Months", "12 Months"],
+      priceAdjustment: 30,
+    },
+    // ... other variants
+  ];
+
   return (
     <div className="ProductDetails" style={{ backgroundColor: "white" }}>
       <div className="leftSide">

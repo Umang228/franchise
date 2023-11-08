@@ -83,8 +83,6 @@ export default function AddProducts() {
   const [tabs, setTabs] = useState([
     { name: "Description", content: "" },
     { name: "Youtube Links", content: "" },
-    { name: "Reviews", content: "" },
-
   ]);
 
   const [showLivePreview, setShowLivePreview] = useState(false);
