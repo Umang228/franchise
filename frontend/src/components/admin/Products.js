@@ -1,40 +1,28 @@
-import React, { useState, useEffect } from "react";
-import { useNavigate, Link } from "react-router-dom";
-import Sidebar from "./Sidebar";
-import "../style/prod.css";
-import axios from "axios";
-import { AiFillEdit } from "react-icons/ai";
-import { AiFillDelete } from "react-icons/ai";
-import { AiOutlineUsergroupDelete } from "react-icons/ai";
-import { AiOutlineBook } from "react-icons/ai";
-import { FcBookmark } from "react-icons/fc";
-import { AiFillEye } from "react-icons/ai";
-
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import Sidebar from './Sidebar';
+import axios from 'axios';
+import { AiFillEdit, AiFillDelete, AiFillEye } from 'react-icons/ai';
+import { DataGrid, GridToolbar } from '@mui/x-data-grid';
+import TextField from '@mui/material/TextField';
 export default function Products() {
   const [products, setProducts] = useState([]);
   const [showConfirmationDialog, setShowConfirmationDialog] = useState(false);
   const [deleteProductId, setDeleteProductId] = useState(null);
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
-  const [search, setSearch] = useState("");
+  const [searchText, setSearchText] = useState('');
+  const [search, setSearch] = useState('');
   const navigate = useNavigate();
-  // pagination
-  const [currentPage, setCurrentPage] = useState(1);
-  const recordsPerPage = 4;
-  const lastIndex = currentPage * recordsPerPage;
-  const firstIndex = lastIndex - recordsPerPage;
-  const records = products.slice(firstIndex, lastIndex);
-  const npage = Math.ceil(products.length / recordsPerPage);
-  const numbers = [...Array(npage + 1).keys()].slice(1);
 
   // Function to fetch product data from the backend
   const fetchProducts = async () => {
     try {
-      const response = await axios.get("http://localhost:8081/admin/products");
+      const response = await axios.get('http://localhost:8081/admin/products');
       if (response.status === 200) {
         setProducts(response.data);
       }
     } catch (error) {
-      console.error("Error fetching products:", error);
+      console.error('Error fetching products:', error);
     }
   };
 
@@ -43,6 +31,17 @@ export default function Products() {
     fetchProducts();
   }, []);
 
+  const handleSearch = (event) => {
+    setSearchText(event.target.value); // Update the search text
+  };
+  const filteredProducts = products.filter(
+    (product) =>
+      product.productName.toLowerCase().includes(searchText.toLowerCase()) ||
+      product.facultyName.toLowerCase().includes(searchText.toLowerCase()) ||
+      product.course.toLowerCase().includes(searchText.toLowerCase()) ||
+      product.subject.toLowerCase().includes(searchText.toLowerCase()) ||
+      product.deliveryType.toLowerCase().includes(searchText.toLowerCase())
+  );
   // Function to open the confirmation dialog for deletion
   const handleOpenConfirmationDialog = (id) => {
     setDeleteProductId(id);
@@ -61,17 +60,15 @@ export default function Products() {
       try {
         console.log(`Deleting product with ID: ${deleteProductId}`);
 
-        const response = await axios.delete(
-          `http://localhost:8081/admin/products/${deleteProductId}`
-        );
-        console.log("Delete response:", response);
+        const response = await axios.delete(`http://localhost:8081/admin/products/${deleteProductId}`);
+        console.log('Delete response:', response);
 
         if (response.status === 200) {
           // Update the state of the products array
           setProducts((prevProducts) =>
             prevProducts.filter((product) => product.id !== deleteProductId)
           );
-          console.log("Product deleted successfully");
+          console.log('Product deleted successfully');
           setShowSuccessMessage(true);
 
           // Close the confirmation dialog
@@ -81,124 +78,87 @@ export default function Products() {
           setTimeout(() => {
             setShowSuccessMessage(false);
           }, 3000);
+
+          // Soft reload by navigating to the current location
+          navigate(navigate('/admin/products'));
         } else {
-          console.log(
-            "Delete request did not return a success status:",
-            response.status
-          );
+          console.log('Delete request did not return a success status:', response.status);
         }
       } catch (error) {
-        console.error("Error deleting product:", error);
+        console.error('Error deleting product:', error);
       }
     }
   };
+
+  const columns = [
+    { field: 'id', headerName: 'Id', flex: 1 },
+    { field: 'productName', headerName: 'Product Name', flex: 1 },
+    { field: 'facultyName', headerName: 'Faculty Name', flex: 1 },
+    { field: 'course', headerName: 'Course', flex: 1 },
+    { field: 'subject', headerName: 'Subject', flex: 1 },
+    { field: 'deliveryType', headerName: 'Delivery Type', flex: 1 },
+    {
+      field: 'actions',
+      headerName: 'Actions',
+      flex: 1,
+      renderCell: (params) => (
+        <div className="action">
+          <button
+            onClick={() => navigate(`/admin/products/edit/${params.row.id}`)}
+            className="edit"
+            style={{ marginLeft: '-18px' }}
+          >
+            <AiFillEdit />
+          </button>
+          <button
+            onClick={() => handleOpenConfirmationDialog(params.row.id)}
+            className="delete"
+            style={{ marginLeft: '-18px' }}
+          >
+            <AiFillDelete />
+          </button>
+          <button
+            style={{ marginLeft: '-18px', color: '#50C878' }}
+            onClick={() => navigate(`/admin/products/view/${params.row.id}`)}
+          >
+            <AiFillEye />
+          </button>
+        </div>
+      ),
+    },
+  ];
 
   return (
     <div className="prod">
       <Sidebar />
       <div className="child-prod">
-        <div className="sub-child">
-          <h1 className="heading1">Products</h1>
-          <p>30 Products Found</p>
-          <h3>All Products</h3>
-        </div>
 
-        <form>
-          <input
-            type="text"
-            placeholder="Search here"
-            onChange={(e) => setSearch(e.target.value)}
-            className="searchable"
+        <div className="topBar">
+          <h1>Products</h1>
+          <button className='btn-10' onClick={() => navigate(`add`)}>
+            + Add Product
+          </button>
+        </div>
+        <TextField
+          label="Search Products"
+          variant="outlined"
+          value={searchText}
+          onChange={handleSearch}
+          className='searchField'
+          style={{ margin: '10px' }}
+        />
+        <div style={{ height:'100%', width: '93%', marginLeft: '42px', boxShadow: '0px 0px 10px rgba(0, 0, 0, 0.1)' }}>
+          <DataGrid
+            rows={filteredProducts}
+            columns={columns}
+            pageSize={4}
+            components={{
+              Toolbar: CustomToolbar,
+            }}
+            disableSelectionOnClick
+            onSelectionModelChange={(ids) => console.log(ids)}
           />
-          <img
-            src="https://img.freepik.com/premium-vector/3d-square-white-icon-button-person_165488-4834.jpg"
-            alt=""
-            className="user-img"
-            title="Admin"
-          />
-        </form>
-        <table class="utable">
-          <thead style={{ borderBottom: "1px solid black" }} className="boderB">
-            <tr>
-              <th>Id</th>
-              <th>Product Name</th>
-              <th>Faculty Name</th>
-              <th>Course</th>
-              <th>Subject</th>
-              <th>Delivery Type</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {records
-              .filter((product) => {
-                return search.toLowerCase() === ""
-                  ? product
-                  : product.productName.toLowerCase().includes(search);
-              })
-              .map((product) => (
-                <tr key={product.id} className="row">
-                  <td>{product.id}</td>
-                  <td>{product.productName}</td>
-                  <td>
-                    <AiOutlineUsergroupDelete className="facu" />{" "}
-                    {product.facultyName}
-                  </td>
-                  <td>
-                    <AiOutlineBook className="course" /> {product.course}
-                  </td>
-                  <td className="subject">
-                    <FcBookmark />
-                    {product.subject}
-                  </td>
-                  <td>{product.deliveryType}</td>
-                  <td className="action">
-                    <button
-                      onClick={() =>
-                        navigate(`/admin/products/edit/${product.id}`)
-                      }
-                      className="edit"
-                    >
-                      <AiFillEdit /> Edit
-                    </button>
-                    <button
-                      onClick={() => handleOpenConfirmationDialog(product.id)}
-                      className="delete"
-                    >
-                      <AiFillDelete /> Delete
-                    </button>
-                    <button style={{ color: "#50C878" }} onClick={() => navigate(`/admin/products/view/${product.id}`)}>
-                        <AiFillEye /> View
-                    </button>
-                  </td>
-                </tr>
-              ))}
-          </tbody>
-        </table>
-        <nav className="nv">
-          <ul>
-            <li>
-              <a href="#0" onClick={prePage}>
-                Prev
-              </a>
-            </li>
-            {numbers.map((n, products) => (
-              <li
-                className={`page-item ${currentPage === n ? "active" : ""}`}
-                key={products}
-              >
-                <a href="#0" onClick={() => changeCPage(n)}>
-                  {n}
-                </a>
-              </li>
-            ))}
-            <li>
-              <a href="#0" onClick={nextPage}>
-                Next
-              </a>
-            </li>
-          </ul>
-        </nav>
+        </div>
 
         {showConfirmationDialog && (
           <div className="confirmation-dialog">
@@ -215,18 +175,53 @@ export default function Products() {
       </div>
     </div>
   );
-  //pagination
-  function prePage() {
-    if (currentPage !== 1) {
-      setCurrentPage(currentPage - 1);
-    }
-  }
-  function changeCPage(id) {
-    setCurrentPage(id);
-  }
-  function nextPage() {
-    if (currentPage !== npage) {
-      setCurrentPage(currentPage + 1);
-    }
-  }
 }
+
+const CustomToolbar = () => {
+  return (
+    <GridToolbar
+      components={{
+        ColumnsPanel: CustomColumnsPanel,
+        FiltersPanel: CustomFiltersPanel,
+        DensitySelector: CustomDensitySelector,
+        ExportButton: CustomExportButton,
+      }}
+    />
+  );
+};
+
+const CustomColumnsPanel = () => {
+  return (
+    <div style={{ padding: '16px' }}>
+      {/* Your custom columns panel content goes here */}
+      <p>Custom Columns Panel</p>
+    </div>
+  );
+};
+
+const CustomFiltersPanel = () => {
+  return (
+    <div style={{ padding: '16px' }}>
+      {/* Your custom filters panel content goes here */}
+      <p>Custom Filters Panel</p>
+    </div>
+  );
+};
+
+const CustomDensitySelector = () => {
+  return (
+    <div style={{ padding: '16px' }}>
+      {/* Your custom density selector content goes here */}
+      <p>Custom Density Selector</p>
+    </div>
+  );
+};
+
+const CustomExportButton = () => {
+  return (
+    <div style={{ padding: '16px' }}>
+      {/* Your custom export button content goes here */}
+      <p>Custom Export Button</p>
+    </div>
+  );
+};

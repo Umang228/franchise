@@ -253,12 +253,12 @@ flex-direction: column;
 
 
 .Price{
-    color:#3A3A3A;
+    color:#0C0C0C;
     font-size: 34px;
 }
 
 .addToCart{
-    background-color: #3A3A3A;
+    background-color: #0C0C0C;
     position: relative;
     right:21px;
     text-align: center;
@@ -350,6 +350,7 @@ flex-direction: column;
     cursor: pointer;
     position: absolute;
     right: 90px;
+    
   }
   
   .delete-button {

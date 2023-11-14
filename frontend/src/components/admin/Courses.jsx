@@ -68,7 +68,7 @@ const Courses = () => {
           className='searchField'
           style={{ margin: '10px'}}
         />
-        <div style={{ height: 500, width: '90%', margin: '23px' }}>
+        <div style={{ height: 500, width: '93%', marginLeft: '42px' }}>
           <DataGrid
             rows={filteredData}
             columns={[

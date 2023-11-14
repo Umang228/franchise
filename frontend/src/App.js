@@ -29,13 +29,14 @@ import Courses from './components/admin/Courses';
 import UpdateCourse from './components/admin/UpdateCourse';
 import Users from './components/admin/Users';
 import ProductDetails from './components/admin/ProductDetails';
+import HomePage from './components/HomePage';
  function App() {
   return (
     <BrowserRouter>
       <Routes>
       <Route path="/" element={<Authentication allowedRoles={[]}><LoginPage /></Authentication>} />
       <Route path="/register" element={<Authentication allowedRoles={[]}><RegisterPage /></Authentication>} />
-
+      <Route path='/homepage' element={<HomePage/>}></Route>
       {/* admin */}
       <Route path="/admin/dashboard" element={<Authentication allowedRoles={['admin']}><  Dashboard /></Authentication>} />
       <Route path="/admin/franchise" element={<AdminFranchise />} />
