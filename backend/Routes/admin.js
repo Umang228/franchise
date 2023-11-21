@@ -6,19 +6,6 @@ const Busboy = require('busboy');
 const cloudinary = require("cloudinary").v2;
 const fs = require("fs"); // for image deleting and editing
 
-// const storage = multer.diskStorage({
-//   destination: (req, file, cb) => {
-//     // Define the directory where uploaded files will be saved.
-//     cb(null, `images/products`); // You need to create the 'uploads' directory in your project.
-//   },
-//   filename: (req, file, cb) => {
-//     const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
-//     cb(null, file.fieldname + "-" + uniqueSuffix + "." + file.mimetype.split("/")[1]);
-//   },
-// });
-
-// const upload = multer({ storage: storage });
-
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
@@ -220,6 +207,12 @@ router.post("/add-product", upload.array("productImage", 4), async (req, res) =>
       productDetails,
       variants,
       youtubeLink,  // Add youtubeLink to the destructuring
+      author,       // Add authors to the destructuring
+      subCategory, // Add subCategories to the destructuring
+      category,    // Add categories to the destructuring
+      tabs,
+      finalPrice,
+      variantCombinations
     } = req.body;
 
     // Create an array to store image file paths
@@ -239,7 +232,7 @@ router.post("/add-product", upload.array("productImage", 4), async (req, res) =>
 
     // Insert product data into your database with image file paths
     const sql = `
-    INSERT INTO products (productName, facultyName, productID, productType, course, subject, productUrl, priceUpdate, deliveryType, isFranchise, isWhatsapp, price, discountPrice, description, shortDescription, featured, slug, category_id, image, mrpText, discountText, rank, topLeft, topRight, bottomLeft, bottomRight, highlights, productDetails, variants, youtubeLink) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+    INSERT INTO products (productName, facultyName, productID, productType, course, subject, productUrl, priceUpdate, deliveryType, isFranchise, isWhatsapp, price, discountPrice, description, shortDescription, featured, slug, category_id, image, mrpText, discountText, rank, topLeft, topRight, bottomLeft, bottomRight, highlights, productDetails, variants, youtubeLink, author, subCategory, category,tabs,finalPrice,variantCombinations) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
     `;
 
     const values = [
@@ -272,7 +265,13 @@ router.post("/add-product", upload.array("productImage", 4), async (req, res) =>
       highlights,
       productDetails,
       variantsJSON,
-      youtubeLink,  // Add youtubeLink to the values
+      youtubeLink,
+      author,
+      subCategory,
+      category,
+      tabs,
+      finalPrice,
+      variantCombinations
     ];
 
     db.query(sql, values, (err, result) => {

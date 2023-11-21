@@ -288,6 +288,7 @@ flex-direction: column;
 .tab-buttons {
     display: flex;
     justify-content: space-between;
+    margin-top: 220px;
   }
   
   .tab-buttons button {

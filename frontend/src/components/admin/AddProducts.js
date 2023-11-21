@@ -1,11 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import {
-  useNavigate,
-  BrowserRouter as Router,
-  Switch,
-  Route,
-  useHistory,
-} from "react-router-dom";
+import { useNavigate, BrowserRouter as Router } from "react-router-dom";
 import "../style/addprod.css";
 import Sidebar from "./Sidebar";
 import axios from "axios";
@@ -13,10 +7,33 @@ import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
 import ReactImageGallery from "react-image-gallery";
 import "react-image-gallery/styles/css/image-gallery.css";
-import LivePreviewPage from "./LivePreviewPage";
 import { AiOutlineArrowLeft } from "react-icons/ai";
 import { TiStarburst } from "react-icons/ti";
-import { BiFontSize } from "react-icons/bi";
+import * as XLSX from "xlsx";
+import {
+  UserOutlined,
+  BarcodeOutlined,
+  YoutubeFilled,
+} from "@ant-design/icons";
+import {
+  Form,
+  Input,
+  Select,
+  Upload,
+  Button,
+  Checkbox,
+  Space,
+  Table,
+  InputNumber,
+} from "antd";
+import { PlusOutlined, MinusOutlined } from "@ant-design/icons";
+import { CartesianProduct } from "js-combinatorics";
+const { Option } = Select;
+const selectStyle = {
+  width: "100%",
+  marginBottom: "16px", // Add margin bottom for spacing
+};
+
 export default function AddProducts() {
   const [productInfo, setProductInfo] = useState({
     productUrl: "",
@@ -56,7 +73,10 @@ export default function AddProducts() {
     productDetails: "",
     youtubeLink: "",
     displayField: "", // Selected field from the dropdown
-    customFields: [], // Array to store custom fields
+    tabs: [
+      { tabName: "Description", content: "" },
+      { tabName: "Youtube Links", content: "" },
+    ],
   });
 
   const [successMessage, setSuccessMessage] = useState("");
@@ -68,13 +88,18 @@ export default function AddProducts() {
   const [subCategories, setSubCategories] = useState([]);
   const [authors, setAuthors] = useState([]);
   const [isDescriptionExpanded, setDescriptionExpanded] = useState(false);
+  const [discountType, setDiscountType] = useState("normal");
+  const [showVariantFields, setShowVariantFields] = useState(false);
+  const [variantOptions, setVariantOptions] = useState([""]);
+  const [variantSections, setVariantSections] = useState([
+    { variantName: "", options: [""] },
+  ]);
   const toggleDescriptionExpand = () => {
     setDescriptionExpanded(!isDescriptionExpanded);
   };
-  const [showTable, setShowTable] = useState(false);
+  const [tableData, setTableData] = useState([]);
   const [uploadedImages, setUploadedImages] = useState([]);
   const inputRef = React.createRef();
-  const [activeTab, setActiveTab] = useState("basicdetails");
   const [htmlContent, setHtmlContent] = useState("");
   const [variantInput, setVariantInput] = useState({
     optionName: "",
@@ -84,45 +109,38 @@ export default function AddProducts() {
     { name: "Description", content: "" },
     { name: "Youtube Links", content: "" },
   ]);
-
-  const [showLivePreview, setShowLivePreview] = useState(false);
-  const [imageFiles, setImageFiles] = useState([]);
-  const livePreviewRef = useRef(null);
-  const [discountType, setDiscountType] = useState("normal");
+  const [excelKeys, setExcelKeys] = useState([]);
+  const [usedKeys, setUsedKeys] = useState([]);
 
   useEffect(() => {
     // Function to calculate and set the final price
     const calculateFinalPrice = () => {
       const mrp = parseFloat(productInfo.price) || 0;
       const discount = parseFloat(productInfo.discountPrice) || 0;
-      const finalPrice = mrp - discount;
-      setProductInfo((prevProductInfo) => ({
-        ...prevProductInfo,
-        finalPrice,
-      }));
+
+      if (discountType === "percentage") {
+        const finalPrice = mrp - (mrp * discount) / 100;
+        setProductInfo((prevProductInfo) => ({
+          ...prevProductInfo,
+          finalPrice: finalPrice.toFixed(2),
+        }));
+      } else {
+        const finalPrice = mrp - discount;
+        setProductInfo((prevProductInfo) => ({
+          ...prevProductInfo,
+          finalPrice: finalPrice.toFixed(2),
+        }));
+      }
     };
-  
-    // Initialize the combinations with prices here
-    const initialPrice = parseFloat(productInfo.price) || 0;
-    const initialCombinations = generateVariantCombinations(productInfo.variants).map(
-      (combination) => ({
-        ...combination,
-        price: initialPrice,
-      })
-    );
-  
-  
-    axios
-      .get("http://localhost:8081/admin/courses")
-      .then((response) => {
+
+    // Fetch courses when the component mounts
+    const fetchCourses = async () => {
+      try {
+        const response = await axios.get("http://localhost:8081/admin/courses");
         console.log("Response from server:", response.data);
         const courses = response.data;
         if (courses.length > 0) {
-          // Access the first course and its related properties
           const firstCourse = courses[0];
-          console.log("Course Subjects:", firstCourse.courseSubjects);
-          console.log("Course Categories:", firstCourse.courseCategories);
-          console.log("Course SubCategories:", firstCourse.courseSubCategories);
           setCourses(courses);
           const subjectsArray = Array.isArray(firstCourse.courseSubjects)
             ? firstCourse.courseSubjects.map((subject) => subject.subjectName)
@@ -137,7 +155,7 @@ export default function AddProducts() {
           )
             ? firstCourse.subCourseCategories
             : [firstCourse.subCourseCategories];
-          setCategories(subCategoriesArray);
+          setSubCategories(subCategoriesArray);
           let authorsArray = Array.isArray(firstCourse.courseAuthors)
             ? firstCourse.courseAuthors
             : [firstCourse.courseAuthors];
@@ -148,50 +166,90 @@ export default function AddProducts() {
           setSubCategories([]);
           setAuthors([]);
         }
-      })
-      .catch((error) => {
+      } catch (error) {
         console.error("Error fetching courses:", error);
-      });
-  
+      }
+    };
+
     // Calculate and set the final price immediately
     calculateFinalPrice();
-  
+
+    // Fetch courses when the component mounts
+    fetchCourses();
+
     // Update the final price every second
-    const interval = setInterval(calculateFinalPrice, 1000);
-  
+    const interval = setInterval(calculateFinalPrice, 1800000);
+
     // Clean up the interval when the component unmounts
     return () => {
       clearInterval(interval);
     };
   }, [productInfo.price, productInfo.variants]);
-  
 
-  useEffect(() => {
-    // Add an event listener to handle clicks outside the Live Preview
-    function handleClickOutside(event) {
-      if (
-        livePreviewRef.current &&
-        !livePreviewRef.current.contains(event.target)
-      ) {
-        setShowLivePreview(false);
-      }
-    }
+  const handleCourseChange = (value) => {
+    // Find the selected course
+    const selectedCourse = courses.find(
+      (course) => course.courseName === value
+    );
 
-    window.addEventListener("mousedown", handleClickOutside);
-
-    return () => {
-      window.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, []);
-
-  // Handle changes in the HTML editor
-  const handleHtmlChange = (content) => {
-    setHtmlContent(content);
+    // Update productInfo and setSubjects
     setProductInfo((prevProductInfo) => ({
       ...prevProductInfo,
-      description: content,
+      course: value,
+      subject: "", // Reset subject when course changes
     }));
+
+    // Display subjects related to the selected course
+    setSubjects(selectedCourse ? extractSubjects(selectedCourse) : []);
+    setCategories(selectedCourse ? extractCategories(selectedCourse) : []);
+    setSubCategories(
+      selectedCourse ? extractSubCategories(selectedCourse) : []
+    );
+    setAuthors(selectedCourse ? extractAuthors(selectedCourse) : []);
   };
+
+  const extractSubjects = (course) => {
+    // Check if courseSubjects is an array or a single value
+    if (Array.isArray(course.courseSubjects)) {
+      return course.courseSubjects.map((subject) => subject.subjectName);
+    } else if (typeof course.courseSubjects === "string") {
+      return [course.courseSubjects];
+    } else {
+      return [];
+    }
+  };
+
+  const extractCategories = (course) => {
+    if (Array.isArray(course.courseCategories)) {
+      return course.courseCategories.map((subject) => subject.categoriesName);
+    } else if (typeof course.courseCategories === "string") {
+      return [course.courseCategories];
+    } else {
+      return [];
+    }
+  };
+
+  const extractSubCategories = (course) => {
+    if (Array.isArray(course.courseSubCategories)) {
+      return course.courseSubCategories.map(
+        (subject) => subject.courseSubCategoriesName
+      );
+    } else if (typeof course.courseSubCategories === "string") {
+      return [course.courseSubCategories];
+    } else {
+      return [];
+    }
+  };
+  const extractAuthors = (course) => {
+    if (Array.isArray(course.courseAuthors)) {
+      return course.courseAuthors.map((subject) => subject.courseAuthorsName);
+    } else if (typeof course.courseAuthors === "string") {
+      return [course.courseAuthors];
+    } else {
+      return [];
+    }
+  };
+
   const handleYoutubeLinkChange = (event) => {
     setProductInfo((prevProductInfo) => ({
       ...prevProductInfo,
@@ -199,19 +257,6 @@ export default function AddProducts() {
     }));
   };
   const navigate = useNavigate();
-  // handle variants
-  const addVariant = () => {
-    console.log("addVariant called");
-    if (productInfo.variants.length < 4) {
-      setProductInfo((prevProductInfo) => ({
-        ...prevProductInfo,
-        variants: [
-          ...prevProductInfo.variants,
-          { optionName: "", optionValues: [] }, // Create an empty variant
-        ],
-      }));
-    }
-  };
 
   const addTab = () => {
     const newTab = { name: "New Tab", content: "" };
@@ -225,7 +270,7 @@ export default function AddProducts() {
 
   const updateTabName = (index, newName) => {
     const updatedTabs = [...tabs];
-    updatedTabs[index].name = newName;
+    updatedTabs[index].tabName = newName; // Update the key to tabName
     setTabs(updatedTabs);
   };
 
@@ -233,110 +278,6 @@ export default function AddProducts() {
     const updatedTabs = [...tabs];
     updatedTabs[index].content = newContent;
     setTabs(updatedTabs);
-  };
-
-  const LivePreview = ({
-    productInfo,
-    htmlContent,
-    imagePreview,
-    closeLivePreview,
-  }) => {
-    const images =
-      imagePreview &&
-      imagePreview.map((preview, index) => ({
-        original: preview,
-        thumbnail: preview, // You can use the same image as a thumbnail or specify a different one
-        description: `Image Preview ${index}`,
-      }));
-
-    const contentStyle = {
-      flex: 1,
-      maxHeight: "100%",
-      overflow: "auto",
-    };
-
-    return (
-      <div>
-        <div style={contentStyle}>
-          <h2>
-            <AiOutlineArrowLeft /> {productInfo.productName}
-          </h2>
-          <label>Images:</label>
-          <div className="product-imgs-slider">
-            <ReactImageGallery items={images} />
-          </div>
-          <div>
-            {/* Display the product variants as dropdowns */}
-            {productInfo.variants.map((variant, variantIndex) => (
-              <div key={variantIndex}>
-                <label>{variant.optionName}:</label>
-                <select
-                  name={`variant-${variantIndex}`}
-                  value={productInfo.variants[variantIndex].selectedOption}
-                  onChange={(e) => {
-                    const selectedOption = e.target.value;
-                    setProductInfo((prevProductInfo) => {
-                      const updatedVariants = [...prevProductInfo.variants];
-                      updatedVariants[variantIndex].selectedOption =
-                        selectedOption;
-                      return {
-                        ...prevProductInfo,
-                        variants: updatedVariants,
-                      };
-                    });
-                  }}
-                >
-                  <option value="">Select an option</option>
-                  {variant.optionValues.map((optionValue, optionIndex) => (
-                    <option key={optionIndex} value={optionValue}>
-                      {optionValue}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            ))}
-          </div>
-          <div>
-            {/* Display the product description */}
-            <div>
-              <div
-                style={{ color: "black" }}
-                dangerouslySetInnerHTML={{ __html: productInfo.description }}
-              ></div>
-            </div>
-          </div>
-          <div>
-            {/* Display the YouTube video */}
-            {productInfo.youtubeLink && (
-              <div>
-                <iframe
-                  title="YouTube Video"
-                  width="100%"
-                  height="315"
-                  src={`https://www.youtube.com/embed/${productInfo.youtubeLink}`}
-                  frameBorder="0"
-                  allow="autoplay; encrypted-media"
-                  allowFullScreen
-                ></iframe>
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-    );
-  };
-
-  const addOptionValue = (variantIndex, optionValue) => {
-    if (productInfo.variants[variantIndex].optionValues.length < 4) {
-      setProductInfo((prevProductInfo) => {
-        const updatedVariants = [...prevProductInfo.variants];
-        updatedVariants[variantIndex].optionValues.push(optionValue);
-        return {
-          ...prevProductInfo,
-          variants: updatedVariants,
-        };
-      });
-    }
   };
 
   const handleChange = (event) => {
@@ -360,29 +301,59 @@ export default function AddProducts() {
         [name]: value,
       }));
     }
-    if (name === "price" || name === "discountPrice") {
-      // Calculate the final price based on the selected discount type
-      const price = parseFloat(productInfo.price);
-      const discountPrice = parseFloat(productInfo.discountPrice);
+  };
 
+  // Use local state to keep track of the price and discountType
+  const [localPrice, setLocalPrice] = useState(productInfo.price);
+  const [localDiscountType, setLocalDiscountType] = useState(
+    productInfo.discountType
+  );
+
+  // ...
+
+  // Function to calculate and set the final price
+  const calculateFinalPrice = () => {
+    setProductInfo((prevProductInfo) => {
+      const price = parseFloat(localPrice);
+      const discountPrice = parseFloat(prevProductInfo.discountPrice) || 0; // Ensure it's a number
       let finalPrice;
 
-      if (discountType === "percentage") {
-        // Discount is a percentage
+      if (localDiscountType === "percentage") {
         finalPrice = price - (price * discountPrice) / 100;
       } else {
-        // Discount is a normal value
         finalPrice = price - discountPrice;
       }
 
-      setProductInfo({
-        ...productInfo,
-        [name]: value,
-        finalPrice: finalPrice.toFixed(2), // Optionally, round to 2 decimal places
-      });
-      calculatePrice();
-    }
+      return {
+        ...prevProductInfo,
+        finalPrice: finalPrice.toFixed(2),
+      };
+    });
   };
+
+  useEffect(() => {
+    calculateFinalPrice();
+
+    // Update the final price every second
+    const interval = setInterval(calculateFinalPrice, 100000);
+
+    // Clean up the interval when the component unmounts
+    return () => {
+      clearInterval(interval);
+    };
+  }, [localPrice, productInfo.discountPrice, localDiscountType]);
+
+  // Effect to update localPrice when productInfo.price changes
+  useEffect(() => {
+    setLocalPrice(productInfo.price);
+  }, [productInfo.price]);
+
+  // Effect to update localDiscountType when productInfo.discountType changes
+  useEffect(() => {
+    setLocalDiscountType(productInfo.discountType);
+  }, [productInfo.discountType]);
+
+  // ...
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -396,18 +367,25 @@ export default function AddProducts() {
       }
     }
 
-    // Stringify the 'variants' array
     const productData = {
       ...productInfoWithBooleanConversion,
-      variants: JSON.stringify(productInfo.variants),
+      tabs: JSON.stringify(tabs),
     };
+
+    const variantCombinationsString = JSON.stringify(
+      productData.variantCombinations
+    );
 
     // Create a new FormData
     const formData = new FormData();
 
     // Append productInfo fields to the FormData
     for (const key in productData) {
-      formData.append(key, productData[key]);
+      if (key === "variantCombinations") {
+        formData.append(key, variantCombinationsString);
+      } else {
+        formData.append(key, productData[key]);
+      }
     }
 
     // Append uploaded images to the FormData
@@ -439,55 +417,6 @@ export default function AddProducts() {
   // const handleTabClick = (tab) => {
   //   setActiveTab(tab);
   // };
-  function generateVariantCombinations(variants) {
-    if (!variants || variants.length === 0) {
-      return [];
-    }
-
-    const optionNames = variants.map((variant) => variant.optionName);
-
-    let combinations = [];
-    const firstVariant = variants[0];
-
-    firstVariant.optionValues.forEach((optionValue) => {
-      combinations.push({
-        [firstVariant.optionName]: optionValue,
-        price: 0, // Initialize price as 0
-      });
-    });
-
-    for (let i = 1; i < variants.length; i++) {
-      const variant = variants[i];
-      const newCombinations = [];
-
-      combinations.forEach((combination) => {
-        variant.optionValues.forEach((optionValue) => {
-          newCombinations.push({
-            ...combination,
-            [variant.optionName]: optionValue,
-            price: 0, // Initialize price as 0
-          });
-        });
-      });
-
-      combinations = newCombinations;
-    }
-
-    return combinations;
-  }
-
-  function calculatePrice(combination) {
-    const mrp = parseFloat(productInfo.price) || 0;
-    const discount = parseFloat(productInfo.discountPrice) || 0;
-    const finalPrice =
-      productInfo.discountType === "percentage"
-        ? mrp - mrp * (discount / 100)
-        : mrp - discount;
-    setProductInfo((prevProductInfo) => ({
-      ...prevProductInfo,
-      finalPrice,
-    }));
-  }
 
   async function handleFileUpload(event) {
     debugger;
@@ -520,59 +449,15 @@ export default function AddProducts() {
     console.log("Files Array:", filesArray);
     setImagePreview((prevPreviews) => [...prevPreviews, ...previews]);
     setUploadedImages((prevImages) => [...prevImages, ...filesArray]);
-
-    // Return a Promise so that the caller can wait for the function to finish
     return Promise.resolve();
   }
-
-  // const handleShowLivePreview = () => {
-  //   setShowLivePreview(true);
-  // };
-  // const closeLivePreview = () => {
-  //   setShowLivePreview(false);
-  // };
-  const handleDiscountTypeChange = (e) => {
-    setProductInfo({ ...productInfo, discountType: e.target.value });
-    calculatePrice();
+  const handleDiscountTypeChange = (value) => {
+    setProductInfo((prevProductInfo) => ({
+      ...prevProductInfo,
+      discountType: value,
+    }));
   };
 
-  const handlePriceChange = (index, newPrice) => {
-    if (productInfo.variantCombinations.length > index) {
-      const updatedCombinations = [...productInfo.variantCombinations];
-      updatedCombinations[index].price = parseFloat(newPrice) || 0;
-      setProductInfo((prevProductInfo) => ({
-        ...prevProductInfo,
-        variantCombinations: updatedCombinations,
-      }));
-    } else {
-      console.error(`Combination at index ${index} does not exist.`);
-    }
-  };
-  
-  
-  
-  
-  // Initialize the variantCombinations with an empty array here
-  // setProductInfo((prevProductInfo) => ({
-  //   ...prevProductInfo,
-  //   variantCombinations: [],
-  // }));
-  
-  useEffect(() => {
-    // ... (the rest of your code)
-  }, [productInfo.price, productInfo.discountPrice]);
-  
-  
-
-  const addCustomField = () => {
-    const newField = prompt("Enter a custom field name:");
-    if (newField) {
-      setProductInfo((prevProductInfo) => ({
-        ...prevProductInfo,
-        customFields: [...prevProductInfo.customFields, newField],
-      }));
-    }
-  };
   const handleProductNameChange = (e) => {
     const newProductName = e.target.value;
     const newProductUrl = newProductName; // Use the product name as the URL
@@ -583,8 +468,127 @@ export default function AddProducts() {
     }));
   };
   const handleAddMoreImages = () => {
-    // Trigger a click on the file input element to allow users to select more images
     inputRef.current.click();
+  };
+
+  const handleVarChange = (value, sectionIndex, optionIndex) => {
+    const updatedSections = [...variantSections];
+    updatedSections[sectionIndex].options[optionIndex] = value;
+    setVariantSections(updatedSections);
+  };
+
+  const handleAddVariant = () => {
+    setVariantSections([
+      ...variantSections,
+      { variantName: "", options: [""] },
+    ]);
+  };
+
+  const handleRemoveVariant = (sectionIndex) => {
+    if (variantSections.length > 1) {
+      const updatedSections = [...variantSections];
+      updatedSections.splice(sectionIndex, 1);
+      setVariantSections(updatedSections);
+    }
+  };
+
+  const handleAddOptions = (sectionIndex) => {
+    const updatedSections = [...variantSections];
+    if (updatedSections[sectionIndex].options.length < 8) {
+      updatedSections[sectionIndex].options.push("");
+      setVariantSections(updatedSections);
+    }
+  };
+
+  const handleRemoveOptions = (sectionIndex, optionIndex) => {
+    const updatedSections = [...variantSections];
+    if (updatedSections[sectionIndex].options.length > 1) {
+      updatedSections[sectionIndex].options.splice(optionIndex, 1);
+      setVariantSections(updatedSections);
+    }
+  };
+  const handleGenerateCombinations = () => {
+    // Generate all combinations of variant options
+    const combinations = new CartesianProduct(
+      ...variantSections.map((section) => section.options)
+    ).toArray();
+
+    // Create table data from combinations with default priceChange values
+    const newData = combinations.map((combination, index) => ({
+      key: index,
+      combination: combination.join(" - "),
+      priceChange: "", // Default value for priceChange
+    }));
+
+    // Update productInfo with variant combinations and price changes
+    setProductInfo((prevProductInfo) => ({
+      ...prevProductInfo,
+      variantCombinations: newData.map((item) => ({
+        combination: item.combination,
+        priceChange: item.priceChange,
+      })),
+    }));
+
+    // Set the table data for display (optional)
+    setTableData(newData);
+  };
+
+  const handlePriceChange = (key, value) => {
+    const newData = tableData.map((item) =>
+      item.key === key ? { ...item, priceChange: value } : item
+    );
+    setTableData(newData);
+  };
+
+  const columns = [
+    {
+      title: "Combination",
+      dataIndex: "combination",
+      key: "combination",
+    },
+    {
+      title: "Price Change",
+      dataIndex: "priceChange",
+      key: "priceChange",
+      render: (text, record) => (
+        <Input
+          value={text}
+          onChange={(e) => handlePriceChange(record.key, e.target.value)}
+        />
+      ),
+    },
+  ];
+
+  const handleExcelUpload = (e) => {
+    const file = e.target.files[0];
+
+    if (file) {
+      const reader = new FileReader();
+
+      reader.onload = (e) => {
+        const data = new Uint8Array(e.target.result);
+        const workbook = XLSX.read(data, { type: "array" });
+
+        // Assuming the keys are in the first sheet and in the A column
+        const keys = XLSX.utils.sheet_to_json(
+          workbook.Sheets[workbook.SheetNames[0]],
+          {
+            header: ["key"],
+          }
+        );
+
+        setExcelKeys(keys);
+      };
+
+      reader.readAsArrayBuffer(file);
+    }
+  };
+
+
+
+  const handleKeyUsage = (key) => {
+    setUsedKeys((prevUsedKeys) => [...prevUsedKeys, key]);
+    // You can implement your logic to send the key to the buyer via email here
   };
 
   return (
@@ -594,78 +598,80 @@ export default function AddProducts() {
         <h2>Add Product</h2>
         {successMessage && <p className="success-message">{successMessage}</p>}
         <form onSubmit={handleSubmit} enctype="multipart/form-data">
-          <div>
-            <label>Product Title</label>
-            <input
-              type="text"
-              name="productName"
-              value={productInfo.productName}
-              onChange={handleProductNameChange}
-              required
-            />
-          </div>
-          <div>
-            <label>Product URL:</label>
-            <input
+          <Form.Item
+            label="Product Title"
+            name="productName"
+            rules={[
+              { required: true, message: "Please enter the product title!" },
+            ]}
+          >
+            <Input onChange={handleProductNameChange} />
+          </Form.Item>
+          <Form.Item
+            label="Product URL"
+            required
+            style={{ marginBottom: "16px" }}
+          >
+            <Input
               type="text"
               name="productUrl"
               value={productInfo.productUrl}
               onChange={handleChange}
-              required
+              style={{ width: "99%" }}
             />
-            {/* <span>Open</span>
-            <span>Copy</span> */}
-          </div>
-          <div className="form-group">
-            <label htmlFor="htmlEditor">Product Description</label>
-            <div
-              className={`editor-container${
-                isDescriptionExpanded ? " expanded" : ""
-              }`}
-              onClick={toggleDescriptionExpand}
-            >
-              <ReactQuill
-                id="htmlEditor"
-                name="description"
-                value={productInfo.description}
-                onChange={(content) =>
-                  setProductInfo({ ...productInfo, description: content })
-                }
+          </Form.Item>
+
+          <Form.Item label="Product Description" required>
+            <Input.TextArea
+              id="htmlEditor"
+              name="description"
+              value={productInfo.description}
+              onChange={(e) =>
+                setProductInfo({ ...productInfo, description: e.target.value })
+              }
+            />
+          </Form.Item>
+
+          <Form.Item label="Detailed Title - SEO">
+            <Input.TextArea
+              name="productTitle"
+              autoSize={{ minRows: 3, maxRows: 10 }}
+            />
+          </Form.Item>
+          <div>
+            <Form.Item label="MRP">
+              <Input
+                type="text"
+                name="price"
+                value={productInfo.price}
+                onChange={handleChange}
+                required
               />
-            </div>
-          </div>
-          <div>
-            <label>Detailed Title - SEO</label>
-            <textarea name="productTitle" id="" cols="30" rows="10"></textarea>
-          </div>
-          <div>
-            <label>MRP</label>
-            <input
-              type="text"
-              name="price"
-              value={productInfo.price}
-              onChange={handleChange}
-              required
-            />
-            <label>Discount</label>
-            <input
-              type="text"
-              name="discountPrice"
-              value={productInfo.discountPrice}
-              onChange={handleChange}
-              required
-            />
-            <div>
+            </Form.Item>
+
+            <Form.Item label="Discount">
+              <Input
+                type="text"
+                name="discountPrice"
+                value={productInfo.discountPrice}
+                onChange={handleChange}
+                required
+              />
+            </Form.Item>
+            <div style={{ margin: "13px" }}>
               <label>Discount Type:</label>
-              <select
+              <Select
                 name="discountType"
                 value={productInfo.discountType}
                 onChange={handleDiscountTypeChange}
+                style={{ width: "98%", borderRadius: "13px" }}
+                dropdownStyle={{ borderRadius: "8px" }}
               >
-                <option value="normal">Normal</option>
-                <option value="percentage">Percentage (%)</option>
-              </select>
+                <Select.Option value="normal">Normal</Select.Option>
+                <Select.Option value="percentage">Percentage (%)</Select.Option>
+              </Select>
             </div>
+
             <div className="flabel">
               <label>Final Price : </label>
               <span> Rs. </span>
@@ -674,181 +680,198 @@ export default function AddProducts() {
               </span>
             </div>
           </div>
-          <div>
-            <label>Display MRP Text</label>
-            <input
+          <Form.Item label="Display MRP Text">
+            <Input
               type="text"
               name="mrpText"
               value={productInfo.mrpText}
               onChange={handleChange}
               required
             />
-          </div>
-          <div>
-            <label>Display Discount Text</label>
-            <input
+          </Form.Item>
+
+          <Form.Item label="Display Discount Text">
+            <Input
               type="text"
               name="discountText"
               value={productInfo.discountText}
               onChange={handleChange}
               required
             />
-          </div>
-          <div>
-            <label>Course</label>
-            <select
-              name="course"
-              value={productInfo.course}
-              onChange={handleChange} // You should implement handleChange for this field
-              className="modeOfPayment"
-            >
-              <option value="" disabled>
-                Select a Course
-              </option>
-              {courses.map((course) => (
-                <option key={course.id} value={course.id}>
-                  {course.courseName}
-                </option>
-              ))}
-            </select>
-          </div>
+          </Form.Item>
 
           <div>
             <label>Inventory</label>
-            <select name="" id="" className="modeOfPayment">
-              <option value="Instock">In Stock</option>
-            </select>
+            <Select
+              defaultValue="Instock" // Set a default value if needed
+              style={{ width: "97%", margin: "13px" }}
+              onChange={(value) =>
+                handleChange({ target: { name: "inventory", value } })
+              }
+            >
+              <Option value="Instock">In Stock</Option>
+              <Option value="OutofStock">Out of Stock</Option>
+            </Select>
           </div>
-          <div>
-            <label>Rank</label>
-            <input
+          <Form.Item label="Rank">
+            <InputNumber
               type="number"
               name="rank"
               value={productInfo.rank}
-              onChange={handleChange}
+              onChange={(value) =>
+                setProductInfo((prevProductInfo) => ({
+                  ...prevProductInfo,
+                  rank: value,
+                }))
+              }
+              style={{ width: "100%" }}
               required
             />
+          </Form.Item>
+          <div>
+            <div>
+              <label>Course</label>
+              <Select
+                name="course"
+                value={productInfo.course}
+                onChange={handleCourseChange}
+                style={selectStyle} // Apply the common style
+              >
+                <Option value="" disabled>
+                  Select a Course
+                </Option>
+                {courses.map((course) => (
+                  <Option key={course.id} value={course.courseName}>
+                    {course.courseName}
+                  </Option>
+                ))}
+              </Select>
+            </div>
+
+            <div>
+              <label>Subjects</label>
+              <Select
+                name="subject"
+                value={productInfo.subject}
+                onChange={(value) =>
+                  handleChange({ target: { name: "subject", value } })
+                }
+                style={selectStyle} // Apply the common style
+              >
+                <Option value="" disabled>
+                  Select a Subject
+                </Option>
+                {subjects.map((courseSubjects) => (
+                  <Option key={courseSubjects} value={courseSubjects}>
+                    {courseSubjects}
+                  </Option>
+                ))}
+              </Select>
+            </div>
+
+            <div>
+              <label>Categories</label>
+              <Select
+                name="category"
+                value={productInfo.category}
+                onChange={(value) =>
+                  handleChange({ target: { name: "category", value } })
+                }
+                style={selectStyle} // Apply the common style
+              >
+                <Option value="" disabled>
+                  Select a Category
+                </Option>
+                {categories.map((category) => (
+                  <Option key={category} value={category}>
+                    {category}
+                  </Option>
+                ))}
+              </Select>
+            </div>
+
+            <div>
+              <label>Sub Categories</label>
+              <Select
+                name="subCategory"
+                value={productInfo.subCategory}
+                onChange={(value) =>
+                  handleChange({ target: { name: "subCategory", value } })
+                }
+                style={selectStyle} // Apply the common style
+              >
+                <Option value="" disabled>
+                  Select a Sub Category
+                </Option>
+                {subCategories.map((subCategory) => (
+                  <Option key={subCategory} value={subCategory}>
+                    {subCategory}
+                  </Option>
+                ))}
+              </Select>
+            </div>
+
+            <div>
+              <label>Authors</label>
+              <Select
+                name="author"
+                value={productInfo.author}
+                onChange={(value) =>
+                  handleChange({ target: { name: "author", value } })
+                }
+                style={selectStyle} // Apply the common style
+              >
+                <Option value="" disabled>
+                  Select an Author
+                </Option>
+                {authors.map((author) => (
+                  <Option key={author} value={author}>
+                    {author}
+                  </Option>
+                ))}
+              </Select>
+            </div>
           </div>
 
-          <div>
-            <label>Subjects</label>
-            <select
-              name="subject"
-              value={productInfo.subject}
-              onChange={handleChange} // Implement handleChange for this field
-              className="modeOfPayment"
-            >
-              <option value="" disabled>
-                Select a Subject
-              </option>
-              {subjects.map((course) => (
-                <option key={course.id} value={course.id}>
-                  {course.subjectName}
-                  {console.log(course.subjectName)}
-                </option>
-              ))}
-              <option value="test">test</option>
-            </select>
-          </div>
-          <div>
-            <label>Categories</label>
-            <select
-              name="category"
-              value={productInfo.category}
-              onChange={handleChange} // Implement handleChange for this field
-              className="modeOfPayment"
-            >
-              <option value="" disabled>
-                Select a Category
-              </option>
-              {courses.map((category) => (
-                <option key={category.id} value={category.id}>
-                  {category.categoryName}
-                </option>
-              ))}
-              <option value="test">test</option>
-            </select>
-          </div>
-          <div>
-            <label>Sub Categories</label>
-            <select
-              name="subCategory"
-              value={productInfo.subCategory}
-              onChange={handleChange} // Implement handleChange for this field
-              className="modeOfPayment"
-            >
-              <option value="" disabled>
-                Select a Sub Category
-              </option>
-              {subCategories.map((subCategory) => (
-                <option key={subCategory.id} value={subCategory.id}>
-                  {subCategory.subCategoryName}
-                </option>
-              ))}
-              <option value="test">test</option>
-            </select>
-          </div>
-          <div>
-            <label>Authors</label>
-            <select
-              name="author"
-              value={productInfo.author}
-              onChange={handleChange} // Implement handleChange for this field
-              className="modeOfPayment"
-            >
-              <option value="" disabled>
-                Select an Author
-              </option>
-              {authors.map((author) => (
-                <option key={author.id} value={author.id}>
-                  {author.authorName}
-                </option>
-              ))}
-              <option value="test">pious</option>
-            </select>
-          </div>
-
-          <div>
-            <label>Top Left Tag</label>
-            <input
+          <Form.Item label="Top Left Tag">
+            <Input
               type="text"
               name="topLeft"
               value={productInfo.topLeft}
               onChange={handleChange}
               required
             />
-          </div>
-          <div>
-            <label>Top Right Tag</label>
-            <input
+          </Form.Item>
+
+          <Form.Item label="Top Right Tag">
+            <Input
               type="text"
               name="topRight"
               value={productInfo.topRight}
               onChange={handleChange}
               required
             />
-          </div>
-          <div>
-            <label>Bottom Left Tag</label>
-            <input
+          </Form.Item>
+
+          <Form.Item label="Bottom Left Tag">
+            <Input
               type="text"
               name="bottomLeft"
               value={productInfo.bottomLeft}
               onChange={handleChange}
               required
             />
-          </div>
-          <div>
-            <label>Bottom Right Tag</label>
-            <input
+          </Form.Item>
+
+          <Form.Item label="Bottom Right Tag">
+            <Input
               type="text"
               name="bottomRight"
               value={productInfo.bottomRight}
               onChange={handleChange}
               required
             />
-          </div>
-
+          </Form.Item>
           <div>
             <label>Upload Images</label>
             <input
@@ -877,56 +900,70 @@ export default function AddProducts() {
               ))}
             </div>
           )}
-          <div>
-            <label>Product Highlights</label>
-            <input
-              type="text"
+          <div className="ant-form-item">
+            <label htmlFor="highlights">Product Highlights</label>
+            <Input
+              id="highlights"
               name="highlights"
               value={productInfo.highlights}
               onChange={handleChange}
               required
+              prefix={<UserOutlined />}
+              placeholder="Enter product highlights"
             />
           </div>
-          <div>
-            <label>YouTube Video Link:</label>
-            <input
-              type="text"
+
+          <div className="ant-form-item">
+            <label htmlFor="youtubeLink">YouTube Video Link:</label>
+            <Input
+              id="youtubeLink"
               name="youtubeLink"
               value={productInfo.youtubeLink}
               onChange={handleYoutubeLinkChange}
+              prefix={<i className="fab fa-youtube" />}
+              placeholder="Paste YouTube video link"
             />
           </div>
-          <div>
-            <label>Product Details</label>
-            <input
-              type="text"
+
+          <div className="ant-form-item">
+            <label htmlFor="productDetails">Product Details</label>
+            <Input
+              id="productDetails"
               name="productDetails"
               value={productInfo.productDetails}
               onChange={handleChange}
               required
+              prefix={<BarcodeOutlined />}
+              placeholder="Enter product details"
             />
           </div>
 
-          <div>
-            <label>Faculty Name:</label>
-            <input
-              type="text"
+          <div className="ant-form-item">
+            <label htmlFor="facultyName">Faculty Name:</label>
+            <Input
+              id="facultyName"
               name="facultyName"
               value={productInfo.facultyName}
               onChange={handleChange}
               required
+              prefix={<UserOutlined />}
+              placeholder="Enter faculty name"
             />
           </div>
-          <div>
-            <label>Product ID (SKU):</label>
-            <input
-              type="text"
+
+          <div className="ant-form-item">
+            <label htmlFor="productID">Product ID (SKU):</label>
+            <Input
+              id="productID"
               name="productID"
               value={productInfo.productID}
               onChange={handleChange}
               required
+              prefix={<BarcodeOutlined />}
+              placeholder="Enter product ID (SKU)"
             />
           </div>
+
           <div>
             <label>Product Type:</label>
             <div>
@@ -1005,49 +1042,39 @@ export default function AddProducts() {
           <div>
             <label>Additional Services:</label>
             <div>
-              <label style={{ color: "black", padding: 15 }}>
-                <input
-                  type="checkbox"
-                  name="isFranchise"
-                  checked={productInfo.isFranchise}
-                  onChange={handleChange}
-                  className="rdio"
-                />
+              <Checkbox
+                name="isFranchise"
+                checked={productInfo.isFranchise}
+                onChange={handleChange}
+                className="rdio"
+              >
                 Is Franchise
-              </label>
-              <label style={{ color: "black", padding: 15 }}>
-                <input
-                  type="checkbox"
-                  name="isWhatsapp"
-                  checked={productInfo.isWhatsapp}
-                  onChange={handleChange}
-                  className="rdio"
-                />
+              </Checkbox>
+              <Checkbox
+                name="isWhatsapp"
+                checked={productInfo.isWhatsapp}
+                onChange={handleChange}
+                className="rdio"
+              >
                 Broadcast To Whatsapp
-              </label>
-              <label style={{ color: "black", padding: 15 }}>
-                <input
-                  type="checkbox"
-                  name="priceUpdate"
-                  checked={productInfo.priceUpdate}
-                  onChange={handleChange}
-                  className="rdio"
-                />
+              </Checkbox>
+              <Checkbox
+                name="priceUpdate"
+                checked={productInfo.priceUpdate}
+                onChange={handleChange}
+                className="rdio"
+              >
                 Price Update
-              </label>
-              <label style={{ color: "black", padding: 15 }}>
-                <input
-                  type="checkbox"
-                  name="featured"
-                  checked={productInfo.featured}
-                  onChange={handleChange}
-                  className="rdio"
-                  style={{
-                    margin: "18px",
-                  }}
-                />
+              </Checkbox>
+              <Checkbox
+                name="featured"
+                checked={productInfo.featured}
+                onChange={handleChange}
+                className="rdio"
+                style={{ margin: "18px" }}
+              >
                 Featured
-              </label>
+              </Checkbox>
             </div>
           </div>
           {tabs.map((tab, index) => (
@@ -1078,206 +1105,119 @@ export default function AddProducts() {
           </button>
 
           <div>
-            <button
-              type="button"
-              onClick={() => {
-                addVariant();
-                setShowTable(true);
-              }}
-              className="btn-10"
-            >
-              + Add Variant
-            </button>
-            {productInfo.variants.map((variant, variantIndex) => (
+            {variantSections.map((section, sectionIndex) => (
               <div
-                key={variantIndex}
-                style={{ position: "relative", top: "13px", padding: "12px" }}
+                key={sectionIndex}
+                style={{ padding: "23px", marginBottom: "10px" }}
               >
-                <div>
-                  <label>Option Name:</label>
-                  <input
-                    type="text"
-                    value={variant.optionName}
-                    className="optIn"
-                    onChange={(e) => {
-                      const newOptionName = e.target.value;
-                      setProductInfo((prevProductInfo) => {
-                        const updatedVariants = [...prevProductInfo.variants];
-                        updatedVariants[variantIndex].optionName =
-                          newOptionName;
-                        return {
-                          ...prevProductInfo,
-                          variants: updatedVariants,
-                        };
-                      });
+                {sectionIndex >= 1 && ( // Add this conditional check
+                  <Button
+                    onClick={() => handleRemoveVariant(sectionIndex)}
+                    style={{
+                      marginTop: "-21px",
+                      color: "red",
+                      position: "relative",
+                      left: "416px",
+                      top: "-10px",
                     }}
+                    danger
+                  >
+                    Remove Variant
+                  </Button>
+                )}
+
+                <Form.Item
+                  label="Variant Name"
+                  name={`variantName_${sectionIndex}`}
+                >
+                  <Input
+                    onChange={(e) =>
+                      handleVarChange(e.target.value, sectionIndex, 0)
+                    }
+                    style={{ width: "95%" }}
                   />
-                </div>
-                <div>
-                  <label style={{ marginTop: "10px" }}>Option Values:</label>
-                  <div style={{ display: "flex", alignItems: "center" }}>
-                    {variant.optionValues.map(
-                      (optionValue, optionValueIndex) => (
-                        <div
-                          key={optionValueIndex}
-                          style={{ marginRight: "10px" }}
-                        >
-                          <input
-                            type="text"
-                            value={optionValue}
-                            className="optVn"
-                            onChange={(e) => {
-                              const updatedOptionValues = [
-                                ...variant.optionValues,
-                              ];
-                              updatedOptionValues[optionValueIndex] =
-                                e.target.value;
-                              setProductInfo((prevProductInfo) => {
-                                const updatedVariants = [
-                                  ...prevProductInfo.variants,
-                                ];
-                                updatedVariants[variantIndex].optionValues =
-                                  updatedOptionValues;
-                                return {
-                                  ...prevProductInfo,
-                                  variants: updatedVariants,
-                                };
-                              });
-                            }}
-                          />
-                        </div>
-                      )
-                    )}
-                    {variant.optionValues.length < 4 && (
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setProductInfo((prevProductInfo) => {
-                            const updatedVariants = [
-                              ...prevProductInfo.variants,
-                            ];
-                            updatedVariants[variantIndex].optionValues.push("");
-                            return {
-                              ...prevProductInfo,
-                              variants: updatedVariants,
-                            };
-                          });
-                        }}
-                        className="btn-10"
+                </Form.Item>
+
+                <Space direction="vertical" style={{ width: "100%" }}>
+                  {section.options.map((value, optionIndex) => (
+                    <div key={optionIndex}>
+                      <Form.Item
+                        label={`Variant Option ${optionIndex + 1}`}
+                        name={`option_${sectionIndex}_${optionIndex}`}
                       >
-                        + Add Option Value
-                      </button>
-                    )}
-                  </div>
-                </div>
-                {/* <div>
-                  <label>Price:</label>
-                  <input
-                    type="number"
-                    value={variant.price}
-                    onChange={(e) => {
-                      const newPrice = parseFloat(e.target.value) || 0;
-                      setProductInfo((prevProductInfo) => {
-                        const updatedVariants = [...prevProductInfo.variants];
-                        updatedVariants[variantIndex].price = newPrice;
-                        return {
-                          ...prevProductInfo,
-                          variants: updatedVariants,
-                        };
-                      });
-                    }}
-                  />
-                </div> */}
+                        <Input
+                          value={value}
+                          onChange={(e) =>
+                            handleVarChange(
+                              e.target.value,
+                              sectionIndex,
+                              optionIndex
+                            )
+                          }
+                          style={{ width: "95%" }}
+                        />
+                        {optionIndex > 0 && (
+                          <MinusOutlined
+                            onClick={() =>
+                              handleRemoveOptions(sectionIndex, optionIndex)
+                            }
+                            style={{ marginLeft: "10px", color: "red" }}
+                          />
+                        )}
+                      </Form.Item>
+                    </div>
+                  ))}
+
+                  <Button
+                    icon={<PlusOutlined />}
+                    onClick={() => handleAddOptions(sectionIndex)}
+                  >
+                    Add Option
+                  </Button>
+                </Space>
               </div>
             ))}
+
+            <Button className="btn-10" onClick={handleAddVariant}>
+              + Add Variant
+            </Button>
           </div>
 
-          {showTable && (
-            <div>
-              <table
-                className="utable"
-                style={{
-                  position: "relative",
-                  top: "-50px",
-                  left: "-30px",
-                  border: "0.5px solid gray",
-                }}
-              >
-                <thead style={{ borderBottom: "0.5px solid gray" }}>
-                  <tr>
-                    {productInfo.variants.map((variant) => (
-                      <th key={variant.optionName}>{variant.optionName}</th>
-                    ))}
-                    {productInfo.variants.some(
-                      (variant) => variant.optionValues.length > 0
-                    ) && <th>Price</th>}
-                  </tr>
-                </thead>
-                <tbody>
-                  {generateVariantCombinations(productInfo.variants).map(
-                    (combination, index) => (
-                      <tr key={index}>
-                        {productInfo.variants.map((variant) => (
-                          <td key={variant.optionName}>
-                            {combination[variant.optionName]}
-                          </td>
-                        ))}
-                        {productInfo.variants.some(
-                          (variant) => variant.optionValues.length > 0
-                        ) && (
-                          <td>
-                            <input
-                              type="text"
-                              value={combination.price} // Use the price value from the combination
-                              onChange={(e) =>
-                                handlePriceChange(index, e.target.value)
-                              }
-                            />
-                          </td>
-                        )}
-                      </tr>
-                    )
-                  )}
-                </tbody>
-              </table>
-            </div>
-          )}
+          <div>
+            <Button className="btn-10" onClick={handleGenerateCombinations}>
+              Generate Combinations
+            </Button>
+            <Table
+              dataSource={tableData}
+              columns={columns}
+              pagination={false}
+            />
+          </div>
 
-          {/* <div>
-            <button
-              type="button"
-              onClick={handleShowLivePreview}
-              id="preview-button"
-              className="btn-10"
-            >
-              Live Preview
-            </button>
-            {showLivePreview && (
-              <div ref={livePreviewRef} className="live-preview-popup">
-                <LivePreview
-                  productInfo={productInfo}
-                  htmlContent={htmlContent}
-                  imagePreview={imagePreview}
-                />
-                {productInfo.youtubeLink && (
-                  <div>
-                    <iframe
-                      title="YouTube Video"
-                      width="560"
-                      height="315"
-                      src={`https://www.youtube.com/embed/${productInfo.youtubeLink}`}
-                      frameborder="0"
-                      allow="autoplay; encrypted-media"
-                      allowfullscreen
-                    ></iframe>
-                  </div>
-                )}
-                <button onClick={closeLivePreview} className="btn-10">
-                  Close
-                </button>
-              </div>
-            )}
-          </div> */}
+          <div>
+            <label htmlFor="excelFile">Import Excel:</label>
+            <input
+              type="file"
+              accept=".xlsx, .xls"
+              id="excelFile"
+              onChange={handleExcelUpload}
+            />
+          </div>
+
+          {excelKeys.length > 0 && (
+        <div>
+          <h3>Imported Keys</h3>
+          <Table dataSource={excelKeys} />
+        </div>
+      )}
+
+      {/* Display Used Keys */}
+      {usedKeys.length > 0 && (
+        <div>
+          <h3>Used Keys</h3>
+          <Table dataSource={usedKeys.map((key) => ({ key }))} />
+        </div>
+      )}
 
           <button type="submit" id="btnn">
             Add Product
