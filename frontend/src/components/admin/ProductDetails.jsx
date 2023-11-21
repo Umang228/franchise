@@ -94,8 +94,6 @@ export default function ProductDetails() {
   const handleReviewSubmit = (e) => {
     e.preventDefault();
 
-    // Implement the review submission logic here, e.g., send data to the server
-    // You can access the 'name', 'email', 'rating', and 'review' state variables here
   };
 
   product.variants = [
@@ -228,7 +226,7 @@ export default function ProductDetails() {
           </span>
           <h1 style={{color:'#0C0C0C'}}>{product.productName}</h1>
           <p>
-            By <span className="faculty">{product.facultyName}</span>
+            By <span className="faculty">{product.author}</span>
           </p>
 
           {/* Render variant selection dropdowns */}
@@ -254,7 +252,7 @@ export default function ProductDetails() {
 
           {/* Display the adjusted price based on selected variants */}
           <h3 className="Price">
-            Rs. <span className="price">{calculatePrice()}</span>
+            Rs. <span className="price">{product.finalPrice}</span>
           </h3>
 
           <span className="pB">
