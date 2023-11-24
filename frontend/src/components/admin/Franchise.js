@@ -1,32 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { DataGrid } from '@mui/x-data-grid';
+import TextField from '@mui/material/TextField';
+import { useNavigate } from 'react-router-dom';
 import Sidebar from './Sidebar';
-import {MdPayment} from 'react-icons/md'
-import {AiTwotoneMail} from 'react-icons/ai'
-import {AiFillEdit} from 'react-icons/ai'
-import {AiFillDelete} from 'react-icons/ai'
 
-export default function Franchise() {
+const Franchise = () => {
+  const navigate = useNavigate();
 
   const [franchises, setFranchises] = useState([]);
-  const [showConfirmationDialog, setShowConfirmationDialog] = useState(false);
-  const [deleteFranchiseId, setDeleteFranchiseId] = useState(null);
-  const [showSuccessMessage, setShowSuccessMessage] = useState(false);
-  const navigate = useNavigate();
-  const[search,setSearch]=useState('');
-    // pagination
-    const[currentPage,setCurrentPage] = useState(1);
-    const recordsPerPage = 4;
-    const lastIndex = currentPage * recordsPerPage;
-    const firstIndex = lastIndex - recordsPerPage;
-    const records = franchises.slice(firstIndex, lastIndex);
-    const npage = Math.ceil(franchises.length/recordsPerPage);
-    const numbers = [...Array(npage + 1).keys()].slice(1);
+  const [searchText, setSearchText] = useState('');
 
-
-
-  // Function to fetch franchise data from the backend
   const fetchFranchises = async () => {
     try {
       const response = await axios.get('http://localhost:8081/admin/franchise');
@@ -38,142 +22,88 @@ export default function Franchise() {
     }
   };
 
-  // Call fetchFranchises when the component mounts
   useEffect(() => {
     fetchFranchises();
   }, []);
 
-  // Function to open the confirmation dialog for deletion
   const handleOpenConfirmationDialog = (id) => {
-    setDeleteFranchiseId(id);
-    setShowConfirmationDialog(true);
+    // Implement the logic to open the confirmation dialog
+    // You need to define the state and functions for handling confirmation dialog in the Franchise component
+    console.log(`Open confirmation dialog for franchise with ID: ${id}`);
   };
 
-  // Function to close the confirmation dialog
-  const handleCloseConfirmationDialog = () => {
-    setDeleteFranchiseId(null);
-    setShowConfirmationDialog(false);
+  const handleSearch = (event) => {
+    setSearchText(event.target.value);
   };
 
-  // Function to handle delete button click
-  const handleDeleteClick = async () => {
-    if (deleteFranchiseId) {
-      try {
-        console.log(`Deleting franchise with ID: ${deleteFranchiseId}`);
-
-        const response = await axios.delete(`http://localhost:8081/admin/franchise/${deleteFranchiseId}`);
-        console.log('Delete response:', response);
-
-        if (response.status === 200) {
-          // Update the state of the franchises array
-          setFranchises((prevFranchises) => prevFranchises.filter((franchise) => franchise.id !== deleteFranchiseId));
-          console.log('Franchise deleted successfully');
-          setShowSuccessMessage(true);
-
-          // Close the confirmation dialog
-          handleCloseConfirmationDialog();
-
-          // Hide the success message after 3 seconds
-          setTimeout(() => {
-            setShowSuccessMessage(false);
-          }, 3000);
-        } else {
-          console.log('Delete request did not return a success status:', response.status);
-        }
-      } catch (error) {
-        console.error('Error deleting franchise:', error);
-      }
-    }
+  // Add this function
+  const handleEditClick = (franchiseId) => {
+    // Implement the logic for handling the edit click
+    navigate(`/admin/franchise/edit/${franchiseId}`)
+    console.log(`Edit franchise with ID ${franchiseId}`);
+    // You can navigate to the edit page or implement your edit logic here
   };
+
+  const filteredFranchises = franchises.filter(
+    (franchise) =>
+      franchise.name.toLowerCase().includes(searchText.toLowerCase()) ||
+      franchise.email.toLowerCase().includes(searchText.toLowerCase())
+  );
 
   return (
-    <div className='prod'>
+    <div className="prod">
       <Sidebar />
       <div className="child-prod">
-      <h1 className='heading1'>All Franchise</h1>
-      <form>
-        <input type="text" placeholder="Search here" onChange={(e)=>setSearch(e.target.value)} className='searchable'/>
-      </form>
-      <table className='utable'>
-        <thead>
-          <tr>
-            <th>Id</th>
-            <th>Name</th>
-            <th>Email</th>
-            <th>Phone Number</th>
-            <th>GST Number</th>
-            <th>Franchise Type</th>
-            <th>Mode of Payment</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {records.filter((franchise)=>{
-            return search.toLowerCase() === '' ? franchise : franchise.name.toLowerCase().includes(search);
-          }).map((franchise) => (
-            <tr key={franchise.id} className='row'>
-              <td>{franchise.id}</td>
-              <td>{franchise.name}</td>
-            <td>{franchise.email}</td>
-              <td>{franchise.phone_number}</td>
-              <td>{franchise.gst_number}</td>
-              <td>{franchise.franchise_type}</td>
-              <td>{franchise.mode_of_payment}</td>
-              <td className='action'>
-                <button onClick={() => navigate(`/admin/franchise/edit/${franchise.id}`)} className='edit'><AiFillEdit/> Edit</button>
-                <button onClick={() => handleOpenConfirmationDialog(franchise.id)} className='delete'><AiFillDelete/> Delete</button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-      <nav>
-        <ul>
-          <li>
-            <a href="#0" onClick={prePage}>Prev</a>
-          </li>
-          {numbers.map((n,franchise)=>(
-            <li className={`page-item ${currentPage === n ? 'active': ''}`} key={franchise}>
-              <a href="#0" onClick={()=>changeCPage(n)}>{n}</a>
-            </li>
-          ))}
-          <li>
-            <a href="#0" onClick={nextPage}>Next</a>
-          </li>
-        </ul>
-      </nav>
-
-      {/* Confirmation Dialog */}
-      {showConfirmationDialog && (
-        <div className="confirmation-dialog">
-          <p>Are you sure you want to delete this franchise?</p>
-          <button onClick={handleCloseConfirmationDialog}>Cancel</button>
-          <button onClick={handleDeleteClick}>Delete</button>
+        <div className="topBar">
+          <h1>All Franchise</h1>
+          <button className='btn-10' onClick={() => navigate(`/admin/franchise/add`)}>+ Add Franchise</button>
         </div>
-      )}
-
-      {/* Success Message */}
-      {showSuccessMessage && (
-        <div className="success-message">
-          Franchise deleted successfully.
+        <TextField
+          label="Search Franchises"
+          variant="outlined"
+          value={searchText}
+          onChange={handleSearch}
+          className='searchField'
+          style={{ margin: '10px'}}
+        />
+        <div style={{ height: 500, width: '93%', marginLeft: '42px' }}>
+          <DataGrid
+            rows={filteredFranchises}
+            columns={[
+              { field: 'id', headerName: 'ID', flex: 1 },
+              { field: 'name', headerName: 'Name', flex: 1 },
+              { field: 'email', headerName: 'Email', flex: 1 },
+              { field: 'phone_number', headerName: 'Phone Number', flex: 1 },
+              { field: 'gst_number', headerName: 'GST Number', flex: 1 },
+              { field: 'franchise_type', headerName: 'Franchise Type', flex: 1 },
+              { field: 'mode_of_payment', headerName: 'Mode of Payment', flex: 1 },
+              {
+                field: 'actions',
+                headerName: 'Actions',
+                width: 120,
+                renderCell: (params) => (
+                  <div>
+                    <button
+                      onClick={() => handleEditClick(params.row.id)}
+                      className='edit-button'
+                    >
+                      Edit
+                    </button>
+                    <button
+                      onClick={() => handleOpenConfirmationDialog(params.row.id)}
+                      className='delete-button'
+                    >
+                      Delete
+                    </button>
+                  </div>
+                ),
+              },
+            ]}
+          />
         </div>
-      )}
       </div>
-
     </div>
   );
-  function prePage(){
-    if(currentPage !== 1){
-      setCurrentPage(currentPage - 1)
-    }
-    }
-    function changeCPage(id){
-      setCurrentPage(id);
-  
-    }
-    function nextPage(){
-      if(currentPage !== npage){
-        setCurrentPage(currentPage + 1)
-      }
-    }
-}
+};
+
+export default Franchise;

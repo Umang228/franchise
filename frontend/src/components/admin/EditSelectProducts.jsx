@@ -3,6 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
 import Sidebar from "./Sidebar";
 import "../style/prod.css";
+import { Table, Input, Checkbox, Button } from 'antd';
 
 export default function EditSelectProducts() {
   const { id } = useParams();
@@ -129,74 +130,98 @@ export default function EditSelectProducts() {
       console.error("Error updating selected products:", error);
     }
   };
+  const columns = [
+    {
+      title: 'Id',
+      dataIndex: 'id',
+      key: 'id',
+    },
+    {
+      title: 'Product Name',
+      dataIndex: 'productName',
+      key: 'productName',
+    },
+    {
+      title: 'Faculty Name',
+      dataIndex: 'facultyName',
+      key: 'facultyName',
+    },
+    {
+      title: 'Course',
+      dataIndex: 'course',
+      key: 'course',
+    },
+    {
+      title: 'Subject',
+      dataIndex: 'subject',
+      key: 'subject',
+    },
+    {
+      title: 'Delivery Type',
+      dataIndex: 'deliveryType',
+      key: 'deliveryType',
+    },
+    {
+      title: 'Price',
+      dataIndex: 'price',
+      key: 'price',
+      render: (text, record) => (
+        <Input
+          type="number"
+          value={selectedProducts.find((p) => p.id === record.id)?.price || 0}
+          onChange={(e) => handlePriceChange(record.id, e.target.value)}
+        />
+      ),
+    },
+    {
+      title: 'Discounted Price',
+      dataIndex: 'discountPrice',
+      key: 'discountPrice',
+      render: (text, record) => (
+        <Input
+          type="number"
+          value={selectedProducts.find((p) => p.id === record.id)?.discountPrice || 0}
+          onChange={(e) => handleDiscountPriceChange(record.id, e.target.value)}
+        />
+      ),
+    },
+    {
+      title: 'Action',
+      dataIndex: 'action',
+      key: 'action',
+      render: (text, record) => (
+        <Checkbox
+          onChange={() => handleCheckboxChange(record.id)}
+          checked={selectedProducts.some((p) => p.id === record.id)}
+        />
+      ),
+    },
+  ];
+
 
   return (
     <div className="prod">
       <Sidebar />
-      <div className="child-prod">
-        <h1 className="heading1">Edit Selected Products</h1>
+      <div  style={{display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',padding:'35px'}}>
+      <h1>Select Products</h1>
 
-        <table className="utable">
-          <thead>
-            <tr>
-              <th>Id</th>
-              <th>Product Name</th>
-              <th>Faculty Name</th>
-              <th>Course</th>
-              <th>Subject</th>
-              <th>Delivery Type</th>
-              <th>Price</th>
-              <th>Discounted Price</th>
-              <th>Action</th>
-            </tr>
-          </thead>
-          <tbody>
-            {products.map((product) => (
-              <tr key={product.id} className="row">
-                <td>{product.id}</td>
-                <td>{product.productName}</td>
-                <td>{product.facultyName}</td>
-                <td>{product.course}</td>
-                <td>{product.subject}</td>
-                <td>{product.deliveryType}</td>
-                <td>
-                  <input
-                    type="number"
-                    value={selectedProducts.find(p => p.id === product.id)?.price || 0}
+      <Table
+        columns={columns}
+        dataSource={products}
+        rowKey="id"
+        pagination={{ pageSize: 5 }} // Adjust the pageSize as needed
+        onChange={(pagination) => console.log('pagination', pagination)}
+        // Add additional features or configuration as needed
+        style={{padding:'23px'}}
+      />
 
-                    onChange={(e) =>
-                      handlePriceChange(product.id, e.target.value)
-                    }
-                  />
-                </td>
-                <td>
-                  <input
-                    type="number"
-                    value={selectedProducts.find(p => p.id === product.id)?.discountPrice || 0}
+      {successMessage && <p className="success-message">{successMessage}</p>}
 
-                    onChange={(e) =>
-                      handleDiscountPriceChange(product.id, e.target.value)
-                    }
-                  />
-                </td>
-
-                <td className="action">
-                  <input
-                    type="checkbox"
-                    ref={(el) => (checkboxesRef.current[product.id] = el)}
-                    onChange={() => handleCheckboxChange(product.id)}
-                    checked={selectedProducts.some((p) => p.id === product.id)}
-                  />
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-
-        {successMessage && <p className="success-message">{successMessage}</p>}
-
-        <button onClick={handleSubmit} className="btn-10">Update</button>
+      <Button onClick={handleSubmit} type="primary" className="btn-10">
+        Update
+      </Button>
       </div>
+
     </div>
   );
 }

@@ -1,7 +1,8 @@
-import React, { useState,useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
-import Sidebar from './Sidebar';
+import Sidebar from "./Sidebar";
+import { Form, Input, Radio, Select, Button } from "antd";
 
 export default function EditFranchise() {
   const { id } = useParams();
@@ -19,8 +20,6 @@ export default function EditFranchise() {
 
   const [successMessage, setSuccessMessage] = useState("");
 
- 
-
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prevData) => ({
@@ -29,7 +28,7 @@ export default function EditFranchise() {
     }));
   };
 
-    // Fetch the existing franchise data based on the id from the URL
+  // Fetch the existing franchise data based on the id from the URL
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -51,8 +50,6 @@ export default function EditFranchise() {
   }, [id]);
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-
     try {
       const response = await axios.put(
         `http://localhost:8081/admin/franchise/${id}`,
@@ -75,106 +72,96 @@ export default function EditFranchise() {
       <Sidebar />
       <div className="edit-franchise-form">
         <h2>Edit Franchise</h2>
-        {successMessage && (
-          <p className="success-message">{successMessage}</p>
-        )}
+        {successMessage && <p className="success-message">{successMessage}</p>}
 
-        <form onSubmit={handleSubmit}>
-          <div>
-            <label>Name:</label>
-            <input
+        <Form onFinish={handleSubmit} layout="vertical">
+          <Form.Item label="Name" required>
+            <Input
               type="text"
               name="name"
               value={formData.name}
               onChange={handleChange}
-              required
+              style={{padding:'8px',width:'90%'}}
             />
-          </div>
-          <div>
-            <label>Email:</label>
-            <input
+          </Form.Item>
+
+          <Form.Item label="Email" required>
+            <Input
               type="email"
               name="email"
               value={formData.email}
               onChange={handleChange}
-              required
+              style={{padding:'8px',width:'90%'}}
             />
-          </div>
-          <div>
-            <label>Phone Number:</label>
-            <input
+          </Form.Item>
+
+          <Form.Item label="Phone Number" required>
+            <Input
               type="tel"
               name="phone_number"
               value={formData.phone_number}
               onChange={handleChange}
-              required
+              style={{padding:'8px',width:'90%'}}
             />
-          </div>
-          <div>
-            <label>Password:</label>
-            <input
-              type="password"
+          </Form.Item>
+
+          <Form.Item label="Password" required>
+            <Input.Password
               name="password"
               value={formData.password}
               onChange={handleChange}
-              required
+              style={{padding:'8px',width:'90%'}}
             />
-          </div>
-          <div>
-            <label>GST Number:</label>
-            <input
+          </Form.Item>
+
+          <Form.Item label="GST Number" required>
+            <Input
               type="text"
               name="gst_number"
               value={formData.gst_number}
               onChange={handleChange}
-              required
+              style={{padding:'8px',width:'90%'}}
             />
-          </div>
-          <div>
-            <label>Franchise Type:</label>
-            <div>
-              <label>
-                <input
-                  type="radio"
-                  name="franchise_type"
-                  value="Regular"
-                  checked={formData.franchise_type === "Regular"}
-                  onChange={handleChange}
-                  className="rdio"
-                />
-                Regular
-              </label>
-              <label>
-                <input
-                  type="radio"
-                  name="franchise_type"
-                  value="Online"
-                  checked={formData.franchise_type === "Online"}
-                  onChange={handleChange}
-                  className="rdio"
-                />
-                Online
-              </label>
-            </div>
-          </div>
-          <div>
-            <label>Mode of Payment:</label>
-            <select
+          </Form.Item>
+
+          <Form.Item label="Franchise Type" required>
+            <Radio.Group
+              name="franchise_type"
+              value={formData.franchise_type}
+              onChange={handleChange}
+              style={{padding:'8px',width:'90%'}}
+            >
+              <Radio value="Regular">Regular</Radio>
+              <Radio value="Online">Online</Radio>
+            </Radio.Group>
+          </Form.Item>
+
+          <Form.Item label="Mode of Payment" required>
+            <Select
               name="mode_of_payment"
               value={formData.mode_of_payment}
-              onChange={handleChange}
-              className="modeOfPayment"
+              onChange={(value) =>
+                setFormData((prevData) => ({
+                  ...prevData,
+                  mode_of_payment: value,
+                }))
+              }
+              style={{width:'90%'}}
             >
-              <option value="Wallet">Wallet</option>
-              <option value="Payment Gateway">Payment Gateway</option>
-              <option value="Both">Both</option>
-            </select>
-          </div>
-        
-          <div>
-          <button type="submit" id="addBtnn">Next</button>
-          </div>
-        </form>
+              <Select.Option value="Wallet">Wallet</Select.Option>
+              <Select.Option value="Payment Gateway">
+                Payment Gateway
+              </Select.Option>
+              <Select.Option value="Both">Both</Select.Option>
+            </Select>
+          </Form.Item>
+
+          <Form.Item>
+            <Button type="primary" htmlType="submit">
+              Next
+            </Button>
+          </Form.Item>
+        </Form>
       </div>
     </div>
   );

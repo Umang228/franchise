@@ -1,24 +1,17 @@
-import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import Sidebar from "./Sidebar";
-import "../style/prod.css";
-import axios from "axios";
-import "../style/prod.css";
+import React, { useState, useEffect } from 'react';
+import { Table, Input, Checkbox, Button } from 'antd';
+import { useNavigate } from 'react-router-dom';
+import Sidebar from './Sidebar';
+import axios from 'axios';
 
-export default function SelectProducts() {
+import '../style/prod.css';
+
+const SelectProducts = () => {
   const [products, setProducts] = useState([]);
   const [selectedProducts, setSelectedProducts] = useState([]);
   const [enteredPrices, setEnteredPrices] = useState({});
   const [enteredDiscountPrices, setEnteredDiscountPrices] = useState({});
-
-  // pagination
-  const [currentPage, setCurrentPage] = useState(1);
-  const recordsPerPage = 4;
-  const lastIndex = currentPage * recordsPerPage;
-  const firstIndex = lastIndex - recordsPerPage;
-  const records = products.slice(firstIndex, lastIndex);
-  const npage = Math.ceil(products.length / recordsPerPage);
-  const numbers = [...Array(npage + 1).keys()].slice(1);
+  const navigate = useNavigate();
 
   const handleCheckboxChange = (productId) => {
     const updatedSelectedProducts = selectedProducts.includes(productId)
@@ -41,34 +34,38 @@ export default function SelectProducts() {
     }));
   };
 
-  const navigate = useNavigate();
-
   const handleSubmit = async () => {
     try {
       const requestData = {
         selectedProducts: selectedProducts,
         enteredPrices: enteredPrices,
-        enteredDiscountPrices: enteredDiscountPrices
+        enteredDiscountPrices: enteredDiscountPrices,
       };
-  
-      await axios.post("http://localhost:8081/admin/select", requestData);
-      navigate("/admin/franchise");
-      console.log("Selection saved successfully");
+
+      await axios.post('http://localhost:8081/admin/select', requestData);
+      navigate('/admin/franchise');
+      console.log('Selection saved successfully');
     } catch (error) {
-      console.error("Error saving selection:", error);
+      console.error('Error saving selection:', error);
     }
   };
-  
 
   // Function to fetch product data from the backend
   const fetchProducts = async () => {
     try {
-      const response = await axios.get("http://localhost:8081/admin/product");
+      const response = await axios.get('http://localhost:8081/admin/product');
       if (response.status === 200) {
         setProducts(response.data);
+
+        // Set initial enteredPrices based on fetched products
+        const initialPrices = {};
+        response.data.forEach((product) => {
+          initialPrices[product.id] = product.price;
+        });
+        setEnteredPrices(initialPrices);
       }
     } catch (error) {
-      console.error("Error fetching products:", error);
+      console.error('Error fetching products:', error);
     }
   };
 
@@ -77,107 +74,101 @@ export default function SelectProducts() {
     fetchProducts();
   }, []);
 
+  const columns = [
+    {
+      title: 'Id',
+      dataIndex: 'id',
+      key: 'id',
+    },
+    {
+      title: 'Product Name',
+      dataIndex: 'productName',
+      key: 'productName',
+    },
+    {
+      title: 'Faculty Name',
+      dataIndex: 'facultyName',
+      key: 'facultyName',
+    },
+    {
+      title: 'Course',
+      dataIndex: 'course',
+      key: 'course',
+    },
+    {
+      title: 'Subject',
+      dataIndex: 'subject',
+      key: 'subject',
+    },
+    {
+      title: 'Delivery Type',
+      dataIndex: 'deliveryType',
+      key: 'deliveryType',
+    },
+    {
+      title: 'Price',
+      dataIndex: 'price',
+      key: 'price',
+      render: (text, record) => (
+        <Input
+          type="text"
+          placeholder="Enter Price"
+          value={enteredPrices[record.id]}
+          onChange={(e) => handlePriceChange(record.id, e.target.value)}
+        />
+      ),
+    },
+    {
+      title: 'Discounted Price',
+      dataIndex: 'discountedPrice',
+      key: 'discountedPrice',
+      render: (text, record) => (
+        <Input
+          type="text"
+          placeholder="Enter Discounted Price"
+          value={enteredDiscountPrices[record.id] || ''}
+          onChange={(e) => handleDiscountPriceChange(record.id, e.target.value)}
+        />
+      ),
+    },
+    {
+      title: 'Action',
+      dataIndex: 'action',
+      key: 'action',
+      render: (text, record) => (
+        <Checkbox
+          onChange={() => handleCheckboxChange(record.id)}
+          checked={selectedProducts.includes(record.id)}
+        />
+      ),
+    },
+  ];
+
   return (
     <div className="prod">
       <Sidebar />
-      <div className="child-prod">
-        <h1 className="heading1">Products</h1>
+      <div className="child-prod" style={{ padding: '115px' }}>
+        <h1 className="heading1">Select Products</h1>
 
-        <table class="utable">
-          <thead>
-            <tr>
-              <th>Id</th>
-              <th>Product Name</th>
-              <th>Faculty Name</th>
-              <th>Course</th>
-              <th>Subject</th>
-              <th>Delivery Type</th>
-              <th>Price</th>
-              <th>Discounted Price</th>
-              <th>Action</th>
-            </tr>
-          </thead>
-          <tbody>
-            {records.map((product) => (
-              <tr key={product.id} className="row">
-                <td>{product.id}</td>
-                <td>{product.productName}</td>
-                <td> {product.facultyName}</td>
-                <td> {product.course}</td>
-                <td>{product.subject}</td>
-                <td>{product.deliveryType}</td>
-                <td>
-                  <input
-                    type="text"
-                    placeholder="Enter Price"
-                    value={enteredPrices[product.id] || ""}
-                    onChange={(e) =>
-                      handlePriceChange(product.id, e.target.value)
-                    }
-                  />
-                </td>
-                <td>
-                  <input
-                    type="text"
-                    placeholder="Enter Discounted Price"
-                    value={enteredDiscountPrices[product.id] || ""}
-                    onChange={(e) =>
-                      handleDiscountPriceChange(product.id, e.target.value)
-                    }
-                  />
-                </td>
-                <td className="action">
-                  <input
-                    type="checkbox"
-                    onChange={() => handleCheckboxChange(product.id)}
-                    checked={selectedProducts.includes(product.id)}
-                  />
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-        <button onClick={handleSubmit} className="btn-10" style={{position:'absolute',top:"500px",color:'white',background:"black"}}>Submit</button>
+        <Table
+          columns={columns}
+          dataSource={products}
+          rowKey="id"
+          pagination={{ pageSize: 5 }} // Adjust pageSize as needed
+          scroll={{ x: true }}
+        />
 
-        <nav>
-          <ul>
-            <li>
-              <a href="#0" onClick={prePage}>
-                Prev
-              </a>
-            </li>
-            {numbers.map((n, products) => (
-              <li
-                className={`page-item ${currentPage === n ? "active" : ""}`}
-                key={products}
-              >
-                <a href="#0" onClick={() => changeCPage(n)}>
-                  {n}
-                </a>
-              </li>
-            ))}
-            <li>
-              <a href="#0" onClick={nextPage}>
-                Next
-              </a>
-            </li>
-          </ul>
-        </nav>
+        <Button
+          onClick={handleSubmit}
+          type="primary"
+          className="btn-10"
+          style={{ padding: '13px', textAlign: 'center', height: '50px' }}
+        >
+          Submit
+        </Button>
       </div>
     </div>
   );
-  //pagination
-  function prePage() {
-    if (currentPage !== 1) {
-      setCurrentPage(currentPage - 1);
-    }
-  }
-  function changeCPage(id) {
-    setCurrentPage(id);
-  }
-  function nextPage() {
-    if (currentPage !== npage) {
-      setCurrentPage(currentPage + 1);
-    }
-  }
-}
+};
+
+export default SelectProducts;

@@ -31,12 +31,18 @@ router.post('/add-course', (req, res) => {
     courseAuthors,
   } = req.body;
 
+  // Convert arrays to JSON strings
+  const subjectsJSON = JSON.stringify(courseSubjects);
+  const categoriesJSON = JSON.stringify(courseCategories);
+  const subCategoriesJSON = JSON.stringify(courseSubCategories);
+  const authorsJSON = JSON.stringify(courseAuthors);
+
   // Define your SQL query and values here.
   const sql = `
     INSERT INTO courses (courseName, courseSubjects, courseCategories, courseSubCategories, courseAuthors)
     VALUES (?, ?, ?, ?, ?)
   `;
-  const values = [courseName, courseSubjects, courseCategories, courseSubCategories, courseAuthors];
+  const values = [courseName, subjectsJSON, categoriesJSON, subCategoriesJSON, authorsJSON];
 
   db.query(sql, values, (err, result) => {
     if (err) {
@@ -47,6 +53,7 @@ router.post('/add-course', (req, res) => {
     return res.status(200).json({ message: "Course added successfully" });
   });
 });
+
 
 
 // Route to fetch all users from the "user" table

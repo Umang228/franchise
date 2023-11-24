@@ -116,6 +116,7 @@ const routes = [
 const SideBar = ({ children }) => {
 
   const [isOpen, setIsOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
   const toggle = () => setIsOpen(!isOpen);
   const [cookies] = useCookies(['token']);
   const userNameRef = useRef(null);
@@ -130,6 +131,10 @@ const SideBar = ({ children }) => {
       return null;
     }
   };
+  const handleInputChange = (e) => {
+    setSearchQuery(e.target.value);
+  };
+
 
   useEffect(() => {
     if (cookies.token) {
@@ -139,7 +144,17 @@ const SideBar = ({ children }) => {
       }
     }
   }, [cookies.token]);
-  
+    const filteredRoutes = routes.filter((route) => {
+    if (route.subRoutes) {
+      const filteredSubRoutes = route.subRoutes.filter((subRoute) =>
+        subRoute.name.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+      return filteredSubRoutes.length > 0;
+    } else {
+      return route.name.toLowerCase().includes(searchQuery.toLowerCase());
+    }
+  });
+
  
 
   const inputAnimation = {
@@ -183,11 +198,10 @@ const SideBar = ({ children }) => {
       <div className="main-container">
         <motion.div
           animate={{
-            width: isOpen ? "280px" : "45px",
-
+            width: isOpen ? '280px' : '45px',
             transition: {
               duration: 0.5,
-              type: "spring",
+              type: 'spring',
               damping: 10,
             },
           }}
@@ -225,12 +239,14 @@ const SideBar = ({ children }) => {
                   variants={inputAnimation}
                   type="text"
                   placeholder="Search"
+                  value={searchQuery}
+                  onChange={handleInputChange}
                 />
               )}
             </AnimatePresence>
           </div>
           <section className="routes">
-            {routes.map((route, index) => {
+            {filteredRoutes.map((route, index) => {
               if (route.subRoutes) {
                 return (
                   <SidebarMenu
@@ -271,6 +287,7 @@ const SideBar = ({ children }) => {
 
         <main>{children}</main>
       </div>
+
     </>
   );
 };
