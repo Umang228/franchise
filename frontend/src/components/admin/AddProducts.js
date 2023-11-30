@@ -25,8 +25,16 @@ import {
   Space,
   Table,
   InputNumber,
+  message,
+  Modal,
 } from "antd";
-import { PlusOutlined, MinusOutlined } from "@ant-design/icons";
+import {
+  PlusOutlined,
+  MinusOutlined,
+  UploadOutlined,
+  DeleteOutlined,
+  EyeOutlined,
+} from "@ant-design/icons";
 import { CartesianProduct } from "js-combinatorics";
 const { Option } = Select;
 const selectStyle = {
@@ -62,6 +70,7 @@ export default function AddProducts() {
     productImage: "",
     variants: [],
     variantCombinations: [],
+    excelFile: null,
     mrpText: "",
     discountText: "",
     rank: 0,
@@ -105,6 +114,8 @@ export default function AddProducts() {
     optionName: "",
     optionValues: [],
   });
+  const [viewModalVisible, setViewModalVisible] = useState(false);
+  const [viewData, setViewData] = useState([]);
   const [tabs, setTabs] = useState([
     { name: "Description", content: "" },
     { name: "Youtube Links", content: "" },
@@ -186,26 +197,44 @@ export default function AddProducts() {
     };
   }, [productInfo.price, productInfo.variants]);
 
+  const parseArray = (data) => {
+    try {
+      return Array.isArray(data)
+        ? data.map(
+            (item) =>
+              item.subjectName ||
+              item.categoriesName ||
+              item.courseSubCategoriesName ||
+              item.courseAuthorsName
+          )
+        : JSON.parse(data);
+    } catch (error) {
+      console.error("Error parsing array:", error);
+      return [];
+    }
+  };
+
   const handleCourseChange = (value) => {
-    // Find the selected course
     const selectedCourse = courses.find(
       (course) => course.courseName === value
     );
 
-    // Update productInfo and setSubjects
     setProductInfo((prevProductInfo) => ({
       ...prevProductInfo,
       course: value,
-      subject: "", // Reset subject when course changes
+      subject: "",
     }));
 
-    // Display subjects related to the selected course
-    setSubjects(selectedCourse ? extractSubjects(selectedCourse) : []);
-    setCategories(selectedCourse ? extractCategories(selectedCourse) : []);
-    setSubCategories(
-      selectedCourse ? extractSubCategories(selectedCourse) : []
+    setSubjects(
+      selectedCourse ? parseArray(selectedCourse.courseSubjects) : []
     );
-    setAuthors(selectedCourse ? extractAuthors(selectedCourse) : []);
+    setCategories(
+      selectedCourse ? parseArray(selectedCourse.courseCategories) : []
+    );
+    setSubCategories(
+      selectedCourse ? parseArray(selectedCourse.courseSubCategories) : []
+    );
+    setAuthors(selectedCourse ? parseArray(selectedCourse.courseAuthors) : []);
   };
 
   const extractSubjects = (course) => {
@@ -478,18 +507,18 @@ export default function AddProducts() {
   };
 
   const handleAddVariant = () => {
-    setVariantSections([
-      ...variantSections,
-      { variantName: "", options: [""] },
-    ]);
+    const updatedSections = [...variantSections];
+    updatedSections.push({
+      name: "",
+      options: [""],
+    });
+    setVariantSections(updatedSections);
   };
 
   const handleRemoveVariant = (sectionIndex) => {
-    if (variantSections.length > 1) {
-      const updatedSections = [...variantSections];
-      updatedSections.splice(sectionIndex, 1);
-      setVariantSections(updatedSections);
-    }
+    const updatedSections = [...variantSections];
+    updatedSections.splice(sectionIndex, 1);
+    setVariantSections(updatedSections);
   };
 
   const handleAddOptions = (sectionIndex) => {
@@ -507,30 +536,42 @@ export default function AddProducts() {
       setVariantSections(updatedSections);
     }
   };
-  const handleGenerateCombinations = () => {
-    // Generate all combinations of variant options
-    const combinations = new CartesianProduct(
-      ...variantSections.map((section) => section.options)
-    ).toArray();
 
-    // Create table data from combinations with default priceChange values
+  const handleGenerateCombinations = () => {
+    const combinations = variantSections.length
+      ? generateCombinations(variantSections)
+      : [];
     const newData = combinations.map((combination, index) => ({
       key: index,
-      combination: combination.join(" - "),
+      ...variantSections.reduce(
+        (acc, section, i) => ({
+          ...acc,
+          [section.name]: combination[i],
+        }),
+        {}
+      ),
       priceChange: "", // Default value for priceChange
+      uploadExcel: "", // Default value for uploadExcel
     }));
 
-    // Update productInfo with variant combinations and price changes
     setProductInfo((prevProductInfo) => ({
       ...prevProductInfo,
-      variantCombinations: newData.map((item) => ({
-        combination: item.combination,
-        priceChange: item.priceChange,
-      })),
+      variantCombinations: newData.map((item) => ({ ...item })),
     }));
 
-    // Set the table data for display (optional)
     setTableData(newData);
+  };
+
+  const generateCombinations = (sections) => {
+    return sections.reduce((acc, section) => {
+      if (acc.length === 0) {
+        return section.options.map((option) => [option]);
+      } else {
+        return acc.flatMap((combo) =>
+          section.options.map((option) => [...combo, option])
+        );
+      }
+    }, []);
   };
 
   const handlePriceChange = (key, value) => {
@@ -540,12 +581,52 @@ export default function AddProducts() {
     setTableData(newData);
   };
 
-  const columns = [
-    {
-      title: "Combination",
-      dataIndex: "combination",
-      key: "combination",
+  const uploadProps = (record) => ({
+    name: "file",
+    accept: ".xlsx, .xls",
+    showUploadList: false,
+    beforeUpload: (file) => {
+      const reader = new FileReader();
+
+      reader.onload = (e) => {
+        try {
+          // Parse the Excel file data
+          const workbook = XLSX.read(e.target.result, { type: "binary" });
+          const sheetName = workbook.SheetNames[0];
+          const sheet = workbook.Sheets[sheetName];
+
+          // Extract data from the sheet
+          const excelData = XLSX.utils.sheet_to_json(sheet, { header: 1 });
+
+          // Update the data in your table or perform other operations
+          const newData = tableData.map((item) =>
+            item.key === record.key ? { ...item, excelData } : item
+          );
+          console.log("the uploded excel sheet data is " + newData);
+          setTableData(newData);
+          console.log(`the uploded excel sheet data after table data is set `);
+          console.log(newData);
+          message.success("File read successfully");
+        } catch (error) {
+          console.error("Error reading file:", error);
+          message.error("Error reading file");
+        }
+      };
+
+      reader.readAsBinaryString(file);
+
+      // Prevent default upload behavior
+      return false;
     },
+  });
+
+  const columns = variantSections.map((section) => ({
+    title: section.name,
+    dataIndex: section.name,
+    key: section.name,
+  }));
+
+  columns.push(
     {
       title: "Price Change",
       dataIndex: "priceChange",
@@ -557,38 +638,41 @@ export default function AddProducts() {
         />
       ),
     },
-  ];
-
-  const handleExcelUpload = (e) => {
-    const file = e.target.files[0];
-
-    if (file) {
-      const reader = new FileReader();
-
-      reader.onload = (e) => {
-        const data = new Uint8Array(e.target.result);
-        const workbook = XLSX.read(data, { type: "array" });
-
-        // Assuming the keys are in the first sheet and in the A column
-        const keys = XLSX.utils.sheet_to_json(
-          workbook.Sheets[workbook.SheetNames[0]],
-          {
-            header: ["key"],
-          }
-        );
-
-        setExcelKeys(keys);
-      };
-
-      reader.readAsArrayBuffer(file);
+    {
+      title: "Action",
+      key: "action",
+      render: (text, record) => (
+        <div style={{ display: "flex" }}>
+          <Upload {...uploadProps(record)}>
+            <Button
+              icon={<UploadOutlined />}
+              style={{ color: "green" }}
+            ></Button>
+          </Upload>
+          <Button
+            type="link"
+            icon={<EyeOutlined />}
+            onClick={() => handleView(record)}
+          />
+          <Button
+            type="link"
+            icon={<DeleteOutlined />}
+            onClick={() => handleRemoveRow(record.key)}
+          />
+        </div>
+      ),
     }
+  );
+
+  const handleView = (record) => {
+    // Set the viewData state with the keys for the specific record
+    setViewData(record.excelData || []);
+    setViewModalVisible(true);
   };
 
-
-
-  const handleKeyUsage = (key) => {
-    setUsedKeys((prevUsedKeys) => [...prevUsedKeys, key]);
-    // You can implement your logic to send the key to the buyer via email here
+  const handleRemoveRow = (key) => {
+    const newData = tableData.filter((item) => item.key !== key);
+    setTableData(newData);
   };
 
   return (
@@ -756,11 +840,10 @@ export default function AddProducts() {
                 onChange={(value) =>
                   handleChange({ target: { name: "subject", value } })
                 }
+                mode="multiple" // Enable multi-select
                 style={selectStyle} // Apply the common style
               >
-                <Option value="" disabled>
-                  Select a Subject
-                </Option>
+                {/* Options for multi-select Subjects */}
                 {subjects.map((courseSubjects) => (
                   <Option key={courseSubjects} value={courseSubjects}>
                     {courseSubjects}
@@ -777,11 +860,10 @@ export default function AddProducts() {
                 onChange={(value) =>
                   handleChange({ target: { name: "category", value } })
                 }
+                mode="multiple" // Enable multi-select
                 style={selectStyle} // Apply the common style
               >
-                <Option value="" disabled>
-                  Select a Category
-                </Option>
+                {/* Options for multi-select Categories */}
                 {categories.map((category) => (
                   <Option key={category} value={category}>
                     {category}
@@ -798,11 +880,10 @@ export default function AddProducts() {
                 onChange={(value) =>
                   handleChange({ target: { name: "subCategory", value } })
                 }
+                mode="multiple" // Enable multi-select
                 style={selectStyle} // Apply the common style
               >
-                <Option value="" disabled>
-                  Select a Sub Category
-                </Option>
+                {/* Options for multi-select Sub Categories */}
                 {subCategories.map((subCategory) => (
                   <Option key={subCategory} value={subCategory}>
                     {subCategory}
@@ -819,11 +900,10 @@ export default function AddProducts() {
                 onChange={(value) =>
                   handleChange({ target: { name: "author", value } })
                 }
+                mode="multiple" // Enable multi-select
                 style={selectStyle} // Apply the common style
               >
-                <Option value="" disabled>
-                  Select an Author
-                </Option>
+                {/* Options for multi-select Authors */}
                 {authors.map((author) => (
                   <Option key={author} value={author}>
                     {author}
@@ -1104,41 +1184,21 @@ export default function AddProducts() {
             + Add Tab
           </button>
 
-          <div>
+          <Space direction="vertical" style={{ width: "100%" }}>
             {variantSections.map((section, sectionIndex) => (
-              <div
-                key={sectionIndex}
-                style={{ padding: "23px", marginBottom: "10px" }}
-              >
-                {sectionIndex >= 1 && ( // Add this conditional check
-                  <Button
-                    onClick={() => handleRemoveVariant(sectionIndex)}
-                    style={{
-                      marginTop: "-21px",
-                      color: "red",
-                      position: "relative",
-                      left: "416px",
-                      top: "-10px",
-                    }}
-                    danger
-                  >
-                    Remove Variant
-                  </Button>
-                )}
-
-                <Form.Item
-                  label="Variant Name"
-                  name={`variantName_${sectionIndex}`}
-                >
-                  <Input
-                    onChange={(e) =>
-                      handleVarChange(e.target.value, sectionIndex, 0)
-                    }
-                    style={{ width: "95%" }}
-                  />
-                </Form.Item>
-
+              <div key={sectionIndex}>
                 <Space direction="vertical" style={{ width: "100%" }}>
+                  <Form.Item label={`Variant Name ${sectionIndex + 1}`}>
+                    <Input
+                      value={section.name}
+                      onChange={(e) => {
+                        const updatedSections = [...variantSections];
+                        updatedSections[sectionIndex].name = e.target.value;
+                        setVariantSections(updatedSections);
+                      }}
+                      style={{ width: "95%" }}
+                    />
+                  </Form.Item>
                   {section.options.map((value, optionIndex) => (
                     <div key={optionIndex}>
                       <Form.Item
@@ -1167,23 +1227,27 @@ export default function AddProducts() {
                       </Form.Item>
                     </div>
                   ))}
-
                   <Button
                     icon={<PlusOutlined />}
                     onClick={() => handleAddOptions(sectionIndex)}
                   >
                     Add Option
                   </Button>
+                  <Button
+                    type="danger"
+                    onClick={() => handleRemoveVariant(sectionIndex)}
+                  >
+                    Remove Variant
+                  </Button>
                 </Space>
               </div>
             ))}
-
             <Button className="btn-10" onClick={handleAddVariant}>
               + Add Variant
             </Button>
-          </div>
+          </Space>
 
-          <div>
+          <div className="variantTable">
             <Button className="btn-10" onClick={handleGenerateCombinations}>
               Generate Combinations
             </Button>
@@ -1191,33 +1255,27 @@ export default function AddProducts() {
               dataSource={tableData}
               columns={columns}
               pagination={false}
+              style={{ width: "100vw" }}
             />
           </div>
-
-          <div>
-            <label htmlFor="excelFile">Import Excel:</label>
-            <input
-              type="file"
-              accept=".xlsx, .xls"
-              id="excelFile"
-              onChange={handleExcelUpload}
+          <Modal
+            title="View Keys"
+            visible={viewModalVisible}
+            onCancel={() => setViewModalVisible(false)}
+            footer={null}
+          >
+            <Table
+              dataSource={viewData.map((key, index) => ({
+                key: index,
+                value: key,
+              }))}
+              columns={[
+                { title: "Index", dataIndex: "key", key: "key" },
+                { title: "Keys", dataIndex: "value", key: "value" },
+              ]}
+              pagination={false}
             />
-          </div>
-
-          {excelKeys.length > 0 && (
-        <div>
-          <h3>Imported Keys</h3>
-          <Table dataSource={excelKeys} />
-        </div>
-      )}
-
-      {/* Display Used Keys */}
-      {usedKeys.length > 0 && (
-        <div>
-          <h3>Used Keys</h3>
-          <Table dataSource={usedKeys.map((key) => ({ key }))} />
-        </div>
-      )}
+          </Modal>
 
           <button type="submit" id="btnn">
             Add Product

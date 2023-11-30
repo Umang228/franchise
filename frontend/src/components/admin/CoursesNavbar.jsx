@@ -27,8 +27,8 @@ const CoursesNavbar = () => {
     border: "none",
     height: "75px",
     display: "flex",
-    justifyContent: "center", // Align items horizontally to the center
-    alignItems: "center", // Align items vertically to the center
+    justifyContent: "center",
+    alignItems: "center",
   };
 
   const menuStyle = {
@@ -75,7 +75,7 @@ const CoursesNavbar = () => {
                   color: "white",
                   display: "flex",
                   alignItems: "center",
-                  color:'#0c0c0c'
+                  color: "#0c0c0c",
                 }}
               >
                 Other Courses <CaretDownFilled style={dropdownIconStyle} />
@@ -96,7 +96,7 @@ const CoursesNavbar = () => {
           style={{
             color: "#0c0c0c",
             width: "100%",
-            height: "100%", // Adjust the width as needed
+            height: "100%",
             display: "flex",
             alignItems: "center",
           }}
@@ -109,32 +109,60 @@ const CoursesNavbar = () => {
 
   function getDropdownContent(courses) {
     return (
-      <Menu>
-        {courses.map((course) => (
-          <Menu.Item key={course.id}>
-            {course.categories && course.categories.length > 0 ? (
-              course.categories.map((category) => (
-                <Menu.Item key={category.id}>
-                  {category.categoryName}
-                  {category.subcategories &&
-                    category.subcategories.length > 0 && (
-                      <Menu>
-                        {category.subcategories.map((subcategory) => (
-                          <Menu.Item key={subcategory.id}>
-                            {subcategory.subcategoryName}
-                          </Menu.Item>
-                        ))}
-                      </Menu>
-                    )}
-                </Menu.Item>
-              ))
-            ) : (
-              <Menu.Item disabled>No categories found</Menu.Item>
-            )}
-          </Menu.Item>
-        ))}
-      </Menu>
+      <div className="CoursesNavbar">
+        <Menu mode="horizontal">
+          {courses.map((course) => (
+            <Menu.Item key={course.id}>
+              {console.log("Course:", course)}
+
+              {/* Check if course.courseCategories is a valid JSON string */}
+              {isJSON(course.courseCategories) ? (
+                JSON.parse(course.courseCategories).map((category) => (
+                  <Menu.Item key={category.id}>
+                    {category.categoryName}
+                    {category.subcategories &&
+                      category.subcategories.length > 0 && (
+                        <Menu>
+                          {category.subcategories.map((subcategory) => (
+                            <Menu.Item key={subcategory.id}>
+                              {subcategory.subcategoryName}
+                            </Menu.Item>
+                          ))}
+                        </Menu>
+                      )}
+                  </Menu.Item>
+                ))
+              ) : (
+                // If it's not valid JSON, treat it as a plain string
+                <Menu.Item>{course.courseCategories}</Menu.Item>
+              )}
+
+              {/* Similarly, handle courseSubCategories */}
+              {console.log("Course subcat", course.courseSubCategories)}
+              {isJSON(course.courseSubCategories) ? (
+                JSON.parse(course.courseSubCategories).map((subCategory) => (
+                  <Menu.Item key={subCategory.id}>
+                    {subCategory.subcategoryName}
+                  </Menu.Item>
+                ))
+              ) : (
+                <Menu.Item>{course.courseSubCategories}</Menu.Item>
+              )}
+            </Menu.Item>
+          ))}
+        </Menu>
+      </div>
     );
+  }
+
+  // Function to check if a string is valid JSON
+  function isJSON(str) {
+    try {
+      JSON.parse(str);
+      return true;
+    } catch (error) {
+      return false;
+    }
   }
 };
 

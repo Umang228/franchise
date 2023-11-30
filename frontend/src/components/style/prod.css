@@ -457,3 +457,34 @@
 }
 
 /* Add more styles as needed */
+.variantTable{
+  width:97vw !important
+}
+
+/* CoursesNavbar.css */
+/* 
+.CoursesNavbar {
+  background-color: #0c0c0c;
+  color: white;
+  border: none;
+  height: 75px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.Menu {
+  display: flex;
+  background-color: #0c0c0c;
+  color: #fff;
+  border: none;
+}
+
+.ant-dropdown-link {
+  color: white;
+  display: flex;
+  align-items: center;
+  color: #0c0c0c;
+}
+
+Add more styling based on your preferences */

@@ -5,7 +5,11 @@ const multer = require("multer"); // for image handling
 const Busboy = require('busboy');
 const cloudinary = require("cloudinary").v2;
 const fs = require("fs"); // for image deleting and editing
-
+const path = require("path");  
+const app = express();
+const staticPath = path.join(__dirname, "../images/products");
+console.log("static ",staticPath);
+app.use('/images', express.static(staticPath));
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
@@ -20,6 +24,11 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage: storage });
 
+cloudinary.config({
+  cloud_name: "deadcpd0c",
+  api_key: "668199629764616",
+  api_secret: "OeophGyONgMzxqGQ63XLc6EN_H8",
+});
 
 // Add course
 router.post('/add-course', (req, res) => {
@@ -213,34 +222,39 @@ router.post("/add-product", upload.array("productImage", 4), async (req, res) =>
       highlights,
       productDetails,
       variants,
-      youtubeLink,  // Add youtubeLink to the destructuring
-      author,       // Add authors to the destructuring
-      subCategory, // Add subCategories to the destructuring
-      category,    // Add categories to the destructuring
+      youtubeLink,
+      author,
+      subCategory,
+      category,
       tabs,
       finalPrice,
       variantCombinations
     } = req.body;
 
-    // Create an array to store image file paths
-    const imagePaths = [];
+    const imagePaths = []; // To store either Multer paths or Cloudinary URLs
 
-    // Loop through uploaded files and move them to the specified directory
+    // Upload images to Cloudinary
+    for (const file of req.files) {
+      const result = await cloudinary.uploader.upload(file.path);
 
-    if (!req.files || req.files.length === 0) {
-      return res.status(400).json({ message: "No files uploaded" });
-    } else {
-      for (const file of req.files) {
-        imagePaths.push(file.path);
+      // Check if Cloudinary upload was successful
+      if (result && result.secure_url) {
+        imagePaths.push(result.secure_url);
+      } else {
+        // Handle upload failure (you can choose to return an error or continue without the image)
+        console.error("Cloudinary upload failed for file:", file);
       }
+    }
+
+    // Check if at least one image was successfully uploaded
+    if (imagePaths.length === 0) {
+      return res.status(400).json({ message: "No files uploaded to Cloudinary" });
     }
 
     const variantsJSON = JSON.stringify(variants);
 
-    // Insert product data into your database with image file paths
     const sql = `
-    INSERT INTO products (productName, facultyName, productID, productType, course, subject, productUrl, priceUpdate, deliveryType, isFranchise, isWhatsapp, price, discountPrice, description, shortDescription, featured, slug, category_id, image, mrpText, discountText, rank, topLeft, topRight, bottomLeft, bottomRight, highlights, productDetails, variants, youtubeLink, author, subCategory, category,tabs,finalPrice,variantCombinations) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
-    `;
+    INSERT INTO products (productName, facultyName, productID, productType, course, subject, productUrl, priceUpdate, deliveryType, isFranchise, isWhatsapp, price, discountPrice, description, shortDescription, featured, slug, category_id, image, mrpText, discountText, rank, topLeft, topRight, bottomLeft, bottomRight, highlights, productDetails, variants, youtubeLink, author, subCategory, category,tabs,finalPrice,variantCombinations) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`;
 
     const values = [
       productName,
@@ -261,7 +275,7 @@ router.post("/add-product", upload.array("productImage", 4), async (req, res) =>
       featured,
       slug,
       category_id,
-      imagePaths.join(","), // Store file paths as a comma-separated string
+      imagePaths.join(","),
       mrpText,
       discountText,
       rank,
@@ -287,6 +301,11 @@ router.post("/add-product", upload.array("productImage", 4), async (req, res) =>
         return res.status(500).json({ message: "Error no file data" });
       }
 
+      // Delete Multer-uploaded images after Cloudinary upload
+      for (const file of req.files) {
+        fs.unlinkSync(file.path);
+      }
+
       return res.json({ message: "Product added successfully" });
     });
   } catch (error) {
@@ -297,10 +316,11 @@ router.post("/add-product", upload.array("productImage", 4), async (req, res) =>
 
 
 
-router.get("/admin/products/:productId", async (req, res) => {
-  const productId = req.params.id; // Get the product ID from the request params
 
-  // Replace this with your database query to fetch the product details by ID
+
+router.get("/admin/products/:id", (req, res) => {
+  const productId = req.params.id;
+
   const sql = "SELECT * FROM products WHERE id = ?";
   const values = [productId];
 
@@ -315,9 +335,17 @@ router.get("/admin/products/:productId", async (req, res) => {
     }
 
     const product = result[0];
+
+    // Check if the 'image' property exists before applying the replacement
+    if (product.image) {
+      // Replace backslashes with forward slashes in image paths
+      product.image = product.image.replace(/\\/g, '/');
+    }
+
     return res.json(product);
   });
 });
+
 
 // Fetch all products
 router.get("/products", (req, res) => {
@@ -850,7 +878,12 @@ router.post("/update_selected_products", async (req, res) => {
               if (error) {
                 reject(error);
               } else {
-                resolve(productResults[0]);
+                // Check if productResults is defined and has the expected structure
+                if (productResults && productResults.length > 0 && productResults[0].hasOwnProperty('productName')) {
+                  resolve(productResults[0]);
+                } else {
+                  resolve({ productName: 'Unknown' }); // Set a default value or handle accordingly
+                }
               }
             });
           });
