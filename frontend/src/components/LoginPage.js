@@ -42,19 +42,20 @@ const LoginPage = () => {
           if (res.data.Status === 'Success') {
             const userRole = res.data.user.role;
             const token = res.data.token;
-  
-            // Store token as a cookie
             setCookie('token', token, { path: '/', maxAge: 7200 });
+            localStorage.setItem('token',token)
+            console.log('Token stored in localStorage:', localStorage.getItem('token'));
             axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-
+            console.log('Axios headers set with token:', axios.defaults.headers.common['Authorization']);
+            
   
             // Navigate based on user role
             if (userRole === 'admin') {
-              navigate('/admin/dashboard');
+              navigate('/homepage');
             } else if (userRole === 'franchise') {
-              navigate('/franchise/dashboard');
+              navigate('/homepage');
             } else {
-              navigate('/user/dashboard');
+              navigate('/homepage');
             }
           } else {
             console.log("Error:", res.data.Error);

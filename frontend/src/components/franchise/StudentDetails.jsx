@@ -1,7 +1,20 @@
 import React, { useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-
+import {
+  Form,
+  Input,
+  Button,
+  Upload,
+  Image,
+  Modal,
+  Spin,
+  message,
+  Row,
+  Col,
+} from "antd";
+import { UploadOutlined } from "@ant-design/icons";
+import SideBar from "./Sidebar";
 
 const generateRandomKey = () => {
   const characters =
@@ -14,178 +27,207 @@ const generateRandomKey = () => {
   return result;
 };
 
-export default function StudentDetails() {
-  const [studentInfo, setStudentInfo] = useState({
-    avatar: null,
-    name: "",
-    mobileNumber: "",
-    email: "",
-    address: "",
-    city: "",
-    state: "",
-    pinCode: "",
-    serial_key: generateRandomKey(),
-  });
-  const [showConfirmationDialog, setShowConfirmationDialog] = useState(false);
+const StudentDetails = () => {
+  const [form] = Form.useForm();
+  const navigate = useNavigate();
   const [imagePreview, setImagePreview] = useState(null);
+  const [showConfirmationDialog, setShowConfirmationDialog] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setStudentInfo((prevStudentInfo) => ({
-      ...prevStudentInfo,
-      [name]: value,
-    }));
+  const handleChange = (info) => {
+    if (info.file.status === "done") {
+      setImagePreview(info.file.thumbUrl);
+    }
   };
 
-  const handleImageUpload = (e) => {
-    const file = e.target.files[0];
-    setImagePreview(URL.createObjectURL(file));
-    setStudentInfo((prevStudentInfo) => ({
-      ...prevStudentInfo,
-      avatar: file,
-    }));
+  const handleRemove = () => {
+    setImagePreview(null);
   };
 
-  // Function to open the confirmation dialog for deletion
   const handleOpenConfirmationDialog = () => {
     setShowConfirmationDialog(true);
   };
 
-  // Function to close the confirmation dialog
   const handleCloseConfirmationDialog = () => {
     setShowConfirmationDialog(false);
   };
 
-  const navigate = useNavigate();
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    console.log(studentInfo);
+  const handleSubmit = async () => {
     try {
+      setLoading(true);
+      const values = await form.validateFields();
       const response = await axios.post(
         "http://localhost:8081/franchise/add-student",
-        studentInfo
+        { ...values, avatar: values.avatar[0] }
       );
 
+      setLoading(false);
+      message.success("Student details submitted successfully!");
+
+      const countdown = 15;
+      let seconds = countdown;
+      const timer = setInterval(() => {
+        seconds--;
+        if (seconds === 0) {
+          clearInterval(timer);
+          navigate("/franchise/orders");
+        }
+      }, 1000);
+
       navigate("/franchise/order-placed");
-
-      setTimeout(() => {
-        navigate("/franchise/orders");
-      }, 15000); // 15 seconds 
-
     } catch (error) {
+      setLoading(false);
+      message.error("Error submitting student data. Please try again.");
       console.error("Error submitting student data:", error);
     }
   };
 
+  const customRequest = ({ file, onSuccess }) => {
+    setTimeout(() => {
+      onSuccess("ok");
+    }, 0);
+  };
+
   return (
     <div>
-      <h2>Student Details</h2>
-      <form>
-        <div>
-          <label htmlFor="name">Upload Image:</label>
-          <input
-            type="file"
+      <SideBar />
+      <div style={{ padding: "60px" }}>
+        <h2 style={{ marginBottom: "20px" }}>Student Details</h2>
+        <Form
+          form={form}
+          onFinish={handleOpenConfirmationDialog}
+          layout="vertical"
+        >
+          <Form.Item
             name="avatar"
-            accept="image/*"
-            onChange={handleImageUpload}
-          />
-             {imagePreview && (
-            <img
-              src={imagePreview}
-              alt="Avatar Preview"
-              style={{ maxWidth: "100px", maxHeight: "100px", marginTop: "10px" }}
-            />
-            )}
-        </div>
-        <div>
-          <label htmlFor="name">Student Name:</label>
-          <input
-            type="text"
-            id="name"
-            name="name"
-            value={studentInfo.name}
-            onChange={handleChange}
-            required
-          />
-        </div>
-        <div>
-          <label htmlFor="mobileNumber">Mobile Number:</label>
-          <input
-            type="text"
-            id="mobileNumber"
-            name="mobileNumber"
-            value={studentInfo.mobileNumber}
-            onChange={handleChange}
-            required
-          />
-        </div>
-        <div>
-          <label htmlFor="email">E-Mail:</label>
-          <input
-            type="email"
-            id="email"
-            name="email"
-            value={studentInfo.email}
-            onChange={handleChange}
-            required
-          />
-        </div>
-        <div>
-          <label htmlFor="address">Address:</label>
-          <input
-            type="text"
-            id="address"
-            name="address"
-            value={studentInfo.address}
-            onChange={handleChange}
-            required
-          />
-        </div>
-        <div>
-          <label htmlFor="city">City:</label>
-          <input
-            type="text"
-            id="city"
-            name="city"
-            value={studentInfo.city}
-            onChange={handleChange}
-            required
-          />
-        </div>
-        <div>
-          <label htmlFor="state">State:</label>
-          <input
-            type="text"
-            id="state"
-            name="state"
-            value={studentInfo.state}
-            onChange={handleChange}
-            required
-          />
-        </div>
-        <div>
-          <label htmlFor="pinCode">Pin Code:</label>
-          <input
-            type="text"
-            id="pinCode"
-            name="pinCode"
-            value={studentInfo.pinCode}
-            onChange={handleChange}
-            required
-          />
-        </div>
-
-        <button type="button" onClick={() => handleOpenConfirmationDialog()}>
-          Submit
-        </button>
-      </form>
-      {showConfirmationDialog && (
-        <div className="confirmation-dialog">
+            label="Upload Image"
+            rules={[{ required: true, message: "Please upload an image" }]}
+          >
+            <Upload
+              customRequest={customRequest}
+              onChange={handleChange}
+              onRemove={handleRemove}
+              listType="picture-card"
+            >
+              {imagePreview ? (
+                <Image src={imagePreview} alt="Avatar Preview" />
+              ) : (
+                <div>
+                  <UploadOutlined />
+                  <div style={{ marginTop: 8 }}>Upload</div>
+                </div>
+              )}
+            </Upload>
+          </Form.Item>
+          <Row gutter={16}>
+            <Col span={12}>
+              <Form.Item
+                name="name"
+                label="Student Name"
+                rules={[
+                  { required: true, message: "Please enter the student name" },
+                ]}
+              >
+                <Input />
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item
+                name="mobileNumber"
+                label="Mobile Number"
+                rules={[
+                  { required: true, message: "Please enter the mobile number" },
+                ]}
+              >
+                <Input />
+              </Form.Item>
+            </Col>
+          </Row>
+          <Row gutter={16}>
+            <Col span={12}>
+              <Form.Item
+                name="email"
+                label="E-Mail"
+                rules={[
+                  {
+                    required: true,
+                    type: "email",
+                    message: "Please enter a valid email",
+                  },
+                ]}
+              >
+                <Input />
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item
+                name="address"
+                label="Address"
+                rules={[
+                  { required: true, message: "Please enter the address" },
+                ]}
+              >
+                <Input />
+              </Form.Item>
+            </Col>
+          </Row>
+          <Row gutter={16}>
+            <Col span={12}>
+              <Form.Item
+                name="city"
+                label="City"
+                rules={[{ required: true, message: "Please enter the city" }]}
+              >
+                <Input />
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item
+                name="state"
+                label="State"
+                rules={[{ required: true, message: "Please enter the state" }]}
+              >
+                <Input />
+              </Form.Item>
+            </Col>
+          </Row>
+          <Row gutter={16}>
+            <Col span={12}>
+              <Form.Item
+                name="pinCode"
+                label="Pin Code"
+                rules={[
+                  { required: true, message: "Please enter the pin code" },
+                ]}
+              >
+                <Input />
+              </Form.Item>
+            </Col>
+          </Row>
+          <Form.Item>
+            <Button type="primary" htmlType="submit" loading={loading}>
+              Submit
+            </Button>
+          </Form.Item>
+        </Form>
+        <Modal
+          title="Confirmation"
+          visible={showConfirmationDialog}
+          onCancel={handleCloseConfirmationDialog}
+          footer={[
+            <Button key="cancel" onClick={handleCloseConfirmationDialog}>
+              Cancel
+            </Button>,
+            <Button key="submit" type="primary" onClick={handleSubmit}>
+              Yes
+            </Button>,
+          ]}
+        >
           <p>Are you sure you want to continue?</p>
-          <button onClick={handleCloseConfirmationDialog}>Cancel</button>
-          <button onClick={handleSubmit}>Yes</button>
-        </div>
-      )}
+        </Modal>
+      </div>
     </div>
   );
-}
+};
+
+export default StudentDetails;

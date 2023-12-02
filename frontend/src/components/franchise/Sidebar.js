@@ -44,11 +44,6 @@ const routes = [
     icon: <BsCartCheck />,
   },
   {
-    path: "/franchise/students",
-    name: "Student",
-    icon: <BsCartCheck />,
-  },
-  {
     path: "/settings",
     name: "Settings",
     icon: <BiCog />,

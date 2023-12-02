@@ -1,6 +1,7 @@
 import './App.css';
 import Authentication from './components/Authentication';
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { useEffect } from 'react';
+import { BrowserRouter, Routes, Route, useNavigate} from "react-router-dom";
 import React from 'react';
 import LoginPage from './components/LoginPage';
 import RegisterPage from './components/RegisterPage';
@@ -30,13 +31,19 @@ import UpdateCourse from './components/admin/UpdateCourse';
 import Users from './components/admin/Users';
 import ProductDetails from './components/admin/ProductDetails';
 import HomePage from './components/HomePage';
+import Ranks from './components/admin/Ranks';
+import Reviews from './components/admin/Reviews';
+import AboutUs from './components/AboutUs';
+import ContactUs from './components/ContactUs';
  function App() {
   return (
     <BrowserRouter>
       <Routes>
+      <Route path='/homepage' element={<HomePage/>}></Route>
+      <Route path='/about' element={<AboutUs/>}></Route>
+      <Route path='/contact' element={<ContactUs/>}></Route>
       <Route path="/" element={<Authentication allowedRoles={[]}><LoginPage /></Authentication>} />
       <Route path="/register" element={<Authentication allowedRoles={[]}><RegisterPage /></Authentication>} />
-      <Route path='/homepage' element={<HomePage/>}></Route>
       {/* admin */}
       <Route path="/admin/dashboard" element={<Authentication allowedRoles={['admin']}><  Dashboard /></Authentication>} />
       <Route path="/admin/franchise" element={<AdminFranchise />} />
@@ -52,6 +59,8 @@ import HomePage from './components/HomePage';
       <Route path="/admin/courses/show" element={<Courses />} />
       <Route path="/admin/courses/update/:id" element={<UpdateCourse/>} />
       <Route path="/admin/users" element={<Users/>} />
+      <Route path="/admin/ranks" element={<Ranks/>} />
+      <Route path="/admin/reviews" element={<Reviews/>} />
       <Route path="/admin/products/view/:productId" element={<ProductDetails/>}/>
 
 

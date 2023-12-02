@@ -1,63 +1,43 @@
 import React, { useState, useEffect } from 'react';
+import { DataGrid } from '@mui/x-data-grid';
 import Sidebar from './Sidebar';
 import axios from 'axios';
 
 function Order() {
   const [orderDetails, setOrderDetails] = useState([]);
 
+  const columns = [
+    { field: 'name', headerName: 'Name', flex: 1 },
+    { field: 'email', headerName: 'Email', flex: 1 },
+    { field: 'mobileNumber', headerName: 'Mobile Number', flex: 1 },
+    { field: 'city', headerName: 'City', flex: 1 },
+    { field: 'product_id', headerName: 'Product ID', flex: 1 },
+    { field: 'address', headerName: 'Address', flex: 1 },
+  ];
 
-    const fetchOrderDetails = async () => {
-      try {
-        const response = await axios.get('http://localhost:8081/franchise/order-details'); 
-        setOrderDetails(response.data);
-      } catch (error) {
-        console.error('Error fetching order details:', error);
-      }
-    };
-
- 
+  const fetchOrderDetails = async () => {
+    try {
+      const response = await axios.get('http://localhost:8081/franchise/order-details');
+      setOrderDetails(response.data);
+    } catch (error) {
+      console.error('Error fetching order details:', error);
+    }
+  };
 
   useEffect(() => {
     fetchOrderDetails();
   }, []);
 
   return (
-    
-    <div>           
+    <div style={{ display: 'flex' }}>
       <Sidebar />
 
-    <div className="prod">
-      <div className="child-prod">
-        <h1 className='heading1'>
-      Orders
-        </h1>
-        <table className='utable'>
-        <thead>
-          <tr>
-            <th>Name</th>
-            <th>Email</th>
-            <th>Mobile Number</th>
-            <th>City</th>
-            <th>Product ID</th>
-            <th>Address</th>
-          </tr>
-        </thead>
-        <tbody>
-          {orderDetails.map((order, index) => (
-            <tr key={index} className='row'>
-              <td>{order.name}</td>
-              <td>{order.email}</td>
-              <td>{order.mobileNumber}</td>
-              <td>{order.city}</td>
-              <td>{order.product_id}</td>
-              <td>{order.address}</td> 
-            </tr>
-          ))}
-        </tbody>
-      </table>
+      <div style={{ margin: '20px', flex: '1', padding: '15px' }}>
+        <h1 style={{ fontSize: '24px', marginBottom: '20px' }}>Orders</h1>
+        <div style={{ height: 500, width: '100%' }}>
+          <DataGrid rows={orderDetails} columns={columns} pageSize={10} />
+        </div>
       </div>
-    </div>
-
     </div>
   );
 }

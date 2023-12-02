@@ -1363,20 +1363,6 @@ export default function AddProducts() {
           the bottom of the form.
         </p>
 
-        {/* <h3>Step 5: Live Preview</h3>
-        <p>
-          1. Click the "Live Preview" button to see how your product will
-          appear.
-        </p>
-        <p>
-          2. A pop-up will display the live preview, including the product
-          description, images, and any embedded YouTube video.
-        </p>
-        <p>
-          3. You can close the live preview by clicking the "Close" button
-          within the pop-up.
-        </p> */}
-
         <h3>Step 5: Submit Your Product</h3>
         <p>
           1. Finally, click the "Add Product" button at the end of the form to

@@ -30,7 +30,152 @@ cloudinary.config({
   api_secret: "OeophGyONgMzxqGQ63XLc6EN_H8",
 });
 
+const uploadMiddleware = upload.single('image');
+// Add Ranks
+// Add Ranks with Cloudinary for image upload
+router.post('/add-record', (req, res) => {
+  // Use the uploadMiddleware to handle the file upload
+  uploadMiddleware(req, res, async (err) => {
+    if (err) {
+      console.error("Error uploading image:", err);
+      return res.status(500).json({ message: "Error uploading image" });
+    }
+
+    try {
+      const { path } = req.file; // Path to the uploaded image on your server
+
+      // Upload the image to Cloudinary
+      const cloudinaryUpload = await cloudinary.uploader.upload(path);
+
+      // Delete the local file after uploading to Cloudinary
+      fs.unlinkSync(path);
+
+      const { secure_url } = cloudinaryUpload; // Cloudinary URL for the uploaded image
+
+      const { Name, Rank, date } = req.body;
+      const sql = 'INSERT INTO ranks(image, Name, Rank, date) VALUES (?, ?, ?, ?)';
+      const params = [secure_url, Name, Rank, date];
+
+      db.query(sql, params, (err, result) => {
+        if (err) {
+          console.error("Database query error:", err);
+          return res.status(500).json({ message: "Error adding record" });
+        }
+        return res.status(200).json({ message: "Record added successfully" });
+      });
+    } catch (error) {
+      console.error("Error uploading image:", error);
+      return res.status(500).json({ message: "Error uploading image" });
+    }
+  });
+});
+
+router.post('/add-comment',(req,res)=>{
+  const { name,comments} = req.body;
+  const sql = `INSERT INTO comments (name, comments) VALUES (?,?)`
+  const params = [name,comments];
+  db.query(sql, params, (err, result) => {
+    if (err) {
+      console.error("Database query error:", err);
+      return res.status(500).json({ message: "Error adding record" });
+    }
+    return res.status(200).json({ message: "Record added successfully" });
+  });
+})
+router.get('/comments', (req, res) => {
+  const sql = 'SELECT * FROM comments';
+
+  db.query(sql, (err, result) => {
+    if (err) {
+      console.error("Database query error:", err);
+      return res.status(500).json({ message: "Error fetching records" });
+    }
+
+    return res.status(200).json(result);
+  });
+});
+router.put('/update-comments/:id', (req, res) => {
+  const recordId = req.params.id;
+  const { name,comments } = req.body;
+
+  const sql = 'UPDATE comments SET name=?, comments=? WHERE id=?';
+  const params = [name,comments];
+
+  db.query(sql, params, (err, result) => {
+    if (err) {
+      console.error("Database query error:", err);
+      return res.status(500).json({ message: "Error updating record" });
+    }
+
+    return res.status(200).json({ message: "Record updated successfully" });
+  });
+});
+router.delete('/delete-comments/:id', (req, res) => {
+  const recordId = req.params.id;
+
+  const sql = 'DELETE FROM comments WHERE id=?';
+  const params = [recordId];
+
+  db.query(sql, params, (err, result) => {
+    if (err) {
+      console.error("Database query error:", err);
+      return res.status(500).json({ message: "Error deleting record" });
+    }
+
+    return res.status(200).json({ message: "Record deleted successfully" });
+  });
+});
+router.get('/records', (req, res) => {
+  const sql = 'SELECT * FROM ranks';
+
+  db.query(sql, (err, result) => {
+    if (err) {
+      console.error("Database query error:", err);
+      return res.status(500).json({ message: "Error fetching records" });
+    }
+
+    return res.status(200).json(result);
+  });
+});
+
+// Update a record
+router.put('/update-record/:id', (req, res) => {
+  const recordId = req.params.id;
+  const { image, Name, Rank, date } = req.body;
+
+  const sql = 'UPDATE ranks SET image=?, Name=?, Rank=?, date=? WHERE id=?';
+  const params = [image, Name, Rank, date, recordId];
+
+  db.query(sql, params, (err, result) => {
+    if (err) {
+      console.error("Database query error:", err);
+      return res.status(500).json({ message: "Error updating record" });
+    }
+
+    return res.status(200).json({ message: "Record updated successfully" });
+  });
+});
+
+// Delete a record
+router.delete('/delete-record/:id', (req, res) => {
+  const recordId = req.params.id;
+
+  const sql = 'DELETE FROM ranks WHERE id=?';
+  const params = [recordId];
+
+  db.query(sql, params, (err, result) => {
+    if (err) {
+      console.error("Database query error:", err);
+      return res.status(500).json({ message: "Error deleting record" });
+    }
+
+    return res.status(200).json({ message: "Record deleted successfully" });
+  });
+});
+
+
 // Add course
+
 router.post('/add-course', (req, res) => {
   const {
     courseName,

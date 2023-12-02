@@ -16,7 +16,7 @@ import {BsBook} from "react-icons/bs"
 import '../Header/Header.css';
 import { useCookies } from 'react-cookie';
 import jwt_decode from 'jwt-decode';
-
+import { GoCodeReview } from "react-icons/go";
 
 
 
@@ -81,6 +81,26 @@ const routes = [
     ],
   },
   {
+    path: "/settings",
+    name: "Website Settings",
+    icon: <BiCog />,
+    exact: true,
+    subRoutes: [
+      {
+        path: "/admin/ranks",
+        name: "Ranks",
+        icon: <FaUser />,
+      },
+      {
+        path: "/admin/reviews",
+        name: "Reviews",
+        icon: <GoCodeReview />,
+        
+      },
+
+    ],
+  },
+  {
     path: "/admin/orders",
     name: "Order",
     icon: <BsCartCheck />,
@@ -90,27 +110,6 @@ const routes = [
     name: "Users",
     icon: <AiOutlineUserSwitch />,
   },
-  {
-    path: "/settings",
-    name: "Settings",
-    icon: <BiCog />,
-    exact: true,
-    subRoutes: [
-      {
-        path: "/settings/profile",
-        name: "Profile ",
-        icon: <FaUser />,
-      },
-      {
-        path: "/settings/2fa",
-        name: "Logout",
-        icon: <FaLock />,
-        
-      },
-
-    ],
-  },
-
 ];
 
 const SideBar = ({ children }) => {
