@@ -299,7 +299,7 @@ export default function AddProducts() {
 
   const updateTabName = (index, newName) => {
     const updatedTabs = [...tabs];
-    updatedTabs[index].tabName = newName; // Update the key to tabName
+    updatedTabs[index].name = newName; // Fix: Update the key to name
     setTabs(updatedTabs);
   };
 
@@ -416,6 +416,11 @@ export default function AddProducts() {
         formData.append(key, productData[key]);
       }
     }
+
+    formData.append("combinations", JSON.stringify(productInfo.variantCombinations));
+    formData.append("priceChange", JSON.stringify(tableData.map((item) => item.priceChange)));
+    formData.append("excelDetails", JSON.stringify(tableData.map((item) => item.excelData)));
+  
 
     // Append uploaded images to the FormData
     for (const image of uploadedImages) {
@@ -556,7 +561,7 @@ export default function AddProducts() {
 
     setProductInfo((prevProductInfo) => ({
       ...prevProductInfo,
-      variantCombinations: newData.map((item) => ({ ...item })),
+      variantCombinations: newData.map((item) => ({ ...item,excelData:item.uploadExcel })),
     }));
 
     setTableData(newData);
@@ -575,10 +580,18 @@ export default function AddProducts() {
   };
 
   const handlePriceChange = (key, value) => {
+    
     const newData = tableData.map((item) =>
       item.key === key ? { ...item, priceChange: value } : item
     );
     setTableData(newData);
+    setProductInfo((prevProductInfo) => ({
+      ...prevProductInfo,
+      variantCombinations: prevProductInfo.variantCombinations.map((item) =>
+        item.key === key ? { ...item, priceChange: value } : item
+      ),
+    }));
+  
   };
 
   const uploadProps = (record) => ({
@@ -597,6 +610,16 @@ export default function AddProducts() {
 
           // Extract data from the sheet
           const excelData = XLSX.utils.sheet_to_json(sheet, { header: 1 });
+          // update in variants
+          setProductInfo((prevProductInfo) => ({
+            ...prevProductInfo,
+            variantCombinations: prevProductInfo.variantCombinations.map(
+              (item) =>
+                item.key === record.key
+                  ? { ...item, uploadExcel: excelData }
+                  : item
+            ),
+          }));
 
           // Update the data in your table or perform other operations
           const newData = tableData.map((item) =>
