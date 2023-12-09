@@ -432,12 +432,12 @@ router.post("/add-product", upload.array("productImage", 4), async (req, res) =>
       productDetails,
       variantsJSON,
       youtubeLink,
-      // author,
-      // subCategory,
-      // category,
-      // tabs,
-      // finalPrice,
-      // variantCombinations
+      author,
+      subCategory,
+      category,
+      tabs,
+      finalPrice,
+      variantCombinations
     ];
 
     db.query(sql, values, (err, result) => {
