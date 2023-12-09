@@ -35,7 +35,7 @@ function ContactUs() {
     <div>
       {/* Navbar components */}
       <Navbar />
-      <CoursesNavbar />
+      {/* <CoursesNavbar /> */}
 
       {/* Contact Us container */}
       <div className="contact-us-container" style={{ marginBottom: '45px' }}>
