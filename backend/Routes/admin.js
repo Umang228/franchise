@@ -399,7 +399,8 @@ router.post("/add-product", upload.array("productImage", 4), async (req, res) =>
     const variantsJSON = JSON.stringify(variants);
 
     const sql = `
-    // INSERT INTO products (productName, facultyName, productID, productType, course, subject, productUrl, priceUpdate, deliveryType, isFranchise, isWhatsapp, price, discountPrice, description, shortDescription, featured, slug, category_id, image, mrpText, discountText, rank, topLeft, topRight, bottomLeft, bottomRight, highlights, productDetails, variants, youtubeLink,author,subCategory,category,tabs,finalPrice,variantCombinations) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`;
+    // INSERT INTO products (productName, facultyName, productID, productType, course, subject, productUrl, priceUpdate, deliveryType, isFranchise, isWhatsapp, price, discountPrice, description, shortDescription, featured, slug, category_id, image, mrpText, discountText, rank, topLeft, topRight, bottomLeft, bottomRight, highlights, productDetails, variants, youtubeLink,author,subCategory,category,tabs,finalPrice,variantCombinations) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,
+  )`;
 
     const values = [
       productName,
