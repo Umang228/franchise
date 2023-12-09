@@ -36,6 +36,7 @@ import {
   EyeOutlined,
 } from "@ant-design/icons";
 import { CartesianProduct } from "js-combinatorics";
+import Courses from "./Courses";
 const { Option } = Select;
 const selectStyle = {
   width: "100%",
@@ -201,12 +202,12 @@ export default function AddProducts() {
     try {
       return Array.isArray(data)
         ? data.map(
-            (item) =>
-              item.subjectName ||
-              item.categoriesName ||
-              item.courseSubCategoriesName ||
-              item.courseAuthorsName
-          )
+          (item) =>
+            item.subjectName ||
+            item.categoriesName ||
+            item.courseSubCategoriesName ||
+            item.courseAuthorsName
+        )
         : JSON.parse(data);
     } catch (error) {
       console.error("Error parsing array:", error);
@@ -420,7 +421,7 @@ export default function AddProducts() {
     formData.append("combinations", JSON.stringify(productInfo.variantCombinations));
     formData.append("priceChange", JSON.stringify(tableData.map((item) => item.priceChange)));
     formData.append("excelDetails", JSON.stringify(tableData.map((item) => item.excelData)));
-  
+
 
     // Append uploaded images to the FormData
     for (const image of uploadedImages) {
@@ -561,7 +562,7 @@ export default function AddProducts() {
 
     setProductInfo((prevProductInfo) => ({
       ...prevProductInfo,
-      variantCombinations: newData.map((item) => ({ ...item,excelData:item.uploadExcel })),
+      variantCombinations: newData.map((item) => ({ ...item, excelData: item.uploadExcel })),
     }));
 
     setTableData(newData);
@@ -580,7 +581,7 @@ export default function AddProducts() {
   };
 
   const handlePriceChange = (key, value) => {
-    
+
     const newData = tableData.map((item) =>
       item.key === key ? { ...item, priceChange: value } : item
     );
@@ -591,7 +592,7 @@ export default function AddProducts() {
         item.key === key ? { ...item, priceChange: value } : item
       ),
     }));
-  
+
   };
 
   const uploadProps = (record) => ({
@@ -842,11 +843,10 @@ export default function AddProducts() {
                 name="course"
                 value={productInfo.course}
                 onChange={handleCourseChange}
-                style={selectStyle} // Apply the common style
+                style={{...selectStyle}}
+                disabled={!courses.length} // Disable if there are no courses
               >
-                <Option value="" disabled>
-                  Select a Course
-                </Option>
+                
                 {courses.map((course) => (
                   <Option key={course.id} value={course.courseName}>
                     {course.courseName}
@@ -854,6 +854,7 @@ export default function AddProducts() {
                 ))}
               </Select>
             </div>
+
 
             <div>
               <label>Subjects</label>

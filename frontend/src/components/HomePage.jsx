@@ -15,7 +15,6 @@ import {
 import { Tabs } from "antd";
 import Navbar from "./admin/Navbar";
 import CoursesNavbar from "./admin/CoursesNavbar";
-import { Footer } from "antd/es/layout/layout";
 import { Row, Col } from "antd";
 // Destructuring components from Ant Design
 const { Meta } = Card;
@@ -177,47 +176,11 @@ const HomePage = () => {
     <div>
       {/* Navigation components */}
       <Navbar />
-      <CoursesNavbar />
+      {/* <CoursesNavbar /> */}
 
       {/* Image Carousel with welcome text */}
-      <div>
-        <Carousel
-          showArrows={true}
-          showThumbs={false}
-          style={{ height: "50%" }}
-        >
-          {images.map((imageUrl, index) => (
-            <div
-              key={index}
-              style={{
-                position: "relative",
-                cursor: "pointer",
-                height: "100%",
-              }}
-            >
-              <img
-                src={imageUrl}
-                alt={`${index}`}
-                width={window.innerWidth}
-                height={430}
-              />
-              <animated.div
-                style={{
-                  ...textSpring,
-                  position: "absolute",
-                  top: "46%",
-                  right: "-22%",
-                  transform: "translate(-50%, -50%)",
-                }}
-              >
-                <h1 style={{ margin: "0", fontSize: "30px", color: "#fff" }}>
-                  Welcome to AIR1CA Career Institute [ACI]
-                  <br /> The Best Career Institute
-                </h1>
-              </animated.div>
-            </div>
-          ))}
-        </Carousel>
+      <div className="homePageBanner">
+          
       </div>
       {/* Feature cards */}
       <div
@@ -283,7 +246,7 @@ const HomePage = () => {
                     >
                       {/* Product Image */}
                       <img
-                        src="/images/header_logo.png" // replace with the actual image URL in your data
+                        src={product.image} // replace with the actual image URL in your data
                         alt={product.name}
                         style={{
                           width: "100%",
@@ -291,7 +254,7 @@ const HomePage = () => {
                           objectFit: "cover",
                         }}
                       />
-                      {console.log("image ", product.image[0])}
+                      {console.log("image ", product.image)}
 
                       {/* Product Name */}
                       <a>{product.productName}</a>
