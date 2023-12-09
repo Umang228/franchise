@@ -16,7 +16,7 @@ const AboutUs = () => {
   return (
     <div style={{ backgroundColor: '#fff' }}>
       <Navbar />
-      <CoursesNavbar />
+      {/* <CoursesNavbar /> */}
       <div className='aboutUs'>
         <div className='aboutLeft'>
           <h4>
