@@ -17,8 +17,8 @@ import '../Header/Header.css';
 import { useCookies } from 'react-cookie';
 import jwt_decode from 'jwt-decode';
 import { GoCodeReview } from "react-icons/go";
-
-
+import { MdPolicy } from "react-icons/md";
+import { SiGnuprivacyguard } from "react-icons/si";
 
 
 
@@ -94,9 +94,18 @@ const routes = [
       {
         path: "/admin/reviews",
         name: "Reviews",
-        icon: <GoCodeReview />,
-        
+        icon: <GoCodeReview />,      
       },
+      {
+        path: "/admin/termsCond",
+        name: "Terms and Conditions",
+        icon: <MdPolicy />
+      },
+      {
+        path: "/admin/policy",
+        name: "Privacy Policy",
+        icon: <SiGnuprivacyguard />
+      }
 
     ],
   },

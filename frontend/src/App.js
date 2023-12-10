@@ -35,13 +35,27 @@ import Ranks from './components/admin/Ranks';
 import Reviews from './components/admin/Reviews';
 import AboutUs from './components/AboutUs';
 import ContactUs from './components/ContactUs';
+import Cart from './components/Cart';
+import CheckoutForm from './components/CheckoutForm';
+import ProductsAll from './components/ProductsAll';
+import Privacy from './components/admin/Privacy';
+import Terms from './components/admin/Terms';
+import TermsAndConditions from './components/TermsAndConditions';
+import PrivacyPolicy from './components/PrivacyPolicy';
  function App() {
   return (
     <BrowserRouter>
+    
       <Routes>
+      
       <Route path='/homepage' element={<HomePage/>}></Route>
       <Route path='/about' element={<AboutUs/>}></Route>
       <Route path='/contact' element={<ContactUs/>}></Route>
+      <Route path='/cart' element={<Cart/>}></Route>
+      <Route path='/checkout' element={<CheckoutForm/>}></Route>
+      <Route path='/allProducts' element={<ProductsAll/>}></Route>
+      <Route path='/termsNdC' element={<TermsAndConditions/>}></Route>
+      <Route path='/privacyP' element={<PrivacyPolicy/>}></Route>
       <Route path="/" element={<Authentication allowedRoles={[]}><LoginPage /></Authentication>} />
       <Route path="/register" element={<Authentication allowedRoles={[]}><RegisterPage /></Authentication>} />
       {/* admin */}
@@ -62,6 +76,8 @@ import ContactUs from './components/ContactUs';
       <Route path="/admin/ranks" element={<Ranks/>} />
       <Route path="/admin/reviews" element={<Reviews/>} />
       <Route path="/admin/products/view/:productId" element={<ProductDetails/>}/>
+      <Route path="/admin/policy" element={<Privacy/>}/>
+      <Route path="/admin/termsCond" element={<Terms/>}/>
 
 
 

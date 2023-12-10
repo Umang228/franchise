@@ -268,10 +268,10 @@ router.put('/update-course/:id', (req, res) => {
   const sql = `
     UPDATE courses
     SET courseName = ?,
-        courseSubjects = ?,
-        courseCategories = ?,
-        courseSubCategories = ?,
-        courseAuthors = ?
+        courseSubjects = JSON_ARRAY(?),
+        courseCategories = JSON_ARRAY(?),
+        courseSubCategories = JSON_ARRAY(?),
+        courseAuthors = JSON_ARRAY(?)
     WHERE id = ?
   `;
 
@@ -399,8 +399,7 @@ router.post("/add-product", upload.array("productImage", 4), async (req, res) =>
     const variantsJSON = JSON.stringify(variants);
 
     const sql = `
-    // INSERT INTO products (productName, facultyName, productID, productType, course, subject, productUrl, priceUpdate, deliveryType, isFranchise, isWhatsapp, price, discountPrice, description, shortDescription, featured, slug, category_id, image, mrpText, discountText, rank, topLeft, topRight, bottomLeft, bottomRight, highlights, productDetails, variants, youtubeLink,author,subCategory,category,tabs,finalPrice,variantCombinations) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,
-  )`;
+    INSERT INTO products (productName, facultyName, productID, productType, course, subject, productUrl, priceUpdate, deliveryType, isFranchise, isWhatsapp, price, discountPrice, description, shortDescription, featured, slug, category_id, image, mrpText, discountText, rank, topLeft, topRight, bottomLeft, bottomRight, highlights, productDetails, variants, youtubeLink, author, subCategory, category,tabs,finalPrice,variantCombinations) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`;
 
     const values = [
       productName,
@@ -1061,7 +1060,143 @@ router.post("/update_selected_products", async (req, res) => {
 
 
 
+router.post('/api/add-to-cart', (req, res) => {
+  const newItem = req.body;
+  cartItems.push(newItem);
+  res.json({ success: true, message: 'Item added to cart' });
+});
 
+router.get('/api/cart', (req, res) => {
+  res.json(cartItems);
+});
+
+router.post('/add-privacy', (req, res) => {
+  const { policy, details } = req.body;
+
+  const sql = 'INSERT INTO privacy_info (policy, details) VALUES (?, ?)';
+  const params = [policy, details];
+
+  db.query(sql, params, (err, result) => {
+    if (err) {
+      console.error("Database query error:", err);
+      return res.status(500).json({ message: "Error adding privacy information" });
+    }
+
+    return res.status(201).json({ message: "Privacy information added successfully", insertedId: result.insertId });
+  });
+});
+
+router.get('/privacy', (req, res) => {
+  const sql = 'SELECT * FROM privacy_info';
+
+  db.query(sql, (err, result) => {
+    if (err) {
+      console.error("Database query error:", err);
+      return res.status(500).json({ message: "Error fetching privacy information" });
+    }
+
+    return res.status(200).json(result);
+  });
+});
+
+// Update privacy-related information by ID
+router.put('/update-privacy/:id', (req, res) => {
+  const privacyId = req.params.id;
+  const { policy, details } = req.body;
+
+  const sql = 'UPDATE privacy_info SET policy=?, details=? WHERE id=?';
+  const params = [policy, details, privacyId];
+
+  db.query(sql, params, (err, result) => {
+    if (err) {
+      console.error("Database query error:", err);
+      return res.status(500).json({ message: "Error updating privacy information" });
+    }
+
+    return res.status(200).json({ message: "Privacy information updated successfully" });
+  });
+});
+
+// Delete privacy-related information by ID
+router.delete('/delete-privacy/:id', (req, res) => {
+  const privacyId = req.params.id;
+
+  const sql = 'DELETE FROM privacy_info WHERE id=?';
+  const params = [privacyId];
+
+  db.query(sql, params, (err, result) => {
+    if (err) {
+      console.error("Database query error:", err);
+      return res.status(500).json({ message: "Error deleting privacy information" });
+    }
+
+    return res.status(200).json({ message: "Privacy information deleted successfully" });
+  });
+});
+
+router.get('/terms', (req, res) => {
+  const sql = 'SELECT * FROM terms';
+  
+  db.query(sql, (err, result) => {
+    if (err) {
+      console.error("Database query error:", err);
+      return res.status(500).json({ message: "Error fetching terms" });
+    }
+  
+    return res.status(200).json(result);
+  });
+});
+
+// Add new term
+router.post('/add-term', (req, res) => {
+  const { title, description } = req.body;
+  const sql = 'INSERT INTO terms (title, description) VALUES (?, ?)';
+  const params = [title, description];
+
+  db.query(sql, params, (err, result) => {
+    if (err) {
+      console.error("Database query error:", err);
+      return res.status(500).json({ message: "Error adding term" });
+    }
+
+    return res.status(200).json({ message: "Term added successfully" });
+  });
+});
+
+// Update term
+router.put('/update-term/:id', (req, res) => {
+  const termId = req.params.id;
+  const { title, description } = req.body;
+
+  const sql = 'UPDATE terms SET title=?, description=? WHERE id=?';
+  const params = [title, description, termId];
+
+  db.query(sql, params, (err, result) => {
+    if (err) {
+      console.error("Database query error:", err);
+      return res.status(500).json({ message: "Error updating term" });
+    }
+
+    return res.status(200).json({ message: "Term updated successfully" });
+  });
+});
+
+// Delete term
+router.delete('/delete-term/:id', (req, res) => {
+  const termId = req.params.id;
+
+  const sql = 'DELETE FROM terms WHERE id=?';
+  const params = [termId];
+
+  db.query(sql, params, (err, result) => {
+    if (err) {
+      console.error("Database query error:", err);
+      return res.status(500).json({ message: "Error deleting term" });
+    }
+
+    return res.status(200).json({ message: "Term deleted successfully" });
+  });
+});
 
 
 

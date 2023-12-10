@@ -3,8 +3,10 @@ import './style/nav.css';
 import { Link } from 'react-router-dom';
 import { useCookies } from 'react-cookie';
 import jwt_decode from 'jwt-decode'; 
+import { CartProvider,useCart } from './admin/CartContext';
 
 const Navbar = () => {
+  const { addToCart } = useCart();
   const [cookies] = useCookies(['token']);
   let userName = null;
 
@@ -15,7 +17,9 @@ const Navbar = () => {
   }
 
   return (
-    <div className='navbar'>
+    <CartProvider>
+         <div className='navbar'>
+      
       <div className="logo">
         <h2>
           UFranchise
@@ -52,7 +56,9 @@ const Navbar = () => {
           </>
         )}
       </div>
-    </div>
+    </div> 
+    </CartProvider>
+
   );
 };
 

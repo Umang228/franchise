@@ -21,6 +21,7 @@
     "chart.js": "^4.4.0",
     "datatables.net": "^1.13.6",
     "datatables.net-dt": "^1.13.6",
+    "emailjs-com": "^3.2.0",
     "formik": "^2.4.5",
     "framer-motion": "^10.16.4",
     "highlight.js": "^11.9.0",

@@ -67,21 +67,15 @@ const Ranks = () => {
   const onFinish = async (values) => {
     try {
       setPostLoading(true); // Set loading to true during post request
-
-      if (imageFile) {
-        // If an image is selected, convert it to base64 and include it in the values
-        const reader = new FileReader();
-        reader.onloadend = () => {
-          values.image = reader.result;
-
-          // Continue with the main request
-          sendAddRecordRequest(values);
-        };
-        reader.readAsDataURL(imageFile);
-      } else {
-        // If no image is selected, continue with the main request
-        sendAddRecordRequest(values);
-      }
+  
+      const formData = new FormData();
+      formData.append("image", imageFile);
+      formData.append("name", values.name);
+      formData.append("rank", values.rank);
+      formData.append("date", values.date);
+  
+      // Continue with the main request
+      sendAddRecordRequest(formData);
     } catch (error) {
       console.error("Error adding/editing record:", error);
     } finally {
@@ -90,16 +84,24 @@ const Ranks = () => {
   };
 
   // Function to handle the main add-record request
-  const sendAddRecordRequest = async (values) => {
+  const sendAddRecordRequest = async (formData) => {
     try {
       if (selectedRecord) {
         // Edit an existing record if selectedRecord is not null
-        await axios.put(`http://localhost:8081/admin/update-record/${selectedRecord.id}`, values);
+        await axios.put(`http://localhost:8081/admin/update-record/${selectedRecord.id}`, formData, {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        });
       } else {
         // Add a new record if selectedRecord is null
-        await axios.post("http://localhost:8081/admin/add-record", values);
+        await axios.post("http://localhost:8081/admin/add-record", formData, {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        });
       }
-
+  
       setIsModalVisible(false);
       setLoading(true); // Set loading to true before refetching records
       fetchRecords(); // Refetch records after adding or editing

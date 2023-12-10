@@ -3,6 +3,7 @@ import axios from "axios";
 import { useSpring, animated } from "react-spring";
 import { Card } from "antd";
 import { Carousel } from "antd";
+import { useNavigate } from "react-router-dom";
 import "react-responsive-carousel/lib/styles/carousel.min.css";
 import {
   GiftOutlined,
@@ -26,7 +27,7 @@ const HomePage = () => {
   const [selectedTab, setSelectedTab] = useState(0);
   const [productTabs, setProductTabs] = useState([]);
   const [topProducts, setTopProducts] = useState([]);
-
+const navigate = useNavigate();
   // useEffect to fetch data on component mount
   useEffect(() => {
     // Set a timeout to animate text after 1 second
@@ -173,14 +174,14 @@ const HomePage = () => {
 
   // Render the component
   return (
-    <div>
+    <div style={{backgroundColor:'#fff'}}>
       {/* Navigation components */}
       <Navbar />
       {/* <CoursesNavbar /> */}
 
       {/* Image Carousel with welcome text */}
-      <div className="homePageBanner">
-          
+      <div style={{width:'100%',height:'500px'}}>
+          <img src="https://air1ca.com/wp-content/themes/airca-child-theme/images/All-Rankers-banner.jpg" alt=""width={1300} height={550}/>
       </div>
       {/* Feature cards */}
       <div
@@ -191,20 +192,12 @@ const HomePage = () => {
           <Card
             key={index}
             style={{
-              width: 270,
-              margin: "20px",
+              width: 280,
+              margin:'-5px',
               textAlign: "center",
-              boxShadow: "0 4px 8px rgba(0,0,0,0.1)",
               cursor: "pointer",
-              transition: "transform 0.3s",
             }}
             onClick={() => alert(`Clicked on ${item.title}`)}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.transform = "scale(1.05)";
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.transform = "scale(1)";
-            }}
           >
             {item.icon}
             <Meta title={item.title} style={{ marginTop: "10px" }} />
@@ -212,9 +205,32 @@ const HomePage = () => {
         ))}
       </div>
 
+      {/*  about us*/}
+            
+      <div className="about" style={{display:'flex',justifyContent:'space-around',alignItems:'center'}}>
+          <div className="text" style={{textAlign:'center',width:'600px'}}>
+            <h2 style={{textAlign:'center',fontSize:'34px',fontWeight:'700'}}>
+              About <span style={{color:'goldenrod',textDecoration:'underline'}}> Us
+</span>
+                          </h2>
+            <p>
+            CA Atul Agarwal &amp; CA Ajay Agarwal both emerged as the topper of CA Final, creating a history of ICAI in May 2018 &amp; May 2019 respectively at the age of 21. They were also the rank holders in CA Inter &amp; CA Foundation.
+            </p>
+            <p>
+            All India Rank 1 CA Atul is also the only candidate in the history of ICAI to score the highest ever marks (83) in Audit paper. Being a Gold Medalist in Audit &amp; DT, he scored 618/800 marks (77. 25%) in CA Final Exams.
+            </p>
+            <p>
+            All India Rank 1 CA Ajay topped the May 2019 CA Final with the highest marks in the history of ICAI in the last 70 years, following the lead of his brother CA Atul. He scored 650 marks (81.25%) in the CA Final being the gold medalist in 4 subjects Financial Reporting, Strategic Financial Management, DT and ISCA.
+            </p>
+          </div>
+          <div className="image">
+            <img src="https://air1ca.com/wp-content/uploads/2020/08/ajay.jpg" alt="" style={{borderTopLeftRadius:'4px solid yellow'}}/>
+          </div>
+      </div>
+
       {/* Top Products with Tabs */}
       <div style={{ textAlign: "center" }}>
-        <h2>Top Products based on Rank</h2>
+        <h2 style={{fontSize:'34px',fontWeight:'800'}}>Top <span style={{color:'goldenrod',textDecoration:'underline'}}> Products</span></h2>
         <Tabs
           centered
           activeKey={selectedTab.toString()}
@@ -245,8 +261,9 @@ const HomePage = () => {
                       }}
                     >
                       {/* Product Image */}
+                      
                       <img
-                        src={product.image} // replace with the actual image URL in your data
+                        src={product.image.split(',')[0]} // replace with the actual image URL in your data
                         alt={product.name}
                         style={{
                           width: "100%",
@@ -254,7 +271,7 @@ const HomePage = () => {
                           objectFit: "cover",
                         }}
                       />
-                      {console.log("image ", product.image)}
+                      {console.log("image is:- ", product.image.split(',')[0])}
 
                       {/* Product Name */}
                       <a>{product.productName}</a>
@@ -272,12 +289,12 @@ const HomePage = () => {
                       >
                         {/* Add your social icons or links here */}
                         <a
-                          href="#"
-                          target="_blank"
+                          href={`/admin/products/view/${product.id}`}
                           rel="noopener noreferrer"
                           style={{ margin: "0 5px" }}
                         >
                           {/* Example social icon */}
+
                           <i
                             className="fa-solid fa-eye"
                             style={{ margin: "0 5px" }}
@@ -303,44 +320,47 @@ const HomePage = () => {
           ))}
         </Tabs>
       </div>
-      <div style={{ textAlign: "center", margin: "30px 0" ,width:'100%'}}>
-        <h1>What Our Students Say</h1>
-        <Carousel autoplay style={{ width: "100%",height:'300px' }} dotPosition="bottom">
-          {featureItems2.map((item, index) => (
-            <Card
-              key={index}
-              style={{
-                width: "100%",
-                height:'100%',
-                margin: "20px",
-                textAlign: "center",
-                boxShadow: "0 4px 8px rgba(0,0,0,0.1)",
-                cursor: "pointer",
-                transition: "transform 0.3s",
-              }}
-              onClick={() => alert(`Clicked on ${item.title}`)}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.transform = "scale(1.05)";
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.transform = "scale(1)";
-              }}
-            >
-              {item.icon}
-              <Meta title={item.title} style={{ marginTop: "10px" }} />
-              <p style={{margin:'13px'}}>
-                {item.desc}
-              </p>
-            </Card>
-          ))}
-        </Carousel>
+      <div style={{ textAlign: "center", margin: "30px 0", width: "100%", position: "relative" }}>
+        {/* Mobile phone image */}
+
+
+        {/* Overlayed reviews */}
+        <div
+          style={{
+            width:'100%'
+          }}
+        >
+          <Carousel autoplay style={{ width: "100%", height: "300px" }} dotPosition="bottom">
+            {featureItems2.map((item, index) => (
+              <Card
+                key={index}
+                style={{
+                  width: "100%",
+                  margin: "0 auto",
+                  textAlign: "center",
+                  boxShadow: "0 4px 8px rgba(0,0,0,0.1)",
+                  cursor: "pointer",
+                  transition: "transform 0.3s",
+                }}
+              >
+                <div style={{ backgroundColor: "" }}>
+                  {item.icon} <span><Meta title={item.title} style={{ marginTop: "10px" }} /></span>
+                </div>
+                <p style={{ margin: '13px' }}>
+                  {item.desc}
+                </p>
+              </Card>
+            ))}
+          </Carousel>
+        </div>
       </div>
 
+      {/* Contact and Social Links */}
       <div
         style={{
           background: "#000",
           color: "#fff",
-          padding: "20px 60px",
+          padding: "20px 10px",
           height: "300px",
           width: "100%",
         }}
@@ -348,40 +368,39 @@ const HomePage = () => {
         <Row gutter={[16, 16]}>
           <Col xs={24} sm={12} md={6}>
             <div style={{ marginBottom: "20px" }}>
-              <h3 style={{color:'white'}}>Call Us</h3>
-              <a href="tel:7742554277"  style={{color:'white'}}>7742554277</a>
+              <h3 style={{ color: 'white' }}>Call Us</h3>
+              <a href="tel:7742554277" style={{ color: 'white' }}>7742554277</a>
             </div>
             <div>
-              <h3 style={{color:'white'}}>Email</h3>
-              <a href="mailto:air1@gmail.com" style={{color:'white'}}>air1@gmail.com</a>
+              <h3 style={{ color: 'white' }}>Email</h3>
+              <a href="mailto:air1@gmail.com" style={{ color: 'white' }}>air1@gmail.com</a>
             </div>
           </Col>
           <Col xs={24} sm={12} md={6}>
-            <div style={{ marginBottom: "20px",display:'flex',flexDirection:'column' }}>
-              <h3  style={{color:'white'}}>Quick Links</h3>
-              <a href="#" style={{color:'white'}}>Home</a>
-              <a href="#" style={{color:'white'}}>About Us</a>
-              <a href="#" style={{color:'white'}}>Courses</a>
-              <a href="#" style={{color:'white'}}>Contact Us</a>
-              <a href="#" style={{color:'white'}}>Terms and Conditions</a>
-              <a href="#" style={{color:'white'}}>Privacy Policy</a>
+            <div style={{ marginBottom: "20px", display: 'flex', flexDirection: 'column' }}>
+              <h3 style={{ color: 'white' }}>Quick Links</h3>
+              <a href="/homepage" style={{ color: 'white' }}>Home</a>
+              <a href="/about" style={{ color: 'white' }}>About Us</a>
+              <a href="/allProducts" style={{ color: 'white' }}>Products</a>
+              <a href="/contact" style={{ color: 'white' }}>Contact Us</a>
+              <a href="/termsNdC" style={{ color: 'white' }}>Terms and Conditions</a>
+              <a href="/privacyP" style={{ color: 'white' }}>Privacy Policy</a>
             </div>
           </Col>
           <Col xs={24} sm={12} md={6}>
             <div style={{ marginBottom: "20px" }}>
-              <h3 style={{color:'white'}}>CA Classes</h3>
+              <h3 style={{ color: 'white' }}>CA Classes</h3>
             </div>
           </Col>
           <Col xs={24} sm={12} md={6}>
             <div>
-              <h3  style={{color:'white'}}>Social Links</h3>
+              <h3 style={{ color: 'white' }}>Social Links</h3>
               <div style={{ display: "flex", alignItems: "center" }}>
                 <a
                   href="#"
                   target="_blank"
                   rel="noopener noreferrer"
-                  style={{ margin: "0 5px",color:'white' }}
-                  
+                  style={{ margin: "0 5px", color: 'white' }}
                 >
                   <i
                     className="fa-solid fa-eye"
@@ -405,6 +424,7 @@ const HomePage = () => {
           </Col>
         </Row>
       </div>
+
     </div>
   );
 };

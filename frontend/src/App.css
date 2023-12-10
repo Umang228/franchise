@@ -110,3 +110,24 @@ button:hover {
   background-position: center;
   background-size: cover;
 }
+.cart-table {
+  width: 100%;
+}
+
+.cart-table td,
+.cart-table th {
+  border: 1px solid #ccc;
+  padding: 8px;
+}
+
+.cart-table th {
+  background-color: #f9f9f9;
+}
+
+.cart-table .action-button {
+  width: 100%;
+}
+
+.ant-modal-content{
+  width: 130% !important;
+}

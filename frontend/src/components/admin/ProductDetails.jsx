@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
 import SideBar from "./Sidebar";
 import axios from "axios";
 import { Carousel } from "react-responsive-carousel";
@@ -10,11 +9,13 @@ import "react-responsive-carousel/lib/styles/carousel.min.css";
 import Rating from "react-rating-stars-component";
 import Navbar from "./Navbar";
 import CoursesNavbar from "./CoursesNavbar";
-import { CartProvider } from "./CartContext";
-import { useCart } from "./CartContext";
+import { CartProvider,useCart} from "./CartContext";
+import { useParams, useNavigate } from "react-router-dom";
+import OrigPdetails from "./OrigPdetails";
 
 export default function ProductDetails() {
   const { productId } = useParams();
+  const navigate = useNavigate();
   const [product, setProduct] = useState(null);
   const [selectedVariants, setSelectedVariants] = useState({});
   const [activeTab, setActiveTab] = useState("description");
@@ -25,11 +26,12 @@ export default function ProductDetails() {
   const [cart, setCart] = useState(0); // State to track the cart count
   const [tabs, setTabs] = useState([]);
   const [defaultTab, setDefaultTab] = useState("description");
-  // const { addToCart } = useCart();
+  const cartContext = useCart();
+  const { addToCart } = cartContext || {};
   const [imagesArray, setImagesArray] = useState([]);
+  // const { addToCart } = useCart();
   const parseVariants = (variantCombinations) => {
     const variantsMap = {};
-
     // Parse the variantCombinations and group by optionName
     variantCombinations.forEach((combination) => {
       Object.entries(combination).forEach(([key, value]) => {
@@ -38,28 +40,30 @@ export default function ProductDetails() {
             variantsMap[key] = {
               optionName: key,
               optionValues: [],
-              priceAdjustment: 0,
+              priceChange: Number(combination.priceChange) || 0,
             };
+            console.log('the key is :-',key);
           }
-
+  
           // Add optionValues
           if (!variantsMap[key].optionValues.includes(value)) {
             variantsMap[key].optionValues.push(value);
           }
-
+  
           // Update priceAdjustment if priceChange is present
           if (key === "priceChange") {
-            variantsMap[key].priceAdjustment += parseFloat(value) || 0;
+            product.priceChange += Number(variantsMap[key].priceChange) || 0;
+            console.log('priceAdjustment ',variantsMap[key].priceChange );
           }
         }
       });
     });
-
+  
     // Convert variantsMap object to an array
     const dynamicVariants = Object.values(variantsMap);
-
+  
     return dynamicVariants;
-  };
+  }
 
   useEffect(() => {
     // Fetch product details based on the product ID from the URL params
@@ -120,8 +124,8 @@ export default function ProductDetails() {
   const baseUrl = "http://localhost:8081"; // Replace with your actual base URL
 
   // Calculate the price based on the selected variants
-  const calculatePrice = () => {
-    let price = product.price;
+  const calculateAdjustedPrice = () => {
+    let adjustedPrice =Number(product.finalPrice);
 
     // Loop through selected variants and adjust the price
     for (const variantName in selectedVariants) {
@@ -129,19 +133,20 @@ export default function ProductDetails() {
       const variant = product.variants.find(
         (v) => v.optionName === variantName
       );
-
+      console.log('variants are', product.variants.priceChange);
       if (variant) {
         const selectedOption = variant.optionValues.find(
           (ov) => ov === selectedValue
         );
         if (selectedOption) {
-          price += variant.priceAdjustment;
+          adjustedPrice += variant.priceChange;
         }
       }
     }
 
-    return price;
+    return adjustedPrice;
   };
+
 
   // Handle variant selection
   const handleVariantChange = (variantName, selectedValue) => {
@@ -155,7 +160,26 @@ export default function ProductDetails() {
     console.log('Clicked on Add to cart');
     console.log("The Data is :-",data);
     setCart([data])
-    console.log("Cart Items :-",cart)
+    const selectedProduct = {
+      id: product.id,
+      name: product.productName,
+      variants: selectedVariants,
+      price: calculateAdjustedPrice(),
+    };
+
+    // Add the product to the cart
+    if (addToCart) {
+      addToCart(selectedProduct);
+      const updatedCart = JSON.stringify([...cartContext.cart, selectedProduct]);
+      localStorage.setItem("cartItems", updatedCart);
+      navigate('/cart');
+      console.log("Cart Items :-", selectedProduct);
+    } else {
+      console.error("addToCart is not defined in the context");
+    }
+
+    console.log("Cart Items :-",selectedProduct)
+
   };
 
   // Define tab content
@@ -176,199 +200,8 @@ export default function ProductDetails() {
   };
   return (
     <CartProvider style={{ backgroundColor: "white" }}>
-      <Navbar />
-      <CoursesNavbar />
-      <div className="ProductDetails" style={{ backgroundColor: "white" }}>
-        <div className="leftSide">
-          {console.log(imagesArray)}
-          <Carousel showArrows={true} className="slider">
-            {imagesArray.map((imageUrl, index) => (
-              <div key={index}>
-                {console.log("final images")}
-                {console.log(`${imageUrl}`)}
-                <img src={`${imageUrl}`} alt={`Product ${index}`} />
-              </div>
-            ))}
-          </Carousel>
-
-          {/* Tab buttons */}
-          {/* Tab buttons */}
-          <div className="tab-buttons">
-            {tabs.map((tab, index) => (
-              <button
-                key={index}
-                onClick={() => setActiveTab(tab.name)}
-                className={activeTab === tab.name ? "active" : ""}
-              >
-                {tab.name}
-              </button>
-            ))}
-            {/* Hardcoded "Reviews" tab */}
-            <button
-              onClick={() => setActiveTab("reviews")}
-              className={activeTab === "reviews" ? "active" : ""}
-            >
-              Reviews
-            </button>
-          </div>
-
-          {/* Tab content */}
-          <div className="tab-content">
-          {tabs.map((tab, index) => (
-        <div
-          key={index}
-          className={`tab-content-${tab.name.toLowerCase()}`}
-          style={{ width: "90vw" }}
-        >
-          {console.log("tab ", tab)}
-          {console.log({activeTab})}
-          {activeTab === tab.name && (
-            <>
-              {tab.name === "Youtube Links" &&
-              tab.content.includes("<p>&lt;iframe") ? (
-                // Display the YouTube video content as iframes
-                <div style={{ textAlign: "center" }}>
-                  {console.log('inside iframe')}
-                  {extractYouTubeLinks(tab.content).length === 1 ? (
-                    // Render a single iframe
-                    <iframe
-                      width="560"
-                      height="315"
-                      src={extractYouTubeLinks(tab.content)[0]}
-                      title="YouTube video player"
-                      frameBorder="0"
-                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                      allowFullScreen
-                    ></iframe>
-                  ) : (
-                    // Render multiple iframes
-                    extractYouTubeLinks(tab.content).map((youtubeLink, idx) => (
-                      <iframe
-                        key={idx}
-                        width="560"
-                        height="315"
-                        src={youtubeLink}
-                        title={`YouTube video player ${idx + 1}`}
-                        frameBorder="0"
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                        allowFullScreen
-                        style={{ marginBottom: '15px' }}
-                      ></iframe>
-                    ))
-                  )}
-                </div>
-              ) : (
-                <div dangerouslySetInnerHTML={{ __html: tab.content }} />
-              )}
-            </>
-          )}
-        </div>
-      ))}
-
-            {/* Hardcoded content for the "Reviews" tab */}
-            {activeTab === "reviews" && (
-              <div className="tab-content-reviews">
-                <h3>Write a Review</h3>
-                <form onSubmit={handleReviewSubmit}>
-                  <div>
-                    <label>Name:</label>
-                    <input
-                      type="text"
-                      name="name"
-                      value={name}
-                      onChange={(e) => setName(e.target.value)}
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label>Email:</label>
-                    <input
-                      type="email"
-                      name="email"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label>Rating:</label>
-                    {/* Star rating component */}
-                    <Rating
-                      count={5}
-                      size={24}
-                      value={rating}
-                      onChange={(newRating) => setRating(newRating)}
-                    />
-                  </div>
-                  <div>
-                    <label>Review:</label>
-                    <textarea
-                      name="review"
-                      value={review}
-                      onChange={(e) => setReview(e.target.value)}
-                      required
-                    ></textarea>
-                  </div>
-                  <button
-                    type="submit"
-                    className="btn-10"
-                    style={{ top: "20px", position: "relative" }}
-                  >
-                    Submit Review
-                  </button>
-                </form>
-              </div>
-            )}
-          </div>
-        </div>
-        <div className="rightSide">
-          <span>
-            Courses {">"} <span className="course">{product.course}</span>
-          </span>
-          <h3 style={{ color: "#0C0C0C" }}>{product.productName}</h3>
-          <p>
-            By <span className="faculty">{product.author}</span>
-          </p>
-
-          {/* Render variant selection dropdowns */}
-          {/* <p style={{display:'flex',flexWrap:'wrap',width:'50%'}}>
-            {product.description}
-          </p> */}
-          {console.log(product.variants)}
-          {product.variants.map((variant) => (
-            <div key={variant.optionName} className="Variants">
-              <label className="varLabel">{variant.optionName}:</label>
-              <select
-                value={selectedVariants[variant.optionName] || ""}
-                onChange={(e) =>
-                  handleVariantChange(variant.optionName, e.target.value)
-                }
-                className="varInp"
-              >
-                <option value="">Select {variant.optionName}</option>
-                {variant.optionValues.map((option) => (
-                  <option key={option} value={option}>
-                    {option}
-                  </option>
-                ))}
-              </select>
-            </div>
-          ))}
-
-          {/* Display the adjusted price based on selected variants */}
-          <h3 className="Price">
-            Rs. <span className="price">{product.finalPrice}</span>
-          </h3>
-
-          <span className="pB">
-            <button className="addToCart" onClick={function name() {
-              handleAddToCart(product)
-            }}>
-              <BsFillCartPlusFill /> Add To Cart
-            </button>
-          </span>
-        </div>
-      </div>
+      {/* <CoursesNavbar /> */}
+      <OrigPdetails/>
     </CartProvider>
   );
 }

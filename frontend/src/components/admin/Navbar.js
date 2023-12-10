@@ -36,12 +36,12 @@ const Navbar = () => {
           </a>
         </li>
         <li key="contact">
-          <a href="/contact" style={{ color: "#000",fontSize:'15px'  }}>
+          <a href="/allProducts" style={{ color: "#000",fontSize:'15px'  }}>
          Products
           </a>
         </li>
         <li>
-        <a href="#" style={{ color: "#fff",fontSize:'15px',backgroundColor:'#000',padding:'13px',borderRadius:'13px',display:'flex',alignItems:'center',justifyContent:'space-around',width:'90px'}}>
+        <a href="/cart" style={{ color: "#fff",fontSize:'15px',backgroundColor:'#000',padding:'13px',borderRadius:'13px',display:'flex',alignItems:'center',justifyContent:'space-around',width:'90px'}}>
         <MdShoppingCart />  Cart
             </a>
         </li>
