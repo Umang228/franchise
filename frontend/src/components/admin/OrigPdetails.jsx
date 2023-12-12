@@ -210,8 +210,6 @@ const OrigPdetails = () => {
             <Carousel showArrows={true} className="slider">
               {imagesArray.map((imageUrl, index) => (
                 <div key={index}>
-                  {console.log("final images")}
-                  {console.log(`${imageUrl}`)}
                   <img src={`${imageUrl}`} alt={`Product ${index}`} />
                 </div>
               ))}

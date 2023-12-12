@@ -33,7 +33,7 @@ const CheckoutForm = () => {
       setCheckedOutItems([]);
     }
 
-    console.log('check-out', checkedOutItems);
+    console.log('checked-out', Object.keys(checkedOutItems));
   }, []);
 
   // Event handler for the "Buy Now" button click
@@ -95,137 +95,136 @@ const CheckoutForm = () => {
 
   // Return the JSX for the CheckoutForm component
   return (
-    
     <div>
       <Navbar />
-     <div style={{ padding: '20px', background: '#f0f2f5' }}>
-      {/* Display title */}
-      <Title level={2} style={{ textAlign: 'center', marginBottom: '40px' }}>
-        Checkout
-      </Title>
-      {/* Create a two-column layout using Row and Col components */}
-      <Row gutter={[16, 16]}>
-        {/* Left column with user input form */}
-        <Col xs={24} sm={12}>
-          <Form layout="vertical">
-            <Form.Item label="Name">
-              {/* Input for user to enter their name */}
-              <Input value={name} onChange={(e) => setName(e.target.value)} />
-            </Form.Item>
-            <Form.Item label="Email">
-              {/* Input for user to enter their email */}
-              <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
-            </Form.Item>
-            <Form.Item label="Country/Region">
-              {/* Select dropdown for user to choose their country */}
-              <Select
-                placeholder="Select country"
-                value={country}
-                onChange={(value) => setCountry(value)}
-              >
-                {/* Map through countries array to create Options */}
-                {countries.map((country) => (
-                  <Option key={country} value={country}>
-                    {country}
-                  </Option>
-                ))}
-              </Select>
-            </Form.Item>
-            {/* Additional address input fields */}
-            <Form.Item label="Street Address">
-              <Input />
-            </Form.Item>
-            <Form.Item label="Town/City">
-              <Input />
-            </Form.Item>
-            <Form.Item label="State/County">
-              <Input />
-            </Form.Item>
-            {/* Button to trigger the buy process */}
-            <Form.Item>
-              <Button type="primary" size="large" onClick={handleBuy} block>
-                Buy Now
-              </Button>
-            </Form.Item>
-          </Form>
-        </Col>
-        {/* Right column displaying checked-out items */}
-        <Col xs={24} sm={12}>
-          {/* Display checked-out items using the CheckoutSummary component */}
-          <CheckoutSummary checkedOutItems={checkedOutItems} />
-        </Col>
-      </Row>
-    </div>
-    
-    <div
-                style={{
-                    background: "#000",
-                    color: "#fff",
-                    padding: "20px 60px",
-                    height: "300px",
-                    width: "100%",
-                }}
-            >
-                <Row gutter={[16, 16]}>
-                    <Col xs={24} sm={12} md={6}>
-                        <div style={{ marginBottom: "20px" }}>
-                            <h3 style={{ color: 'white' }}>Call Us</h3>
-                            <a href="tel:7742554277" style={{ color: 'white' }}>7742554277</a>
-                        </div>
-                        <div>
-                            <h3 style={{ color: 'white' }}>Email</h3>
-                            <a href="mailto:air1@gmail.com" style={{ color: 'white' }}>air1@gmail.com</a>
-                        </div>
-                    </Col>
-                    <Col xs={24} sm={12} md={6}>
-                        <div style={{ marginBottom: "20px", display: 'flex', flexDirection: 'column' }}>
-                            <h3 style={{ color: 'white' }}>Quick Links</h3>
-                            <a href="#" style={{ color: 'white' }}>Home</a>
-                            <a href="#" style={{ color: 'white' }}>About Us</a>
-                            <a href="#" style={{ color: 'white' }}>Courses</a>
-                            <a href="#" style={{ color: 'white' }}>Contact Us</a>
-                            <a href="#" style={{ color: 'white' }}>Terms and Conditions</a>
-                            <a href="#" style={{ color: 'white' }}>Privacy Policy</a>
-                        </div>
-                    </Col>
-                    <Col xs={24} sm={12} md={6}>
-                        <div style={{ marginBottom: "20px" }}>
-                            <h3 style={{ color: 'white' }}>CA Classes</h3>
-                        </div>
-                    </Col>
-                    <Col xs={24} sm={12} md={6}>
-                        <div>
-                            <h3 style={{ color: 'white' }}>Social Links</h3>
-                            <div style={{ display: "flex", alignItems: "center" }}>
-                                <a
-                                    href="#"
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    style={{ margin: "0 5px", color: 'white' }}
+      <div style={{ padding: '20px', background: '#f0f2f5' }}>
+        {/* Display title */}
+        <Title level={2} style={{ textAlign: 'center', marginBottom: '40px' }}>
+          Checkout
+        </Title>
+        {/* Create a two-column layout using Row and Col components */}
+        <Row gutter={[16, 16]}>
+          {/* Left column with user input form */}
+          <Col xs={24} sm={12}>
+            <Form layout="vertical">
+              <Form.Item label="Name">
+                {/* Input for user to enter their name */}
+                <Input value={name} onChange={(e) => setName(e.target.value)} />
+              </Form.Item>
+              <Form.Item label="Email">
+                {/* Input for user to enter their email */}
+                <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
+              </Form.Item>
+              <Form.Item label="Country/Region">
+                {/* Select dropdown for user to choose their country */}
+                <Select
+                  placeholder="Select country"
+                  value={country}
+                  onChange={(value) => setCountry(value)}
+                >
+                  {/* Map through countries array to create Options */}
+                  {countries.map((country) => (
+                    <Option key={country} value={country}>
+                      {country}
+                    </Option>
+                  ))}
+                </Select>
+              </Form.Item>
+              {/* Additional address input fields */}
+              <Form.Item label="Street Address">
+                <Input />
+              </Form.Item>
+              <Form.Item label="Town/City">
+                <Input />
+              </Form.Item>
+              <Form.Item label="State/County">
+                <Input />
+              </Form.Item>
+              {/* Button to trigger the buy process */}
+              <Form.Item>
+                <Button type="primary" size="large" onClick={handleBuy} block>
+                  Buy Now
+                </Button>
+              </Form.Item>
+            </Form>
+          </Col>
+          {/* Right column displaying checked-out items */}
+          <Col xs={24} sm={12}>
+            {/* Display checked-out items using the CheckoutSummary component */}
+            <CheckoutSummary checkedOutItems={checkedOutItems} />
+          </Col>
+        </Row>
+      </div>
 
-                                >
-                                    <i
-                                        className="fa-solid fa-eye"
-                                        style={{ margin: "0 5px" }}
-                                    ></i>
-                                    <i
-                                        className="fab fa-whatsapp"
-                                        style={{ margin: "0 5px", color: "green" }}
-                                    ></i>
-                                    <i
-                                        className="fab fa-youtube"
-                                        style={{ margin: "0 5px", color: "red" }}
-                                    ></i>
-                                    <i
-                                        className="fa-solid fa-phone"
-                                        style={{ margin: "0 5px", color: "darkgray" }}
-                                    ></i>
-                                </a>
-                            </div>
-                        </div>
-                    </Col>
-                </Row>
+      <div
+        style={{
+          background: "#000",
+          color: "#fff",
+          padding: "20px 60px",
+          height: "300px",
+          width: "100%",
+        }}
+      >
+        <Row gutter={[16, 16]}>
+          <Col xs={24} sm={12} md={6}>
+            <div style={{ marginBottom: "20px" }}>
+              <h3 style={{ color: 'white' }}>Call Us</h3>
+              <a href="tel:7742554277" style={{ color: 'white' }}>7742554277</a>
             </div>
+            <div>
+              <h3 style={{ color: 'white' }}>Email</h3>
+              <a href="mailto:air1@gmail.com" style={{ color: 'white' }}>air1@gmail.com</a>
+            </div>
+          </Col>
+          {console.log('check-out', checkedOutItems)}
+          <Col xs={24} sm={12} md={6}>
+            <div style={{ marginBottom: "20px", display: 'flex', flexDirection: 'column' }}>
+              <h3 style={{ color: 'white' }}>Quick Links</h3>
+              <a href="#" style={{ color: 'white' }}>Home</a>
+              <a href="#" style={{ color: 'white' }}>About Us</a>
+              <a href="#" style={{ color: 'white' }}>Courses</a>
+              <a href="#" style={{ color: 'white' }}>Contact Us</a>
+              <a href="#" style={{ color: 'white' }}>Terms and Conditions</a>
+              <a href="#" style={{ color: 'white' }}>Privacy Policy</a>
+            </div>
+          </Col>
+          <Col xs={24} sm={12} md={6}>
+            <div style={{ marginBottom: "20px" }}>
+              <h3 style={{ color: 'white' }}>CA Classes</h3>
+            </div>
+          </Col>
+          <Col xs={24} sm={12} md={6}>
+            <div>
+              <h3 style={{ color: 'white' }}>Social Links</h3>
+              <div style={{ display: "flex", alignItems: "center" }}>
+                <a
+                  href="#"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{ margin: "0 5px", color: 'white' }}
+                >
+                  <i
+                    className="fa-solid fa-eye"
+                    style={{ margin: "0 5px" }}
+                  ></i>
+                  <i
+                    className="fab fa-whatsapp"
+                    style={{ margin: "0 5px", color: "green" }}
+                  ></i>
+                  <i
+                    className="fab fa-youtube"
+                    style={{ margin: "0 5px", color: "red" }}
+                  ></i>
+                  <i
+                    className="fa-solid fa-phone"
+                    style={{ margin: "0 5px", color: "darkgray" }}
+                  ></i>
+                </a>
+              </div>
+            </div>
+          </Col>
+        </Row>
+      </div>
     </div>
   );
 };
